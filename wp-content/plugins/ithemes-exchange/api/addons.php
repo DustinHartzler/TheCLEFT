@@ -175,11 +175,12 @@ function it_exchange_temporarily_load_addons( $add_ons ) {
 */
 function it_exchange_temporarily_load_addon( $add_on ) {
 	$enabled_addons = it_exchange_get_enabled_addons();
+	$temp_addon     = it_exchange_get_addon( $add_on );
 
-	// Init all enabled addons
+	// Init addon
 	if( ! isset( $enabled_addons[$add_on] ) ) {
-		if ( ! empty( $params['file'] ) && is_file( $params['file'] ) ) {
-			include_once( $params['file'] );
+		if ( ! empty( $temp_addon['file'] ) && is_file( $temp_addon['file'] ) ) {
+			include_once( $temp_addon['file'] );
 		}
 	}
 }
@@ -447,6 +448,8 @@ function it_exchange_disable_addon( $add_on ) {
 	$registered = it_exchange_get_addons();
 	$enabled_addons = it_exchange_get_enabled_addons( array( 'break_cache' => true ) );
 	$success = false;
+	
+	do_action( 'it_exchange_add_on_before_disable', $add_on );
 
 	if ( ! empty( $enabled_addons[$add_on] ) ) {
 		unset( $enabled_addons[$add_on] );
