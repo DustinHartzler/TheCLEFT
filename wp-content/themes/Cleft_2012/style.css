@@ -1,0 +1,334 @@
+/*
+Theme Name: The Cleft 2012 Version
+Theme URI: TheCleft.org
+Description: Custom theme for TheCleft.org
+Version: 3.0
+Author: Dustin Hartzler
+Author URI: www.HartzlerDM.com
+
+*/
+
+body,
+p.quotebox a {
+	color:#888;
+}
+
+a:link,
+a:visited,
+a:active,
+.widgettitle {
+	color:#86bdd9;
+}
+
+a:hover,
+#footer-bottom a:hover,
+#footer .widget_links ul a:hover,
+#footer .widget_links ol a:hover,
+.iconlist h5,
+.iconlist h5 a,
+.sf-menu a:hover,
+.sfHover a,
+.sf-menu ul li.sfHover > a {
+	color:#C31E2E;
+	text-decoration: underline;
+}
+
+html,
+body,
+#footer-bottom{
+	background:#2b2b2b;
+}
+
+#outer {
+	background:#333;
+}
+
+h1, h2, h3, h4, h5, h6,
+h1 a, h2 a, h3 a, h4 a, h5 a, h6 a,
+#main .widgettitle,
+form.standard .button,
+.sf-menu a {
+	color:#fff;
+}
+
+hr,
+.post,
+.widgettitle,
+.sf-menu li li {
+	border-bottom:1px solid #ddd;
+}
+
+.postmeta,
+#footer-bottom a,
+#searchform #s {
+	color:#888;
+}
+
+#header,
+.promo-navigation a,
+.pagination a,
+.pagination a span,
+p.quotebox,
+.ads,
+.boxed,
+.sf-menu ul a {
+	background:#222;
+}
+
+#header {
+	border-bottom:10px solid #C31E2E;
+}
+
+#topbar,
+.sf-menu li li:last-child {
+	border-bottom:1px solid #fff;
+}
+
+#topbar,
+#footer {
+	background:#333;
+}
+
+#topbar a,
+#footer .widgettitle,
+.error,
+.warning,
+.success,
+.error a,
+.warning a,
+.success a {
+	color:#fff;
+}
+
+#searchform #searchsubmit {
+	background:url(../../images/searchsubmit.gif) no-repeat center center;
+}
+
+#searchform #s {
+	background:#555;
+}
+
+#footer {
+	border-bottom:1px solid #444;
+}
+
+#footer-bottom {
+	border-top:1px solid #222;
+}
+
+#footer-bottom a.scroll-top {
+	background:url(../../images/to-top.gif) no-repeat left center;
+}
+
+img.alignright {float:right; margin:0 0 1em 1em}
+img.alignleft {float:left; margin:0 1em 1em 0}
+img.aligncenter {display: block; margin-left: auto; margin-right: auto}
+.alignright {float:right; }
+.alignleft {float:left; }
+.aligncenter {display: block; margin-left: auto; margin-right: auto}
+
+.promo-navigation a,
+.pagination a,
+.pagination a span,
+.ads,
+.demogrid p {
+	border:1px solid #ddd;
+}
+
+.promo-navigation .activeSlide,
+form.standard .button,
+.sfHover,
+.sf-menu li ul {
+	background:#ddd;
+}
+
+#topbar,
+#footer,
+#footer .widget_links ul a,
+#footer .widget_links ol a {
+	color:#ddd;
+}
+
+p.quotebox {
+	background-position:10px center;
+	background-repeat:no-repeat;
+	background-image:url(../../images/quote_left.gif);
+}
+
+form.standard .textbox,
+form.standard .textarea,
+form.standard .select,
+form.standard .button,
+form.standard .checkbox,
+form.standard .radio, .textbox,
+.gform_wrapper .gform_footer input.button {
+	border:1px solid #f60;
+}
+
+form.standard .button:hover {
+	background:#red;
+}
+
+form.standard label {
+  display:block;
+  padding-bottom:2px;
+  padding-left:2px;
+  padding-right:0;
+  padding-top:0;
+}
+
+.shadow {
+	-moz-box-shadow:0 0 2px #ddd;
+	-webkit-box-shadow:0 0 2px #ddd;
+	box-shadow:0 0 2px #ddd; 
+}
+
+.hovershadow:hover,
+.pagination a:hover {
+	-moz-box-shadow:0 0 3px #d0d0d0;
+	-webkit-box-shadow:0 0 3px #d0d0d0;
+	box-shadow:0 0 3px #d0d0d0; 
+}
+
+.highlight {
+	background-color:#ff6;
+}
+
+.error {
+	background:#C00;
+}
+
+.warning {
+	background:#f93;
+}
+
+.success {
+	background:#090;
+}
+
+.sf-menu ul a:hover {
+	background:#ebebeb;
+}
+.sf-menu li li {
+	background:#e8e8e8;
+	border-left:1px solid #fff;
+	border-right:1px solid #fff;
+}
+.sf-menu li li:first-child {
+	border-top:1px solid #fff;
+}
+.sf-menu li ul {
+	-moz-box-shadow:2px 2px 2px #ddd;
+	-webkit-box-shadow:2px 2px 2px #ddd;
+	box-shadow:2px 2px 2px #ddd; 
+}
+.sf-sub-indicator {
+	background:url('../../images/menu/default-submenu-sprite.png') no-repeat -10px -100px; /* 8-bit indexed alpha png. IE6 gets solid image only */
+}
+
+li#menu-item-85 a{background: url('http://thecleft.org/wp-content/themes/theCleft/images/facebook.png');
+	text-indent: -9000px;
+	text-decoration: underline;
+	background-repeat: no-repeat;
+	height: 20px;
+	z-index: 10;
+	display: block;
+	margin-top: 9px;
+	font-size: 8px;
+}
+
+
+li#menu-item-178 a{background: url('http://thecleft.org/wp-content/themes/theCleft/images/twitter.png');
+	text-indent: -9000px;
+	text-decoration: underline;
+	width: 20px;
+	z-index: 10;
+	background-repeat: no-repeat;
+	display: block;
+	margin-left: 20px;
+	margin-top: 9px;
+}
+/* ------- Fluid Columns ------- */
+.one_half{ width:48%; }
+.one_third{ width:30.66%; }
+.two_third{ width:65.33%; }
+.one_fourth{ width:22%; }
+.three_fourth{ width:74%; }
+.one_fifth{ width:16.8%; }
+.two_fifth{ width:37.6%; }
+.three_fifth{ width:58.4%; }
+.four_fifth{ width:67.2%; }
+.one_sixth{ width:13.33%; }
+.five_sixth{ width:82.67%; }
+.one_half,.one_third,.two_third,.three_fourth,.one_fourth,.one_fifth,.two_fifth,.three_fifth,.four_fifth,.one_sixth,.five_sixth{ position:relative; margin-right:4%; float:left; }
+.last{ margin-right:0 !important; clear:right; }
+.clearboth {clear:both;display:block;font-size:0;height:0;line-height:0;width:100%;}
+
+
+body .gform_wrapper form .gform_body ul,
+body .gform_wrapper form .gform_body ul li {
+    list-style-type:none!important;
+    list-style-image:none!important;
+    list-style:none!important;
+    background-image:none!important;
+    background:none!important;
+    padding:0!important;
+    margin:0!important
+    border:1px solid #f60;
+}
+
+.gform_wrapper .ginput_complex label, .gform_wrapper .gfield_time_hour label, .gform_wrapper .gfield_time_minute label, .gform_wrapper .gfield_date_month label, .gform_wrapper .gfield_date_day label, .gform_wrapper .gfield_date_year label, .gform_wrapper .instruction {
+  display:block;
+  font-size:11px;
+  letter-spacing:0.5pt;
+  margin-bottom:3px;
+  margin-left:0;
+  margin-right:0;
+  margin-top:3px;
+}
+
+
+body .gform_wrapper div.gform_body ul.gform_fields li.gfield.gfield_html ul li,
+body .gform_wrapper form div.gform_body ul.gform_fields li.gfield.gfield_html ul li {list-style-type: disc!important; overflow:visible}
+body .gform_wrapper div.gform_body ul.gform_fields li.gfield.gfield_html ul,
+body .gform_wrapper form div.gform_body ul.gform_fields li.gfield.gfield_html ul {list-style-type: disc!important; margin: 0 0 1.5em 1.5em}
+
+body #gform_wrapper .gform_body .gform_fields .gfield .gfield_checkbox. input_20_6 {border:1px solid red}
+
+#submit, .button{
+		padding:9px 22px;
+		cursor:pointer;
+		border:none;
+	}
+.button:hover{
+	color: yellow;
+}
+.gform_wrapper .validation_error {
+  color:#ff0000;
+  font-size:14px;
+  font-weight:bold;
+  line-height:1.5em;
+  margin-bottom:16px;
+}
+
+.woocommerce .col2-set .col-1, .woocommerce-page .col2-set .col-1 {
+float: left;
+width: 100% !important;
+}
+
+.woocommerce form .form-row input.input-text, .woocommerce form .form-row textarea, .woocommerce-page form .form-row input.input-text, .woocommerce-page form .form-row textarea, .product .nyp input.nyp-input {
+padding: 10px 0 10px 5px;
+font-size: 14px;
+}
+
+ul.order_details {
+	padding-left: 12px;
+}
+
+form.cart {
+	padding-bottom: 40px;
+}
+
+div#product-763 {
+	min-height: 615px;
+}
