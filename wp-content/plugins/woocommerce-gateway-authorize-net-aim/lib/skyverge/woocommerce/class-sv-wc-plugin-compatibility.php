@@ -18,7 +18,7 @@
  *
  * @package   SkyVerge/WooCommerce/Plugin/Classes
  * @author    SkyVerge
- * @copyright Copyright (c) 2013-2014, SkyVerge, Inc.
+ * @copyright Copyright (c) 2013-2015, SkyVerge, Inc.
  * @license   http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
 
@@ -427,6 +427,28 @@ class SV_WC_Plugin_Compatibility {
 	 */
 	public static function is_wc_version_lt_2_2() {
 		return self::get_wc_version() && version_compare( self::get_wc_version(), '2.2', '<' );
+	}
+
+
+	/**
+	 * Returns true if the installed version of WooCommerce is 2.3 or greater
+	 *
+	 * @since 3.1.0
+	 * @return boolean true if the installed version of WooCommerce is 2.3 or greater
+	 */
+	public static function is_wc_version_gte_2_3() {
+		return self::get_wc_version() && version_compare( self::get_wc_version(), '2.3', '>=' );
+	}
+
+
+	/**
+	 * Returns true if the installed version of WooCommerce is less than 2.3
+	 *
+	 * @since 3.1.0
+	 * @return boolean true if the installed version of WooCommerce is less than 2.3
+	 */
+	public static function is_wc_version_lt_2_3() {
+		return self::get_wc_version() && version_compare( self::get_wc_version(), '2.3', '<' );
 	}
 
 

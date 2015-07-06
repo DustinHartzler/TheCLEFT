@@ -1,5 +1,19 @@
 *** WooCommerce Authorize.net AIM Gateway Changelog ***
 
+2015.04.29 - version 3.3.3
+ * Fix - Ensure SIM gateway can be activated
+
+2015.04.21 - version 3.3.2
+ * Fix - Escape all instances of add_query_arg and remove_query_arg to avoid a potential XSS attack
+ * Tweak - Introduce the `wc_authorize_net_aim_transaction_description` filter
+
+2015.02.19 - version 3.3.1
+ * Fix - Fix a fatal error on checkout for stores using PHP 5.2
+
+2015.02.09 - version 3.3.0
+ * Feature - Refund/Void support! You can now refund/void transactions directly from the Edit Order screen :)
+ * Misc - WooCommerce 2.3 Compatibility
+
 2014.10.28 - version 3.2.5
  * Fix - Fix Uncaught exception 'SV_WC_API_Exception' error.
 

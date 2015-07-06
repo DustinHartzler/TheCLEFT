@@ -18,7 +18,7 @@
  *
  * @package   SkyVerge/WooCommerce/Payment-Gateway/API
  * @author    SkyVerge
- * @copyright Copyright (c) 2013-2014, SkyVerge, Inc.
+ * @copyright Copyright (c) 2013-2015, SkyVerge, Inc.
  * @license   http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
 
@@ -82,6 +82,32 @@ interface SV_WC_Payment_Gateway_API {
 	 * @throws SV_WC_Payment_Gateway_Exception network timeouts, etc
 	 */
 	public function check_debit( WC_Order $order );
+
+
+	/**
+	 * Perform a refund for the given order
+	 *
+	 * If the gateway does not support refunds, this method can be a no-op.
+	 *
+	 * @since 3.1.0
+	 * @param WC_Order $order order object
+	 * @return SV_WC_Payment_Gateway_API_Response refund response
+	 * @throws SV_WC_Payment_Gateway_Exception network timeouts, etc
+	 */
+	public function refund( WC_Order $order );
+
+
+	/**
+	 * Perform a void for the given order
+	 *
+	 * If the gateway does not support voids, this method can be a no-op.
+	 *
+	 * @since 3.1.0
+	 * @param WC_Order $order order object
+	 * @return SV_WC_Payment_Gateway_API_Response void response
+	 * @throws SV_WC_Payment_Gateway_Exception network timeouts, etc
+	 */
+	public function void( WC_Order $order );
 
 
 	/**

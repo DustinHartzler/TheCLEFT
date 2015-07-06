@@ -5,7 +5,7 @@
  * Description: Accept Credit Cards and eChecks via Authorize.net AIM in your WooCommerce store
  * Author: SkyVerge
  * Author URI: http://www.skyverge.com
- * Version: 3.2.5
+ * Version: 3.3.3
  * Text Domain: woocommerce-gateway-authorize-net-aim
  * Domain Path: /i18n/languages/
  *
@@ -17,7 +17,7 @@
  * @package   WC-Gateway-Authorize-Net-AIM
  * @author    SkyVerge
  * @category  Gateway
- * @copyright Copyright (c) 2011-2014, SkyVerge, Inc.
+ * @copyright Copyright (c) 2011-2015, SkyVerge, Inc.
  * @license   http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
 
@@ -41,7 +41,7 @@ if ( ! class_exists( 'SV_WC_Framework_Bootstrap' ) ) {
 	require_once( 'lib/skyverge/woocommerce/class-sv-wc-framework-bootstrap.php' );
 }
 
-SV_WC_Framework_Bootstrap::instance()->register_plugin( '3.0.2-1', __( 'WooCommerce Authorize.net AIM Gateway', 'woocommerce-gateway-authorize-net-aim' ), __FILE__, 'init_woocommerce_gateway_authorize_net_aim', array( 'is_payment_gateway' => true, 'minimum_wc_version' => '2.1', 'backwards_compatible' => '3.0.0' ) );
+SV_WC_Framework_Bootstrap::instance()->register_plugin( '3.1.0', __( 'WooCommerce Authorize.net AIM Gateway', 'woocommerce-gateway-authorize-net-aim' ), __FILE__, 'init_woocommerce_gateway_authorize_net_aim', array( 'is_payment_gateway' => true, 'minimum_wc_version' => '2.1', 'backwards_compatible' => '3.1.0' ) );
 
 function init_woocommerce_gateway_authorize_net_aim() {
 
@@ -108,7 +108,10 @@ class WC_Authorize_Net_AIM extends SV_WC_Payment_Gateway_Plugin {
 
 
 	/** string version number */
-	const VERSION = '3.2.5';
+	const VERSION = '3.3.3';
+
+	/** @var WC_Authorize_Net_AIM single instance of this plugin */
+	protected static $instance;
 
 	/** string the plugin id */
 	const PLUGIN_ID = 'authorize_net_aim';
@@ -305,7 +308,7 @@ class WC_Authorize_Net_AIM extends SV_WC_Payment_Gateway_Plugin {
 		if ( $this->is_legacy_sim_gateway_active() ) {
 			$actions['deactivate_sim'] = sprintf(
 				'<a href="%s" title="%s">%s</a>',
-				wp_nonce_url(
+				esc_url( wp_nonce_url(
 					add_query_arg(
 						array(
 							'action'        => 'wc_authorize_net_toggle_sim',
@@ -314,14 +317,14 @@ class WC_Authorize_Net_AIM extends SV_WC_Payment_Gateway_Plugin {
 							'paged'         => $page,
 							's'             => $s ),
 						'admin.php' ),
-					$this->get_file() ),
+					$this->get_file() ) ),
 				esc_attr__( 'Deactivate SIM gateway', self::TEXT_DOMAIN ),
 				__( 'Deactivate SIM gateway', self::TEXT_DOMAIN )
 			);
 		} else {
 			$actions['activate_sim'] = sprintf(
 				'<a href="%s" title="%s">%s</a>',
-				wp_nonce_url(
+				esc_url( wp_nonce_url(
 					add_query_arg(
 						array(
 							'action'        => 'wc_authorize_net_toggle_sim',
@@ -330,7 +333,7 @@ class WC_Authorize_Net_AIM extends SV_WC_Payment_Gateway_Plugin {
 							'paged'         => $page,
 							's'             => $s ),
 						'admin.php' ),
-					$this->get_file() ),
+					$this->get_file() ) ),
 				esc_attr__( 'Activate SIM gateway', self::TEXT_DOMAIN ),
 				__( 'Activate SIM gateway', self::TEXT_DOMAIN )
 			);
@@ -371,7 +374,7 @@ class WC_Authorize_Net_AIM extends SV_WC_Payment_Gateway_Plugin {
 		}
 
 		// back to whence we came
-		wp_redirect( $return_url );
+		wp_redirect( esc_url_raw( $return_url ) );
 		exit;
 	}
 
@@ -411,7 +414,22 @@ class WC_Authorize_Net_AIM extends SV_WC_Payment_Gateway_Plugin {
 	}
 
 
-	/** Getter methods ******************************************************/
+	/** Helper methods ******************************************************/
+
+
+	/**
+	 * Main Authorize.net AIM Instance, ensures only one instance is/can be loaded
+	 *
+	 * @since 3.3.0
+	 * @see wc_authorize_net_aim()
+	 * @return WC_Authorize_Net_AIM
+	 */
+	public static function instance() {
+		if ( is_null( self::$instance ) ) {
+			self::$instance = new self();
+		}
+		return self::$instance;
+	}
 
 
 	/**
@@ -545,10 +563,24 @@ class WC_Authorize_Net_AIM extends SV_WC_Payment_Gateway_Plugin {
 
 
 /**
- * The WC_Authorize_Net_AIM global object
+ * Returns the One True Instance of Authorize.net AIM
+ *
+ * @since 3.3.0
+ * @return WC_Authorize_Net_AIM
+ */
+function wc_authorize_net_aim() {
+	return WC_Authorize_Net_AIM::instance();
+}
+
+
+/**
+ * The WC_Authorize_Net_AIM global object, exists only for backwards compat
+ *
+ * @deprecated 3.3.0
  * @name $wc_authorize_net_aim
  * @global WC_Authorize_Net_AIM $GLOBALS['wc_authorize_net_aim']
  */
-$GLOBALS['wc_authorize_net_aim'] = new WC_Authorize_Net_AIM();
+$GLOBALS['wc_authorize_net_aim'] = wc_authorize_net_aim();
+
 
 } // init_woocommerce_gateway_authorize_net_aim

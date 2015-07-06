@@ -18,7 +18,7 @@
  *
  * @package   WC-Gateway-Authorize-Net-AIM/API
  * @author    SkyVerge
- * @copyright Copyright (c) 2011-2014, SkyVerge, Inc.
+ * @copyright Copyright (c) 2011-2015, SkyVerge, Inc.
  * @license   http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
 
@@ -193,6 +193,50 @@ class WC_Authorize_Net_AIM_API extends SV_WC_API_Base implements SV_WC_Payment_G
 		$request = $this->get_new_request();
 
 		$request->create_echeck_debit( $order );
+
+		return $this->perform_request( $request );
+	}
+
+
+	/**
+	 * Perform a refund for the order
+	 *
+	 * Note that only transactions settled in the past 120 days are eligible for
+	 * refunds
+	 *
+	 * @since 3.3.0
+	 * @param WC_Order $order the order
+	 * @return \WC_Authorize_Net_AIM_API_Response Authorize.net API response object
+	 * @throws SV_WC_API_Exception network timeouts, etc
+	 */
+	public function refund( WC_Order $order ) {
+
+		$request = $this->get_new_request();
+
+		$request->create_refund( $order );
+
+		return $this->perform_request( $request );
+	}
+
+
+	/**
+	 * Perform a void for the order
+	 *
+	 * Note that a void is only performed in for a transaction that has a valid
+	 * authorization that has not been captured. Authorized & captured transactions
+	 * that have not yet been settled are not eligible for voiding as we don't
+	 * know if they've been settled or not.
+	 *
+	 * @since 3.3.0
+	 * @param WC_Order $order the order
+	 * @return \WC_Authorize_Net_AIM_API_Response Authorize.net API response object
+	 * @throws SV_WC_API_Exception network timeouts, etc
+	 */
+	public function void( WC_Order $order ) {
+
+		$request = $this->get_new_request();
+
+		$request->create_void( $order );
 
 		return $this->perform_request( $request );
 	}

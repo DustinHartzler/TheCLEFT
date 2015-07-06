@@ -18,7 +18,7 @@
  *
  * @package   WC-Gateway-Authorize-Net-AIM/API/Response
  * @author    SkyVerge
- * @copyright Copyright (c) 2011-2014, SkyVerge, Inc.
+ * @copyright Copyright (c) 2011-2015, SkyVerge, Inc.
  * @license   http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
 
@@ -159,7 +159,15 @@ class WC_Authorize_Net_AIM_API_Response implements SV_WC_Payment_Gateway_API_Res
 			return __( 'N/A', WC_Authorize_Net_AIM::TEXT_DOMAIN );
 		}
 
-		return (string) $this->response_xml->messages->message->text;
+		$message = (string) $this->response_xml->messages->message->text;
+
+		// E00027 is a generic decline error that is returned as an API error but includes additional error messages
+		// that are valuable to include
+		if ( 'E00027' == $this->get_api_error_code() ) {
+			$message .= ' ' . $this->get_transaction_status_message();
+		}
+
+		return $message;
 	}
 
 

@@ -18,7 +18,7 @@
  *
  * @package   SkyVerge/WooCommerce/Payment-Gateway/Classes
  * @author    SkyVerge
- * @copyright Copyright (c) 2013-2014, SkyVerge, Inc.
+ * @copyright Copyright (c) 2013-2015, SkyVerge, Inc.
  * @license   http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
 
@@ -616,15 +616,18 @@ abstract class SV_WC_Payment_Gateway_Direct extends SV_WC_Payment_Gateway {
 	 *
 	 * @since 1.0.0
 	 * @param WC_Order $order the order object
+	 * @param SV_WC_Payment_Gateway_API_Response $response optional credit card transaction response
 	 * @return SV_WC_Payment_Gateway_API_Response the response
 	 * @throws SV_WC_Payment_Gateway_Exception network timeouts, etc
 	 */
-	protected function do_credit_card_transaction( $order ) {
+	protected function do_credit_card_transaction( $order, $response = null ) {
 
-		if ( $this->perform_credit_card_charge() ) {
-			$response = $this->get_api()->credit_card_charge( $order );
-		} else {
-			$response = $this->get_api()->credit_card_authorization( $order );
+		if ( is_null( $response ) ) {
+			if ( $this->perform_credit_card_charge() ) {
+				$response = $this->get_api()->credit_card_charge( $order );
+			} else {
+				$response = $this->get_api()->credit_card_authorization( $order );
+			}
 		}
 
 		// success! update order record
@@ -732,65 +735,6 @@ abstract class SV_WC_Payment_Gateway_Direct extends SV_WC_Payment_Gateway {
 			return $this->do_transaction_failed_result( $order, $response );
 
 		}
-	}
-
-
-	/**
-	 * Returns true if the authorization for $order is still valid for capture
-	 *
-	 * @since 2.0.0
-	 * @param $order WC_Order the order
-	 * @return boolean true if the authorization is valid for capture, false otherwise
-	 */
-	public function authorization_valid_for_capture( $order ) {
-
-		// check whether the charge has already been captured by this gateway
-		$charge_captured = get_post_meta( $order->id, '_wc_' . $order->payment_method . '_charge_captured', true );
-
-		if ( 'yes' == $charge_captured ) {
-			return false;
-		}
-
-		// if for any reason the authorization can not be captured
-		$auth_can_be_captured = get_post_meta( $order->id, '_wc_' . $order->payment_method . '_auth_can_be_captured', true );
-
-		if ( 'no' == $auth_can_be_captured ) {
-			return false;
-		}
-
-		// authorization hasn't already been captured, but has it expired?
-		return ! $this->has_authorization_expired( $order );
-	}
-
-
-	/**
-	 * Returns true if the authorization for $order has expired
-	 *
-	 * @since 2.0.0
-	 * @param $order WC_Order the order
-	 * @return boolean true if the authorization has expired, false otherwise
-	 */
-	public function has_authorization_expired( $order ) {
-
-		$transaction_time = strtotime( $this->get_order_meta( $order->id, 'trans_date', true ) );
-
-		return floor( ( time() - $transaction_time ) / 3600 ) > $this->get_authorization_time_window();
-	}
-
-
-	/**
-	 * Return the authorization time window in hours. An authorization is considered
-	 * expired if it is older than this.
-	 *
-	 * 30 days (720 hours) is the standard authorization window. Individual gateways
-	 * can override this as necessary.
-	 *
-	 * @since 2.2.0
-	 * @return int hours
-	 */
-	protected function get_authorization_time_window() {
-
-		return 720;
 	}
 
 
@@ -2026,13 +1970,13 @@ abstract class SV_WC_Payment_Gateway_Direct extends SV_WC_Payment_Gateway {
 		}
 
 		// unknown token?
-		if ( ! $this->has_payment_token( $user_id, $token, $environment_id ) ) {
+		if ( ! $this->has_payment_token( $user_id, $token, null, $environment_id ) ) {
 			return false;
 		}
 
 		// get the payment token object as needed
 		if ( ! is_object( $token ) ) {
-			$token = $this->get_payment_token( $user_id, $token, $environment_id );
+			$token = $this->get_payment_token( $user_id, $token, null, $environment_id );
 		}
 
 		// for direct gateways that allow it, attempt to delete the token from the endpoint
@@ -2047,6 +1991,9 @@ abstract class SV_WC_Payment_Gateway_Direct extends SV_WC_Payment_Gateway {
 				}
 
 			} catch( SV_WC_Payment_Gateway_Exception $e ) {
+				if ( $this->debug_log() ) {
+					$this->get_plugin()->log( $e->getMessage() . "\n" . $e->getTraceAsString(), $this->get_id() );
+				}
 				return false;
 			}
 		}
@@ -2094,7 +2041,7 @@ abstract class SV_WC_Payment_Gateway_Direct extends SV_WC_Payment_Gateway {
 
 		// get the payment token object as needed
 		if ( ! is_object( $token ) ) {
-			$token = $this->get_payment_token( $user_id, $token, $environment_id );
+			$token = $this->get_payment_token( $user_id, $token, null, $environment_id );
 		}
 
 		// get existing tokens
@@ -2248,25 +2195,6 @@ abstract class SV_WC_Payment_Gateway_Direct extends SV_WC_Payment_Gateway {
 	protected function show_my_payment_methods_load_template() {
 
 		assert( $this->supports_tokenization() );
-
-		// concrete stub method
-		assert( false );
-	}
-
-
-	/** Direct Payment Gateway ******************************************************/
-
-
-	/**
-	 * Returns the API instance for this gateway if it is a direct communication
-	 *
-	 * This is a stub method which must be overridden if this gateway performs
-	 * direct communication
-	 *
-	 * @since 1.0.0
-	 * @return SV_WC_Payment_Gateway_API the payment gateway API instance
-	 */
-	public function get_api() {
 
 		// concrete stub method
 		assert( false );

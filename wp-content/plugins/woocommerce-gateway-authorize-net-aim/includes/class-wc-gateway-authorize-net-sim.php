@@ -18,7 +18,7 @@
  *
  * @package   WC-Gateway-Authorize-Net-AIM/Gateway/SIM
  * @author    SkyVerge
- * @copyright Copyright (c) 2011-2014, SkyVerge, Inc.
+ * @copyright Copyright (c) 2011-2015, SkyVerge, Inc.
  * @license   http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
 

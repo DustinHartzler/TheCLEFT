@@ -18,7 +18,7 @@
  *
  * @package   WC-Gateway-Authorize-Net-AIM/Gateway/eCheck
  * @author    SkyVerge
- * @copyright Copyright (c) 2011-2014, SkyVerge, Inc.
+ * @copyright Copyright (c) 2011-2015, SkyVerge, Inc.
  * @license   http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
 
@@ -45,7 +45,7 @@ class WC_Gateway_Authorize_Net_AIM_eCheck extends WC_Gateway_Authorize_Net_AIM {
 
 		parent::__construct(
 			WC_Authorize_Net_AIM::ECHECK_GATEWAY_ID,
-			$GLOBALS['wc_authorize_net_aim'],
+			wc_authorize_net_aim(),
 			WC_Authorize_Net_AIM::TEXT_DOMAIN,
 			array(
 				'method_title'       => __( 'Authorize.net AIM eCheck', WC_Authorize_Net_AIM::TEXT_DOMAIN ),

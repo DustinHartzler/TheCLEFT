@@ -18,7 +18,7 @@
  *
  * @package   SkyVerge/WooCommerce/Plugin/Classes
  * @author    SkyVerge
- * @copyright Copyright (c) 2013-2014, SkyVerge, Inc.
+ * @copyright Copyright (c) 2013-2015, SkyVerge, Inc.
  * @license   http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
 
@@ -84,12 +84,15 @@ if ( ! class_exists( 'SV_WC_Plugin' ) ) :
  * Use the standard WordPress/WooCommerce `is_*` methods when adding the notice
  * to control which pages it does (or does not) display on.
  *
- * @version 3.0.2-1
+ * @version 3.1.0
  */
 abstract class SV_WC_Plugin {
 
 	/** Plugin Framework Version */
-	const VERSION = '3.0.2-1';
+	const VERSION = '3.1.0';
+
+	/** @var object single instance of plugin */
+	protected static $instance;
 
 	/** @var string plugin id */
 	private $id;
@@ -177,6 +180,25 @@ abstract class SV_WC_Plugin {
 
 		// Load translation files
 		add_action( 'init', array( $this, 'load_translation' ) );
+	}
+
+
+	/**
+	 * Cloning instances is forbidden due to singleton pattern.
+	 *
+	 * @since 3.1.0
+	 */
+	public function __clone() {
+		_doing_it_wrong( __FUNCTION__, sprintf( __( 'You cannot clone instances of %s.', $this->text_domain ), $this->get_plugin_name() ), '3.1.0' );
+	}
+
+	/**
+	 * Unserializing instances is forbidden due to singleton pattern.
+	 *
+	 * @since 3.1.0
+	 */
+	public function __wakeup() {
+		_doing_it_wrong( __FUNCTION__, sprintf( __( 'You cannot unserialize instances of %s.', $this->text_domain ), $this->get_plugin_name() ), '3.1.0' );
 	}
 
 

@@ -18,7 +18,7 @@
  *
  * @package   WC-Gateway-Authorize-Net-AIM/API/Request
  * @author    SkyVerge
- * @copyright Copyright (c) 2011-2014, SkyVerge, Inc.
+ * @copyright Copyright (c) 2011-2015, SkyVerge, Inc.
  * @license   http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
 
@@ -45,6 +45,12 @@ class WC_Authorize_Net_AIM_API_Request implements SV_WC_Payment_Gateway_API_Requ
 
 	/** prior auth-only capture transaction type */
 	const PRIOR_AUTH_CAPTURE = 'priorAuthCaptureTransaction';
+
+	/** refund transaction type */
+	const REFUND = 'refundTransaction';
+
+	/** void transaction type */
+	const VOID = 'voidTransaction';
 
 	/** @var WC_Order optional order object if this request was associated with an order */
 	protected $order;
@@ -135,6 +141,59 @@ class WC_Authorize_Net_AIM_API_Request implements SV_WC_Payment_Gateway_API_Requ
 		$this->order = $order;
 
 		$this->create_transaction( self::AUTH_CAPTURE );
+	}
+
+
+	/** Create a refund for the given $order
+	 *
+	 * @since 3.3.0
+	 * @param WC_Order $order order object
+	 */
+	public function create_refund( WC_Order $order ) {
+
+		$this->order = $order;
+
+		$this->request_data = array(
+			'refId'              => $order->id,
+			'transactionRequest' => array(
+				'transactionType' => self::REFUND,
+				'amount'          => $order->refund->amount,
+				'payment'         => array(
+					'creditCard' => array(
+						'cardNumber'     => $order->refund->account_four,
+						'expirationDate' => $order->refund->expiry_date,
+					),
+				),
+				'refTransId'      => $order->refund->trans_id,
+				'order'           => array(
+					'invoiceNumber' => ltrim( $this->order->get_order_number(), _x( '#', 'hash before the order number', WC_Authorize_Net_AIM::TEXT_DOMAIN ) ),
+					'description'   => SV_WC_Helper::str_truncate( $this->order->refund->reason, 255 ),
+				),
+			),
+		);
+	}
+
+
+	/** Create a void for the given $order
+	 *
+	 * @since 3.3.0
+	 * @param WC_Order $order order object
+	 */
+	public function create_void( WC_Order $order ) {
+
+		$this->order = $order;
+
+		$this->request_data = array(
+			'refId'              => $order->id,
+			'transactionRequest' => array(
+				'transactionType' => self::VOID,
+				'refTransId'      => $order->refund->trans_id,
+				'order'           => array(
+					'invoiceNumber' => ltrim( $this->order->get_order_number(), _x( '#', 'hash before the order number', WC_Authorize_Net_AIM::TEXT_DOMAIN ) ),
+					'description'   => SV_WC_Helper::str_truncate( $this->order->refund->reason, 255 ),
+				),
+			),
+		);
 	}
 
 
@@ -531,7 +590,7 @@ class WC_Authorize_Net_AIM_API_Request implements SV_WC_Payment_Gateway_API_Requ
 		}
 
 		// card number
-		if ( preg_match( '/<cardNumber>(\d+)<\/cardNumber>/', $string, $matches ) ) {
+		if ( preg_match( '/<cardNumber>(\d+)<\/cardNumber>/', $string, $matches ) && strlen( $matches[1] ) > 4 ) {
 			$string = preg_replace( '/<cardNumber>\d+<\/cardNumber>/', '<cardNumber>' . substr( $matches[1], 0, 1 ) . str_repeat( '*', strlen( $matches[1] ) - 5 ) . substr( $matches[1], -4 ) . '</cardNumber>', $string );
 		}
 

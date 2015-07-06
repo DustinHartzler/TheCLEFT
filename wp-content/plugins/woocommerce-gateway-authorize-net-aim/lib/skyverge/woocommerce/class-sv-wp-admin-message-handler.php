@@ -18,7 +18,7 @@
  *
  * @package     SkyVerge/WordPress/WP-Admin-Message-Handler
  * @author      SkyVerge
- * @copyright   Copyright (c) 2013-2014, SkyVerge, Inc.
+ * @copyright   Copyright (c) 2013-2015, SkyVerge, Inc.
  * @license     http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
 
@@ -236,6 +236,11 @@ class SV_WP_Admin_Message_Handler {
 	 * @since 1.0.0
 	 */
 	public function show_messages() {
+
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+
 		if ( $this->error_count() > 0 )
 			echo '<div id="wp-admin-message-handler-error" class="error"><ul><li><strong>' . implode( '</strong></li><li><strong>', $this->get_errors() ) . "</strong></li></ul></div>";
 

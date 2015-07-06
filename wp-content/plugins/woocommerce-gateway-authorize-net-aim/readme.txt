@@ -2,9 +2,9 @@
 Author: skyverge
 Tags: woocommerce
 Requires at least: 3.8
-Tested up to: 4.0
+Tested up to: 4.1
 Requires WooCommerce at least: 2.1
-Tested WooCommerce up to: 2.2
+Tested WooCommerce up to: 2.3
 
 Accept Credit Cards and eChecks via Authorize.net AIM in your WooCommerce store
 

@@ -18,7 +18,7 @@
  *
  * @package   SkyVerge/WooCommerce/Plugin/Classes
  * @author    SkyVerge
- * @copyright Copyright (c) 2013-2014, SkyVerge, Inc.
+ * @copyright Copyright (c) 2013-2015, SkyVerge, Inc.
  * @license   http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
 
@@ -108,9 +108,13 @@ class SV_WC_Admin_Notice_Handler {
 	 *
 	 * @since 3.0.0
 	 * @param string $message_id the message id
-	 * @param array $params optional parameters array.  Defaults to array( 'dismissible' => true, 'always_show_on_settings' => true )
+	 * @param array $params optional parameters array.  Defaults to array( 'dismissible' => true, 'always_show_on_settings' => true, 'notice_class' => 'updated' )
 	 */
 	public function should_display_notice( $message_id, $params = array() ) {
+
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return false;
+		}
 
 		// default to dismissible, always on settings
 		if ( ! isset( $params['dismissible'] ) ) {
@@ -181,7 +185,7 @@ class SV_WC_Admin_Notice_Handler {
 	 * @since 3.0.0
 	 * @param string $message the notice message to display
 	 * @param string $message_id the message id
-	 * @param array $params optional parameters array.  Options: 'dismissible', 'is_visible', 'always_show_on_settings'
+	 * @param array $params optional parameters array.  Options: 'dismissible', 'is_visible', 'always_show_on_settings', 'notice_class'
 	 */
 	public function render_admin_notice( $message, $message_id, $params = array() ) {
 
@@ -192,7 +196,9 @@ class SV_WC_Admin_Notice_Handler {
 			$dismiss_link = sprintf( '<a href="#" class="js-wc-plugin-framework-notice-dismiss" data-message-id="%s" style="float: right;">%s</a>', $message_id, __( 'Dismiss', $this->text_domain ) );
 		}
 
-		echo sprintf( '<div data-plugin-id="' . $this->get_plugin()->get_id() . '" class="error js-wc-plugin-framework-admin-notice"%s><p>%s %s</p></div>', ! isset( $params['is_visible'] ) || ! $params['is_visible'] ? ' style="display:none;"' : '', $message, $dismiss_link );
+		$class = isset( $params['notice_class'] ) ? $params['notice_class'] : 'error';
+
+		echo sprintf( '<div data-plugin-id="' . $this->get_plugin()->get_id() . '" class="' . $class . ' js-wc-plugin-framework-admin-notice"%s><p>%s %s</p></div>', ! isset( $params['is_visible'] ) || ! $params['is_visible'] ? ' style="display:none;"' : '', $message, $dismiss_link );
 	}
 
 
@@ -223,7 +229,7 @@ class SV_WC_Admin_Notice_Handler {
 				}
 			);
 
-			$( this ).closest( 'div.error' ).fadeOut();
+			$( this ).closest( 'div.js-wc-plugin-framework-admin-notice' ).fadeOut();
 
 			return false;
 		} );

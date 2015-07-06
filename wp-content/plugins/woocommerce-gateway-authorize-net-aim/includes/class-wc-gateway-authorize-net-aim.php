@@ -18,7 +18,7 @@
  *
  * @package   WC-Gateway-Authorize-Net-AIM/Gateway
  * @author    SkyVerge
- * @copyright Copyright (c) 2011-2014, SkyVerge, Inc.
+ * @copyright Copyright (c) 2011-2015, SkyVerge, Inc.
  * @license   http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
 
@@ -125,6 +125,16 @@ class WC_Gateway_Authorize_Net_AIM extends SV_WC_Payment_Gateway_Direct {
 
 			$order->payment->card_type = SV_WC_Payment_Gateway_Payment_Token::type_from_account_number( $order->payment->account_number );
 		}
+
+		/**
+		 * Filter the order description
+		 *
+		 * @since 3.3.2
+		 * @param string $description The order description
+		 * @param int $order_id The order ID being processed
+		 * @param WC_Gateway_Authorize_Net_AIM $aim The gateway class instance
+		 */
+		$order->description = apply_filters( 'wc_authorize_net_aim_transaction_description', sprintf( _x( '%s - Order %s', 'Order description', WC_Authorize_Net_AIM::TEXT_DOMAIN ), esc_html( get_bloginfo( 'name' ) ), $order->get_order_number() ), $order_id, $this );
 
 		return $order;
 	}
