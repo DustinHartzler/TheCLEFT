@@ -13,11 +13,11 @@
 	
 	
 <!-- Load stylesheets -->
-	<link type="text/css" rel="stylesheet" href="http://thecleft.org/wp-content/themes/Cleft_2012/css/960.css" media="screen" /><!-- no need to edit, 960.gs Framework -->
-	<link type="text/css" rel="stylesheet" href="http://thecleft.org/wp-content/themes/Cleft_2012/css/screen.css" media="screen" />
-	<link id="theme-colors" type="text/css" rel="stylesheet" href="http://thecleft.org/wp-content/themes/Cleft_2012/style.css" media="screen" /><!-- replace css/themes/xxxxxx.css with the theme you want to use -->
-	<link type="text/css" rel="stylesheet" href="http://thecleft.org/wp-content/themes/Cleft_2012/css/print.css" media="print" />
-	<link type="text/css" rel="stylesheet" href="http://thecleft.org/wp-content/themes/Cleft_2012/css/jquery.fancybox-1.3.4.css" media="screen" /><!-- no need to edit, lightbox css -->
+	<link type="text/css" rel="stylesheet" href="https://thecleft.org/wp-content/themes/Cleft_2012/css/960.css" media="screen" /><!-- no need to edit, 960.gs Framework -->
+	<link type="text/css" rel="stylesheet" href="https://thecleft.org/wp-content/themes/Cleft_2012/css/screen.css" media="screen" />
+	<link id="theme-colors" type="text/css" rel="stylesheet" href="https://thecleft.org/wp-content/themes/Cleft_2012/style.css" media="screen" /><!-- replace css/themes/xxxxxx.css with the theme you want to use -->
+	<link type="text/css" rel="stylesheet" href="https://thecleft.org/wp-content/themes/Cleft_2012/css/print.css" media="print" />
+	<link type="text/css" rel="stylesheet" href="https://thecleft.org/wp-content/themes/Cleft_2012/css/jquery.fancybox-1.3.4.css" media="screen" /><!-- no need to edit, lightbox css -->
 	<!--[if lt IE 7]><link type="text/css" rel="stylesheet" href="http://thecleft.org/wp-content/themes/Cleft_2012/css/ie6.css" media="screen" /><![endif]-->
 <!-- // Load stylesheets -->
 	
@@ -25,11 +25,11 @@
 	<!-- Load Javascript / jQuery -->
 		<!--[if lt IE 7]><script src="http://ie7-js.googlecode.com/svn/version/2.1(beta4)/IE7.js"></script><![endif]-->    
 		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
-		<script type="text/javascript" src="http://thecleft.org/wp-content/themes/Cleft_2012/js/superfish-combined.js"></script>
-		<script type="text/javascript" src="http://thecleft.org/wp-content/themes/Cleft_2012/js/jquery.cycle.all.min.js"></script>
-		<script type="text/javascript" src="http://thecleft.org/wp-content/themes/Cleft_2012/js/jquery.fancybox-1.3.4.pack.js"></script>
-        <script type="text/javascript" src="http://thecleft.org/wp-content/themes/Cleft_2012/js/jquery.tweet.js"></script>
-		<script type="text/javascript" src="http://thecleft.org/wp-content/themes/Cleft_2012/js/general.js"></script>
+		<script type="text/javascript" src="https://thecleft.org/wp-content/themes/Cleft_2012/js/superfish-combined.js"></script>
+		<script type="text/javascript" src="https://thecleft.org/wp-content/themes/Cleft_2012/js/jquery.cycle.all.min.js"></script>
+		<script type="text/javascript" src="https://thecleft.org/wp-content/themes/Cleft_2012/js/jquery.fancybox-1.3.4.pack.js"></script>
+        <script type="text/javascript" src="https://thecleft.org/wp-content/themes/Cleft_2012/js/jquery.tweet.js"></script>
+		<script type="text/javascript" src="https://thecleft.org/wp-content/themes/Cleft_2012/js/general.js"></script>
 	<!-- // Load Javascript / jQuery -->
 	
 	<!-- Favicon -->
