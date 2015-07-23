@@ -48,7 +48,7 @@
             <div class="container_12">
                 
                 <div class="grid_6">
-                    <p><a href="http://thecleft.org"><strong>The Cleft</strong></a> is an outreach for students</p>
+                    <p><a href="https://thecleft.org"><strong>The Cleft</strong></a> is an outreach for students</p>
                 </div><!-- //grid_6 -->
 
                 <div class="grid_4">

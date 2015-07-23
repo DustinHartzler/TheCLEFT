@@ -1,11 +1,11 @@
         <div id="footer" class="clearfix">
         	<div class="container_12">
-            	<div class="grid_2"><a href="http://thecleft.org/leaders"><img src="http://thecleft.org/wp-content/themes/theCleft/images/cleft/Footer_Join.png"></a></div>
-            	<div class="grid_2"><a href="http://thecleft.org/Fridaynights/"><img src="http://thecleft.org/wp-content/themes/theCleft/images/cleft/Footer_Events.png"></a></div>
-            	<div class="grid_2"><a href="http://thecleft.org/youth-network"><img src="http://thecleft.org/wp-content/themes/theCleft/images/cleft/Footer_Youth_Network.png"></a></div>
-            	<div class="grid_2"><a href="http://thecleft.org/donate/"><img src="http://thecleft.org/wp-content/themes/theCleft/images/cleft/Footer_Donate.png"></a></div>
-            	<div class="grid_2"><a href="http://thecleft.org/student-center"><img src="http://thecleft.org/wp-content/themes/theCleft/images/cleft/Footer_Student_Center.png"></a></div>
-            	<div class="grid_2"><a href="http://thecleft.org/event-rental"><img src="http://thecleft.org/wp-content/themes/theCleft/images/cleft/Footer_Event_Rental.png"></a></div>
+            	<div class="grid_2"><a href="https://thecleft.org/leaders"><img src="http://thecleft.org/wp-content/themes/theCleft/images/cleft/Footer_Join.png"></a></div>
+            	<div class="grid_2"><a href="https://thecleft.org/Fridaynights/"><img src="http://thecleft.org/wp-content/themes/theCleft/images/cleft/Footer_Events.png"></a></div>
+            	<div class="grid_2"><a href="https://thecleft.org/youth-network"><img src="http://thecleft.org/wp-content/themes/theCleft/images/cleft/Footer_Youth_Network.png"></a></div>
+            	<div class="grid_2"><a href="https://thecleft.org/donate/"><img src="http://thecleft.org/wp-content/themes/theCleft/images/cleft/Footer_Donate.png"></a></div>
+            	<div class="grid_2"><a href="https://thecleft.org/student-center"><img src="http://thecleft.org/wp-content/themes/theCleft/images/cleft/Footer_Student_Center.png"></a></div>
+            	<div class="grid_2"><a href="https://thecleft.org/event-rental"><img src="http://thecleft.org/wp-content/themes/theCleft/images/cleft/Footer_Event_Rental.png"></a></div>
             	<div class="clear"> </div>
             	
                 
