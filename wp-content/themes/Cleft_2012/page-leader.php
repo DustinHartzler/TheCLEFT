@@ -9,7 +9,7 @@ Template Name: Leader
                 
                 
                 <div class="grid_5">
-					<img src="http://thecleft.org/wp-content/themes/Cleft_2012/img/Calendar.png" alt="Leader Calendar" width="350px" />               
+					<img src="https://thecleft.org/wp-content/themes/Cleft_2012/img/Calendar.png" alt="Leader Calendar" width="350px" />               
                 </div><!--//grid_4-->
 				
                 <div class="grid_7">

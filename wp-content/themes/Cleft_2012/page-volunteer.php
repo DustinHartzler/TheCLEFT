@@ -11,7 +11,7 @@ Template Name: Volunteer
                 <div class="grid_5">
                 	<object width="381" height="223"><param name="movie" value="http://www.youtube.com/v/gVyJwiA76gQ?version=3&amp;hl=en_US&amp;rel=0"></param><param name="allowFullScreen" value="true"></param><param name="allowscriptaccess" value="always"></param><embed src="http://www.youtube.com/v/gVyJwiA76gQ?version=3&amp;hl=en_US&amp;rel=0" type="application/x-shockwave-flash" width="381" height="223" allowscriptaccess="always" allowfullscreen="true"></embed></object>
                 	<div class="clear" style="height: 30px;"></div><hr><br>
-					<img src="http://thecleft.org/wp-content/themes/Cleft_2012/img/JointheTeamPage.png" alt="Apex" width="350px" />               
+					<img src="https://thecleft.org/wp-content/themes/Cleft_2012/img/JointheTeamPage.png" alt="Apex" width="350px" />               
                 </div><!--//grid_4-->
 				
                 <div class="grid_7">

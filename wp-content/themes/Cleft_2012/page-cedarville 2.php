@@ -9,7 +9,7 @@ Template Name: Apex
                 
                 
                 <div class="grid_5">
-					<img src="http://thecleft.org/wp-content/themes/Cleft_2012/img/Cedarville.jpg" alt="Cedarville University" width="350px" />               
+					<img src="https://thecleft.org/wp-content/themes/Cleft_2012/img/Cedarville.jpg" alt="Cedarville University" width="350px" />               
                 </div><!--//grid_4-->
 				
                 <div class="grid_7">
