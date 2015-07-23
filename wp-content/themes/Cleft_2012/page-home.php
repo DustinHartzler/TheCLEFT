@@ -15,7 +15,7 @@ Template Name: Home
 				<ul class="promo-navigation clean"></ul><!-- //promo-navigation (auto generated) -->
 				
 				<ul class="promos clean">
-					<li class="hidden"><a href="https://thecleft.org/wp-content/uploads/2012/02/CleftValues.pdf" target="_blank"><img src="https://thecleft.org/wp-content/themes/Cleft_2012/img/banners/Values.png" alt="Values" width="940" height="400" style="border: 5px solid #fff;"/></a></li>
+					<li ><a href="https://thecleft.org/wp-content/uploads/2012/02/CleftValues.pdf" target="_blank"><img src="https://thecleft.org/wp-content/themes/Cleft_2012/img/banners/Values.png" alt="Values" width="940" height="400" style="border: 5px solid #fff;"/></a></li>
 					<li class="hidden"><a href="https://thecleft.org/xchange"><img src="https://thecleft.org/wp-content/themes/Cleft_2012/img/banners/xchange.png" alt="exhange" width="940" height="400" style="border: 5px solid #B4D333;" /></a></li>
 					<li class="hidden"><a href="https://thecleft.org/volunteers"><img src="https://thecleft.org/wp-content/themes/Cleft_2012/img/banners/Rev_Leaders.png" alt="Rev Leaders" width="940" height="400" style="border: 5px solid #fff;" /></a></li>
 					
