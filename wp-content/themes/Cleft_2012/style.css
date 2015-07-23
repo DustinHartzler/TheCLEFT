@@ -226,7 +226,7 @@ form.standard label {
 	background:url('../../images/menu/default-submenu-sprite.png') no-repeat -10px -100px; /* 8-bit indexed alpha png. IE6 gets solid image only */
 }
 
-li#menu-item-85 a{background: url('images/facebook.png');
+li#menu-item-85 a{background: url('https://thecleft.org/wp-content/themes/theCleft/images/facebook.png');
 	text-indent: -9000px;
 	text-decoration: underline;
 	background-repeat: no-repeat;
@@ -238,7 +238,7 @@ li#menu-item-85 a{background: url('images/facebook.png');
 }
 
 
-li#menu-item-178 a{background: url('images/twitter.png');
+li#menu-item-178 a{background: url('https://thecleft.org/wp-content/themes/theCleft/images/twitter.png');
 	text-indent: -9000px;
 	text-decoration: underline;
 	width: 20px;
