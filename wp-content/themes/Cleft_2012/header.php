@@ -74,7 +74,7 @@
            		<div class="grid_12" id="header-container">
                     
                     <div id="logo">
-                        <h1><a href="http://TheCleft.org" title="Go to the home page"><img src="http://thecleft.org/wp-content/themes/Cleft_2012/img/Cleft_Logo.png" width="300px" alt="Logo" /></a></h1>
+                        <h1><a href="https://TheCleft.org" title="Go to the home page"><img src="https://thecleft.org/wp-content/themes/Cleft_2012/img/Cleft_Logo.png" width="300px" alt="Logo" /></a></h1>
                     </div><!-- //logo -->
                     
                     <ul class="sf-menu">
