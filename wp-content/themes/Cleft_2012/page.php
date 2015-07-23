@@ -9,7 +9,7 @@ Template Name: Page with Sidebar
                 
                 
                 <div class="grid_5">
-					<img src="http://thecleft.org/wp-content/themes/Cleft_2012/img/Side_Image.png" alt="Ad" />               
+					<img src="https://thecleft.org/wp-content/themes/Cleft_2012/img/Side_Image.png" alt="Ad" />               
                 </div><!--//grid_5-->
 				
                 <div class="grid_7">
