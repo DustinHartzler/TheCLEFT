@@ -8,6 +8,20 @@ if ( function_exists('register_sidebar') )
     'after_widget' => "</li>",
     'before_title' => '<h4>',
     'after_title' => "</h4>"));
+
+add_action( 'wp_enqueue_scripts', 'cleft_load_scripts' );
+
+function cleft_load_scripts() {
+		wp_enqueue_script( 'jquery' );
+        // wp_register_script( 'owl-script', get_stylesheet_directory_uri() . '/js/owlcarousel/owl.carousel.js', array('jquery'), false, true );
+        // wp_enqueue_script( 'owl-script' );
+
+        // wp_register_style('owl-style-carousel',  get_stylesheet_directory_uri() . '/js/owlcarousel/owl.carousel.css');
+        // wp_enqueue_style('owl-style-carousel');
+
+        // wp_register_style('owl-style-theme',  get_stylesheet_directory_uri() . '/js/owlcarousel/owl.theme.css');
+        // wp_enqueue_style('owl-style-theme');
+}
     
 #-----------------------------------------------------------------
 # Display Short Codes in Excerpts and Widgets

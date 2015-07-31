@@ -24,7 +24,7 @@
 	
 	<!-- Load Javascript / jQuery -->
 		<!--[if lt IE 7]><script src="http://ie7-js.googlecode.com/svn/version/2.1(beta4)/IE7.js"></script><![endif]-->    
-		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
+		
 		<script type="text/javascript" src="https://thecleft.org/wp-content/themes/Cleft_2012/js/superfish-combined.js"></script>
 		<script type="text/javascript" src="https://thecleft.org/wp-content/themes/Cleft_2012/js/jquery.cycle.all.min.js"></script>
 		<script type="text/javascript" src="https://thecleft.org/wp-content/themes/Cleft_2012/js/jquery.fancybox-1.3.4.pack.js"></script>
