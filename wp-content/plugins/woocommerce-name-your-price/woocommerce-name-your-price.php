@@ -3,11 +3,13 @@
 Plugin Name: WooCommerce Name Your Price
 Plugin URI: http://www.woothemes.com/products/name-your-price/
 Description: WooCommerce Name Your Price allows customers to set their own price for products or donations.
-Version: 2.0.9
+Version: 2.3.3
 Author: Kathy Darling
 Author URI: http://kathyisawesome.com
 Requires at least: 3.8
-Tested up to: 4.0
+Tested up to: 4.2
+WC requires at least: 2.1.0    
+WC tested up to: 2.3.8   
 
 Copyright: © 2012 Kathy Darling.
 License: GNU General Public License v3.0
@@ -48,7 +50,13 @@ class WC_Name_Your_Price {
 	 * @var plugin version
 	 * @since 2.0
 	 */
-	public $version = '2.0.9';   
+	public $version = '2.3.3';   
+
+	/**
+	 * @var required WooCommerce version
+	 * @since 2.1
+	 */
+	public $required_woo = '2.1.0';
 
 	/**
 	 * Main WC_Name_Your_Price Instance
@@ -73,7 +81,7 @@ class WC_Name_Your_Price {
 	 * @since 2.0
 	 */
 	public function __clone() {
-		_doing_it_wrong( __FUNCTION__, __( 'Cheatin&#8217; huh?' ), '2.0' );
+		_doing_it_wrong( __FUNCTION__, __( 'Cheatin&#8217; huh?' ), 'wc_name_your_price' );
 	}
 
 	/**
@@ -82,7 +90,7 @@ class WC_Name_Your_Price {
 	 * @since 2.0
 	 */
 	public function __wakeup() {
-		_doing_it_wrong( __FUNCTION__, __( 'Cheatin&#8217; huh?' ), '2.0' );
+		_doing_it_wrong( __FUNCTION__, __( 'Cheatin&#8217; huh?' ), 'wc_name_your_price' );
 	}
   
 	/**
@@ -142,12 +150,19 @@ class WC_Name_Your_Price {
 	 */
 	public function includes(){
 
+		// check we're running the required version of WC
+		if ( ! defined( 'WC_VERSION' ) || version_compare( WC_VERSION, $this->required_woo, '<' ) ) {
+			add_action( 'admin_notices', array( $this, 'admin_notice' ) );
+			return false;
+		}
+
 		// include all helper functions
 		include_once( 'includes/class-wc-name-your-price-helpers.php' );
 
 		// include admin class to handle all backend functions
-		if( is_admin() )
+		if( is_admin() ){
 			include_once( 'includes/admin/class-name-your-price-admin.php' );
+		}
 
 		// include the front-end functions
 		if ( ! is_admin() || defined('DOING_AJAX') ) {
@@ -156,18 +171,31 @@ class WC_Name_Your_Price {
 
 			include_once( 'includes/class-wc-name-your-price-cart.php' );
 			$this->cart = new WC_Name_Your_Price_Cart();
+
 		}
 
-		if ( WC_Name_Your_Price_Helpers::is_woocommerce_2_1() ) {
-			include_once( 'includes/wc-21-functions.php' );
+		include_once( 'includes/class-wc-name-your-price-compatibility.php' );
+		$this->compatibility = new WC_Name_Your_Price_Compatibility();
+
+		// minor backcompat issues
+		if ( WC_Name_Your_Price_Helpers::is_woocommerce_2_3() ) {
+			include_once( 'includes/wc-23-functions.php' );
 		} else {
-			include_once( 'includes/wc-20-functions.php' );
+			include_once( 'includes/wc-21-functions.php' );
 		}
-
-		if ( WC_Name_Your_Price_Helpers::is_woocommerce_2_1() )
-			add_action( 'woocommerce_variable_product_sync', array( 'WC_Name_Your_Price_Helpers', 'variable_product_sync' ), 10, 2 );
 
 	}
+
+
+	/**
+	 * Displays a warning message if version check fails.
+	 * @return string
+	 * @since  2.1
+	 */
+	public function admin_notice() {
+	    echo '<div class="error"><p>' . sprintf( __( 'WooCommerce Name Your Price requires at least WooCommerce %s in order to function. Please upgrade WooCommerce.', 'woocommerce-mix-and-match-products' ), $this->required_woo ) . '</p></div>';
+	}
+
 
 	/*-----------------------------------------------------------------------------------*/
 	/* Localization */
@@ -197,13 +225,7 @@ class WC_Name_Your_Price {
 	 */
 
 	public function add_action_link( $links ) {
-
-		if ( WC_Name_Your_Price_Helpers::is_woocommerce_2_1() ) {
-			$settings_link = '<a href="'.admin_url('admin.php?page=wc-settings&tab=nyp').'" title="'.__('Go to the settings page', 'wc_name_your_price').'">'.__( 'Settings', 'wc_name_your_price' ).'</a>';
-		} else {
-			$settings_link = '<a href="'.admin_url('admin.php?page=woocommerce&tab=nyp').'" title="'.__('Go to the settings page', 'wc_name_your_price').'">'.__( 'Settings', 'wc_name_your_price' ).'</a>';
-		}
-
+		$settings_link = '<a href="'.admin_url('admin.php?page=wc-settings&tab=nyp').'" title="'.__('Go to the settings page', 'wc_name_your_price').'">'.__( 'Settings', 'wc_name_your_price' ).'</a>';
 		return array_merge( (array) $settings_link, $links );
 
 	}
@@ -255,7 +277,7 @@ endif; // end class_exists check
  * Returns the main instance of WC_Name_Your_Price to prevent the need to use globals.
  *
  * @since  2.0
- * @return WooCommerce
+ * @return WC_Name_Your_Price
  */
 function WC_Name_Your_Price() {
   return WC_Name_Your_Price::instance();

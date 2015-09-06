@@ -6,31 +6,23 @@
 class WC_Name_Your_Price_Helpers {
 
 	// the nyp product type is how the ajax add to cart functionality is disabled
-	static $supported_types = array( 'simple', 'subscription', 'bundle', 'bto', 'composite', 'variation', 'subscription_variation', 'nyp' );
+	static $supported_types = array( 'simple', 'subscription', 'bundle', 'composite', 'variation', 'subscription_variation', 'deposit', 'mix-and-match', 'nyp' );
 	static $supported_variable_types = array( 'variable', 'variable-subscription' );
 
-
 	/**
-	 * Check is the installed version of WooCommerce is 2.1 or newer.
+	 * Check is the installed version of WooCommerce is 2.3 or newer.
 	 * props to Brent Shepard
 	 *
 	 * @return	boolean
 	 * @access 	public
-	 * @since 2.0
+	 * @since 2.1
 	 */
-	public static function is_woocommerce_2_1() {
-
-		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '2.1b' ) >= 0 ) {
-
-			$woocommerce_is_2_1 = true;
-
+	public static function is_woocommerce_2_3() {
+		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '2.3-bleeding' ) >= 0 ) {
+			return true;
 		} else {
-
-			$woocommerce_is_2_1 = false;
-
+			return false;
 		}
-
-		return $woocommerce_is_2_1;
 	}
 
 
@@ -63,11 +55,13 @@ class WC_Name_Your_Price_Helpers {
 	public static function is_nyp( $product ){
 
 		// get the product object
-		if ( ! is_object( $product ) )
-			$product = get_product( $product );
+		if ( ! is_object( $product ) ){
+			$product = wc_nyp_get_product( $product );
+		}
 
-		if ( ! $product )
+		if ( ! $product ){
 			return FALSE;
+		}
 
 		// the product ID
 		$product_id = self::get_id( $product );
@@ -86,14 +80,14 @@ class WC_Name_Your_Price_Helpers {
 	/*
 	 * Get the suggested price
 	 *
-	 * @param 	mixed $product_id product/variation object or product/variation ID
+	 * @param 	mixed $product product/variation object or product/variation ID
 	 * @return 	return number or FALSE
 	 * @access 	public
 	 * @since 2.0
 	 */
-	public static function get_suggested_price( $product_id ) {
+	public static function get_suggested_price( $product ) {
 
-		$product_id = self::get_id( $product_id );
+		$product_id = self::get_id( $product );
 
 		$suggested = get_post_meta( $product_id , '_suggested_price', true ); 
 
@@ -106,14 +100,14 @@ class WC_Name_Your_Price_Helpers {
 	/*
 	 * Get the minimum price
 	 *
-	 * @param int|WC_Product $product_id Either a product object or product's post ID.
+	 * @param int|WC_Product $product Either a product object or product's post ID.
 	 * @return 	return string
 	 * @access 	public
 	 * @since 	2.0
 	 */
-	public static function get_minimum_price( $product_id ){
+	public static function get_minimum_price( $product ){
 
-		$product_id = self::get_id( $product_id );
+		$product_id = self::get_id( $product );	
 
 		$minimum = get_post_meta( $product_id , '_min_price', true );
 
@@ -124,18 +118,35 @@ class WC_Name_Your_Price_Helpers {
 
 
 	/*
+	 * Get the minimum price for a variable product
+	 *
+	 * @param int|WC_Product $product Either a product object or product's post ID.
+	 * @return 	return string
+	 * @access 	public
+	 * @since 	2.3
+	 */
+	public static function get_minimum_variation_price( $product ){
+
+		$product_id = self::get_id( $product );	
+
+		$minimum = get_post_meta( $product_id , '_min_variation_price', true );
+
+		// filter the raw minimum price @since 1.2
+		return apply_filters ( 'woocommerce_raw_minimum_variation_price', $minimum, $product_id );
+
+	}
+
+	/*
 	 * Check if Subscriptions plugin is installed and this is a subscription product
 	 *
-	 * @param int|WC_Product $product_id Either a product object or product's post ID.
+	 * @param int|WC_Product $product Either a product object or product's post ID.
 	 * @access 	public
 	 * @return 	return boolean returns true for subscription, variable-subscription and subsctipion_variation
 	 * @since 	2.0
 	 */
-	public static function is_subscription( $product_id ){
+	public static function is_subscription( $product ){
 
-		$product_id = self::get_id( $product_id );
-
-		if( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $product_id ) ) {
+		if( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $product ) ) {
 			return TRUE;
 		} else {
 			return FALSE;
@@ -147,7 +158,7 @@ class WC_Name_Your_Price_Helpers {
 	/*
 	 * Is the billing period variable
 	 *
-	 * @param int|WC_Product $product_id Either a product object or product's post ID.
+	 * @param int|WC_Product $product Either a product object or product's post ID.
 	 * @return 	return string
 	 * @access 	public
 	 * @since 	2.0
@@ -155,11 +166,13 @@ class WC_Name_Your_Price_Helpers {
 	public static function is_billing_period_variable( $product ) {
 
 		// get the product object
-		if ( ! is_object( $product ) )
-			$product = get_product( $product );
+		if ( ! is_object( $product ) ){
+			$product = wc_nyp_get_product( $product );
+		}
 
-		if ( ! $product )
+		if ( ! $product ){
 			return FALSE;
+		}
 
 		// the product ID
 		$product_id = $product->id;
@@ -230,11 +243,12 @@ class WC_Name_Your_Price_Helpers {
 
 		// get the product object
 		if ( is_numeric( $product ) ) {
-			$product = get_product( $product );
+			$product = wc_nyp_get_product( $product );
 		}
 
-		if ( ! $product )
+		if ( ! $product ){
 			return FALSE;
+		}
 
 		// the product ID
 		$product_id = $product->id;
@@ -261,9 +275,9 @@ class WC_Name_Your_Price_Helpers {
 	 */
 	public static function standardize_number( $value ){
 
-		$value = str_replace( get_option( 'woocommerce_price_thousand_sep' ), '', $value );
+		$value = trim( str_replace( get_option( 'woocommerce_price_thousand_sep' ), '', $value ) );
 
-		return wc_nyp_format_decimal( $value );
+		return wc_format_decimal( $value );
 
 	}
 
@@ -283,7 +297,7 @@ class WC_Name_Your_Price_Helpers {
 		if( isset( $factors[$period] ) )
 			$price = $factors[$period] * self::standardize_number( $price );
 
-		return wc_nyp_format_decimal( $price );
+		return wc_format_decimal( $price );
 
 	}
 
@@ -319,12 +333,13 @@ class WC_Name_Your_Price_Helpers {
 
 	public static function get_price_html( $product ) { 
 
-		_deprecated_function( 'get_price_html', '2.0.4', 'WC_Name_Your_Price()->display->nyp_price_html()' );
+		_deprecated_function( 'WC_Name_Your_Price_Helpers::get_price_html()', '2.0.4', 'WC_Name_Your_Price()->display->nyp_price_html()' );
 
 		$html = '';
 
-		if( WC_Name_Your_Price_Helpers::is_nyp( $product ) )
+		if( WC_Name_Your_Price_Helpers::is_nyp( $product ) ){
 			$html = self::get_suggested_price_html( $product );
+		}
 
 		return apply_filters( 'woocommerce_nyp_html', $html, $product );
 
@@ -345,8 +360,9 @@ class WC_Name_Your_Price_Helpers {
 		$html = '';
 
 		// if not nyp quit early
-		if ( ! self::is_nyp( $product ) )
+		if ( ! self::is_nyp( $product ) ){
 			return $html;
+		}
 
 		// get the minimum price
 		$minimum = self::get_minimum_price( $product ); 
@@ -354,13 +370,10 @@ class WC_Name_Your_Price_Helpers {
 		if( $minimum > 0 ){
 
 			// get the minimum: text option
-			$minimum_text = get_option( 'woocommerce_nyp_minimum_text', _x( 'Minimum Price:', 'minimum price', 'wc_name_your_price' ) );
-
-			// get minimum billing period
-			$minimum_period = self::is_billing_period_variable( $product ) ? self::get_minimum_billing_period( $product ) : false;
+			$minimum_text = stripslashes( get_option( 'woocommerce_nyp_minimum_text', __( 'Minimum Price:', 'wc_name_your_price' ) ) );
 
 			// formulate a price string
-			$price_string = self::get_price_string( $product, array( 'price' => $minimum, 'period' => $minimum_period ) );
+			$price_string = self::get_price_string( $product, 'minimum' );
 
 			$html .= sprintf( '<span class="minimum-text">%s</span><span class="amount">%s</span>', $minimum_text, $price_string );
 
@@ -375,8 +388,7 @@ class WC_Name_Your_Price_Helpers {
 	/*
 	 * Get the "Suggested Price: $10" price string
 	 *
-	 * @param	string $price ( formatted price string )
-	 * @param	boolean $show_parens ( whether or not to show parentheses )
+	 * @param	obj $product
 	 * @return 	string
 	 * @access 	public
 	 * @since 	2.0
@@ -387,8 +399,9 @@ class WC_Name_Your_Price_Helpers {
 		$html = '';
 
 		// if not nyp quit early
-		if ( ! self::is_nyp( $product ) )
+		if ( ! self::is_nyp( $product ) ){
 			return $html;
+		}
 
 		// get suggested price
 		$suggested = self::get_suggested_price( $product ); 
@@ -396,20 +409,17 @@ class WC_Name_Your_Price_Helpers {
 		if ( $suggested > 0 ) {
 
 			// get the suggested: text option
-			$suggested_text = get_option( 'woocommerce_nyp_suggested_text', _x( 'Suggested Price:', 'suggested price', 'wc_name_your_price' ) );
-
-			// get suggested billing period
-			$suggested_period = self::is_billing_period_variable( $product ) ? self::get_suggested_billing_period( $product ) : false;
+			$suggested_text = stripslashes( get_option( 'woocommerce_nyp_suggested_text', __( 'Suggested Price:', 'wc_name_your_price' ) ) );
 
 			// formulate a price string
-			$price_string = self::get_price_string( $product, array( 'price' => $suggested, 'period' => $suggested_period ) );
+			$price_string = self::get_price_string( $product );
 
 			// put it all together
 			$html .= sprintf( '<span class="suggested-text">%s</span>%s', $suggested_text, $price_string );
 
 		} 
 
-		return $html;
+		return apply_filters( 'woocommerce_nyp_suggested_price_html', $html, $product );
 
 	}
 
@@ -419,33 +429,61 @@ class WC_Name_Your_Price_Helpers {
 	 *
 	 * @since 	2.0
 	 * @param	object $product
-	 * @param	array $args ( price, and billing period )
+	 * @param	string $type ( minimum or suggested )
 	 * @return	string
 	 * @access	public
 	 * @since	2.0
 	 */
-	public static function get_price_string( $product, $args = array() ) {
-
-		$defaults = array( 'price' => false, 'period' => false );
-
-		extract( wp_parse_args( $args, $defaults ) );
+	public static function get_price_string( $product, $type = 'suggested' ) {
 
 		// need to catch the product ID from minimum price template - must've forgotten to change that
-		if ( ! is_object( $product ) )
-			$product = get_product( $product );
+		if ( ! is_object( $product ) ){
+			$product = wc_nyp_get_product( $product );
+		}
+
+		// switch the second parameter and deprecate the old array
+		if( is_array( $type ) ){
+			$defaults = array( 'price' => false, 'period' => false );
+			$args = wp_parse_args( $type, $defaults );
+			$price = $args['price'];
+			$period = $args['period'];
+			_deprecated_argument( 'WC_Name_Your_Price_Helpers::get_price_string()', '2.2', 'Instead of an array, the second argument should be a string stating whether this is the "minimum" or "suggested" price string that you are creating.' );
+		}
+
+		// minimum or suggested price
+		switch( $type ){
+			case 'minimum-variation':
+				$price = self::get_minimum_variation_price( $product );
+				break;
+			case 'minimum':
+				$price = self::get_minimum_price( $product );
+				break;
+			default:
+				$price = self::get_suggested_price( $product );
+				break;
+		}
 
 		// get subscription price string
-		if( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $product ) ) {
+		if( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $product ) && 'woocommerce_get_price_html' != current_filter() ) {
 
-			// if a billing period was passed ( then it is a variable billing product and need to create our own string )
-			if( $product->is_type( 'subscription' ) && $period ) { 
+			$variable_billing = self::is_billing_period_variable( $product );
 
-				$html = sprintf( _x( ' %s / %s', 'Variable subscription price, ex: $10 / day', 'wc_name_your_price' ), wc_nyp_price( $price ), WC_Subscriptions_Manager::get_subscription_period_strings( 1, $period ) );
+			// minimum or suggested period
+			if( 'minimum' == $type ){
+				$period = $variable_billing ? self::get_minimum_billing_period( $product ) : WC_Subscriptions_Product::get_period( $product );
+			} else {
+				$period = $variable_billing ? self::get_suggested_billing_period( $product ) : WC_Subscriptions_Product::get_period( $product );
+			}
+
+			// if is a variable billing product we need to create our own string
+			if( $variable_billing ) { 
+
+				$html = sprintf( _x( ' %s / %s', 'Variable subscription price, ex: $10 / day', 'wc_name_your_price' ), wc_price( $price ), self::get_subscription_period_strings( 1, $period ) );
 
 			} else {
 
 				$include = array( 
-					'price' => wc_nyp_price( $price ),
+					'price' => wc_price( $price ),
 					'subscription_length' => false,
 					'sign_up_fee'         => false,
 					'trial_length'        => false );
@@ -454,13 +492,35 @@ class WC_Name_Your_Price_Helpers {
 
 			} 
 
-		// simple products
-		} else {
-			$html = wc_nyp_price( $price );
+		// non-subscription products
+		} elseif ( intval($price) === 0 ){
+			$html = __( 'Free!', 'wc_name_your_price' );
+		} else { 
+			$html = wc_price( $price );
 		}
 
-		return $html;
+		return apply_filters( 'woocommerce_nyp_price_string', $html, $product );
 
+	}
+
+
+	/**
+	 * Get Price Value Attribute
+	 * 
+	 * @param	string $product_id
+	 * @return	string
+	 * @access	public
+	 * @since	2.1
+	 */
+	public static function get_price_value_attr( $product_id, $prefix = false ) {
+
+		if ( ( $posted = self::get_posted_price( $product_id, $prefix ) ) != '' ) {
+			$price = $posted;
+		} else {
+			$price = self::get_initial_price( $product_id );
+		}
+
+		return $price;
 	}
 
 
@@ -475,28 +535,31 @@ class WC_Name_Your_Price_Helpers {
 	 */
 	public static function get_posted_price( $product_id, $prefix = false ) {
 
-		// go through a few options to find the $price we should display in the input (typically will be the suggested price)
-		$posted = isset( $_POST['nyp' . $prefix] ) ?  ( self::standardize_number( $_POST['nyp' . $prefix] ) ) : '';
+		return isset( $_REQUEST['nyp' . $prefix] ) ?  ( self::standardize_number( $_REQUEST['nyp' . $prefix] ) ) : '';
 
-		// get suggested price
-		$suggested = self::get_suggested_price( $product_id );
+	}
 
-		// get minimum price
-		$minimum = self::get_minimum_price( $product_id );
 
-		if ( $posted && $posted >= 0 ) {
-			$price = $posted;
-		} elseif ( $suggested && $suggested > 0 ) {
+	/**
+	 * Get Initial Price - Suggested, then minimum, then null
+	 * 
+	 * @param	string $product_id
+	 * @return	string
+	 * @access	public
+	 * @since	2.1
+	 */
+	public static function get_initial_price( $product_id ) {
+
+		if ( ( $suggested = self::get_suggested_price( $product_id ) ) != '' ) {
 			$price = $suggested;
-		} elseif ( $minimum && $minimum > 0 ) {
+		} elseif ( ( $minimum = self::get_minimum_price( $product_id ) ) != '' ) {
 			$price =  $minimum;
 		} else {
 			$price = '';
 		}
 
-		return $price;
+		return apply_filters( 'woocommerce_nyp_get_initial_price', $price, $product_id );
 	}
-
 
 	/**
 	 * Get Posted Billing Period
@@ -510,19 +573,11 @@ class WC_Name_Your_Price_Helpers {
 	public static function get_posted_period( $product_id, $prefix = false ) {
 
 		// go through a few options to find the $period we should display
-		$posted_period = isset( $_POST['nyp-period' . $prefix] ) ?  $_POST['nyp-period' . $prefix] : '';
-
-		// get suggested billing_period
-		$suggested_period = self::get_suggested_billing_period( $product_id );
-
-		// get minimum billing_period
-		$minimum_period = self::get_minimum_billing_period( $product_id );
-
-		if ( $posted_period ) {
-			$period = $posted_period;
-		} elseif ( $suggested_period ) {
+		if ( isset( $_REQUEST['nyp-period' . $prefix] ) && array_key_exists( $_REQUEST['nyp-period' . $prefix], self::get_subscription_period_strings() ) ) {
+			$period = $_REQUEST['nyp-period' . $prefix];
+		} elseif ( $suggested_period = self::get_suggested_billing_period( $product_id ) ) {
 			$period = $suggested_period;
-		} elseif ( $minimum_period ) {
+		} elseif ( $minimum_period = self::get_minimum_billing_period( $product_id ) ) {
 			$period = $minimum_period;
 		} else {
 			$period = 'month';
@@ -533,7 +588,7 @@ class WC_Name_Your_Price_Helpers {
 
 	/*
 	 * Generate markup for NYP Price input
-	 * similar to wc_price() but returns a text input instead with formatted number
+	 * returns a text input with formatted value
 	 * 
 	 * @param	string $product_id
 	 * @param	string $prefix - needed for composites and bundles
@@ -543,25 +598,41 @@ class WC_Name_Your_Price_Helpers {
 	 */
 	public static function get_price_input( $product_id, $prefix = null ) {
 
-		$price = self::get_posted_price( $product_id, $prefix );
+		$price = self::get_price_value_attr( $product_id, $prefix );
 
-		$num_decimals = absint( get_option( 'woocommerce_price_num_decimals' ) );
-		$currency_pos = get_option( 'woocommerce_currency_pos' );
-		$currency_symbol = get_woocommerce_currency_symbol();
-		$decimal_sep     = wp_specialchars_decode( stripslashes( get_option( 'woocommerce_price_decimal_sep' ) ), ENT_QUOTES );
-		$thousands_sep   = wp_specialchars_decode( stripslashes( get_option( 'woocommerce_price_thousand_sep' ) ), ENT_QUOTES );
-
-		$price           = apply_filters( 'raw_woocommerce_price', floatval( $price ) );
-		$price           = apply_filters( 'formatted_woocommerce_price', number_format( $price, $num_decimals, $decimal_sep, $thousands_sep ), $price, $num_decimals, $decimal_sep, $thousands_sep );
-
-		if ( apply_filters( 'woocommerce_price_trim_zeros', true ) && $num_decimals > 0 ) {
-			$price = wc_nyp_trim_zeros( $price );
-		}
-
-		$return = sprintf( '<input id="nyp%s" name="nyp%s" value="%s" size="6" title="nyp" class="input-text amount nyp-input text" />', $prefix, $prefix, $price );
+		$return = sprintf( '<input id="nyp%s" name="nyp%s" type="text" value="%s" size="6" title="nyp" class="input-text amount nyp-input text" />', $prefix, $prefix, self::format_price( $price ) );
 
 		return apply_filters ( 'woocommerce_get_price_input', $return, $product_id, $prefix );
 
+	}
+
+	/*
+	 * Format price with local decimal point
+	 * similar to wc_price() 
+	 * 
+	 * @param	string $price
+	 * @return	string
+	 * @access	public
+	 * @since	2.1
+	 */
+	public static function format_price( $price ){ 
+
+		$num_decimals    = absint( get_option( 'woocommerce_price_num_decimals' ) );
+		$decimal_sep     = wp_specialchars_decode( stripslashes( get_option( 'woocommerce_price_decimal_sep' ) ), ENT_QUOTES );
+		$thousands_sep   = wp_specialchars_decode( stripslashes( get_option( 'woocommerce_price_thousand_sep' ) ), ENT_QUOTES );
+
+		if( $price != "" ) {
+
+			$price           = apply_filters( 'raw_woocommerce_price', floatval( $price ) ); 
+			$price           = apply_filters( 'formatted_woocommerce_price', number_format( $price, $num_decimals, $decimal_sep, $thousands_sep ), $price, $num_decimals, $decimal_sep, $thousands_sep );
+
+			if ( apply_filters( 'woocommerce_price_trim_zeros', false ) && $num_decimals > 0 ) {
+				$price = wc_trim_zeros( $price );
+			}
+			
+		}
+
+		return $price;
 	}
 
 
@@ -578,8 +649,9 @@ class WC_Name_Your_Price_Helpers {
 
 		$terms = '&nbsp;';
 
-		if ( ! is_object( $product ) )
-			$product = get_product( $product );
+		if ( ! is_object( $product ) ){
+			$product = wc_nyp_get_product( $product );
+		}
 
 		// parent variable subscriptions don't have a billing period, so we get a array to string notice. therefore only apply to simple subs and sub variations
 		
@@ -588,12 +660,14 @@ class WC_Name_Your_Price_Helpers {
 			if( self::is_billing_period_variable( $product ) ) {
 				// don't display the subscription price, period or length
 				$include = array(
+					'price' => '',
 					'subscription_price'  => false,
 					'subscription_period' => false
 				);
 
 			} else {
-				$include = array( 'subscription_price'  => false );
+				$include = array( 'price' => '', 
+					'subscription_price'  => false );
 				// if we don't show the price we don't get the "per" backslash so add it back
 				if( WC_Subscriptions_Product::get_interval( $product ) == 1 )
 					$terms .= '<span class="per">/ </span>';
@@ -632,7 +706,7 @@ class WC_Name_Your_Price_Helpers {
 		$selected = $period ? $period : 'month';
 
 		// get list of available periods from Subscriptions plugin
-		$periods = WC_Subscriptions_Manager::get_subscription_period_strings();
+		$periods = self::get_subscription_period_strings();
 
 		if( $periods ) :
 
@@ -664,9 +738,10 @@ class WC_Name_Your_Price_Helpers {
 	 */
 	public static function get_data_attributes( $product_id, $prefix  = null ) {
 
-		$price = self::get_posted_price( $product_id, $prefix );
-		$minimum = self::get_minimum_price( $product_id ); 
+		$price = self::get_price_value_attr( $product_id, $prefix );
 
+		$minimum = self::get_minimum_price( $product_id ); 
+		
 		$data_string = sprintf( 'data-price="%s"', (double) $price );
 
 		if( self::is_subscription( $product_id ) && self::is_billing_period_variable( $product_id ) ){
@@ -807,4 +882,65 @@ class WC_Name_Your_Price_Helpers {
 		}
 
 	}
+
+
+	/*
+	 * The error message template
+	 *
+	 * @param 	string $id selects which message to use
+	 * @return 	return string
+	 * @access 	public
+	 * @since 	2.1
+	 */
+	public static function get_error_message_template( $id = null ){
+
+		$errors = apply_filters( 'woocommerce_nyp_error_message_templates', 
+			array( 
+				'invalid' => __( '&quot;%%TITLE%%&quot; could not be added to the cart: Please enter a valid, positive number.', 'wc_name_your_price' ), 
+				'minimum' => __( '&quot;%%TITLE%%&quot; could not be added to the cart: Please enter at least %%MINIMUM%%.', 'wc_name_your_price' ),
+				'minimum_js' => __( 'Please enter at least %%MINIMUM%%', 'wc_name_your_price' )
+			) 
+		);
+
+		return isset( $errors[$id] ) ? $errors[ $id ] : '';
+
+	}
+
+	/*
+	 * Get error message
+	 *
+	 * @param 	string $id - the error template to use
+	 * @param 	array $tags - array of tags and their respective replacement values
+	 * @param 	obj $_product - the relevant product object
+	 * @return 	return string
+	 * @access 	public
+	 * @since 	2.1
+	 */
+	public static function error_message( $id, $tags = array(), $_product = null ){
+
+		$message = self::get_error_message_template( $id );
+
+		foreach( $tags as $tag => $value ){
+			$message = str_replace( $tag, $value, $message );
+		}
+				
+		return apply_filters ( 'woocommerce_nyp_error_message', $message, $id, $tags, $_product );
+
+	}
+
+
+	/**
+	 * Return an i18n'ified associative array of all possible subscription periods.
+	 * ready for Subs 2.0 but with backcompat
+	 *
+	 * @since 2.2.8
+	 */
+	public static function get_subscription_period_strings( $number = 1, $period = '' ) {
+		if( function_exists( 'wcs_get_subscription_period_strings' ) ) {
+			return wcs_get_subscription_period_strings( $number, $period );
+		} else {
+			return WC_Subscriptions_Manager::get_subscription_period_strings( $number, $period );
+		}
+	}
+
 } //end class

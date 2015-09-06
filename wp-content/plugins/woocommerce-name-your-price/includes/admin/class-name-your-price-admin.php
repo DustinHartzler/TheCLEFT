@@ -12,7 +12,7 @@
  */
 class WC_Name_Your_Price_Admin {
 
-	static $simple_supported_types = array( 'simple', 'subscription', 'bundle', 'bto', 'composite', );
+	static $simple_supported_types = array( 'simple', 'subscription', 'bundle', 'composite', 'deposit', 'mix-and-match' );
 
 	/**
 	 * Bootstraps the class and hooks required actions & filters.
@@ -21,33 +21,25 @@ class WC_Name_Your_Price_Admin {
 	 */
 	public static function init() {
 
-		// admin notices
-		if ( ! WC_Name_Your_Price_Helpers::is_woocommerce_2_1() ) {
-			add_action( 'admin_notices', array( __CLASS__, 'admin_notice' ) );
-			add_action( 'admin_init', array( __CLASS__, 'nag_ignore' ) );
-		}
-
 		// Product Meta boxes
 		add_filter( 'product_type_options', array( __CLASS__, 'product_type_options' ) );
 		add_action( 'woocommerce_product_options_general_product_data', array( __CLASS__, 'add_to_metabox' ) );
 		add_action( 'woocommerce_process_product_meta', array( __CLASS__, 'save_product_meta' ), 20, 2 );
 
 		// Variable Product
-		if ( WC_Name_Your_Price_Helpers::is_woocommerce_2_1() ) {
-			add_action( 'woocommerce_variation_options', array( __CLASS__, 'product_variations_options' ), 10, 2 );
-			add_action( 'woocommerce_product_after_variable_attributes', array( __CLASS__, 'add_to_variations_metabox'), 10, 2 );
+		add_action( 'woocommerce_variation_options', array( __CLASS__, 'product_variations_options' ), 10, 3 );
+		add_action( 'woocommerce_product_after_variable_attributes', array( __CLASS__, 'add_to_variations_metabox'), 10, 3 );
 
-			// regular variable products
-			add_action( 'woocommerce_process_product_meta_variable', array( __CLASS__, 'save_variable_product_meta' ) );
-			add_action( 'woocommerce_save_product_variation', array( __CLASS__, 'save_product_variation' ), 10, 2 );
+		// regular variable products
+		add_action( 'woocommerce_process_product_meta_variable', array( __CLASS__, 'save_variable_product_meta' ) );
+		add_action( 'woocommerce_save_product_variation', array( __CLASS__, 'save_product_variation' ), 20, 2 );
 
-			// variable subscription products
-			add_action( 'woocommerce_process_product_meta_variable-subscription', array( __CLASS__, 'save_variable_product_meta' ) );
-			add_action( 'woocommerce_save_product_variation-subscription', array( __CLASS__, 'save_product_variation' ), 10, 2 );
+		// variable subscription products
+		add_action( 'woocommerce_process_product_meta_variable-subscription', array( __CLASS__, 'save_variable_product_meta' ) );
+		add_action( 'woocommerce_save_product_variation-subscription', array( __CLASS__, 'save_product_variation' ), 20, 2 );
 
-			// Variable Bulk Edit
-			add_action( 'woocommerce_variable_product_bulk_edit_actions', array( __CLASS__, 'bulk_edit_actions' ) );
-		}
+		// Variable Bulk Edit
+		add_action( 'woocommerce_variable_product_bulk_edit_actions', array( __CLASS__, 'bulk_edit_actions' ) );
 
 		// Admin Scripts
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'meta_box_script'), 20 );
@@ -57,69 +49,22 @@ class WC_Name_Your_Price_Admin {
 
 		// Edit Products screen
 		add_filter( 'woocommerce_get_price_html', array( __CLASS__, 'admin_price_html' ), 20, 2 );
-
+		
 		// Product Filters
 		add_filter( 'woocommerce_product_filters', array( __CLASS__, 'product_filters' ) );
 		add_filter( 'parse_query', array( __CLASS__, 'product_filters_query' ) );
 
-		// Quick Edit - changing to only work with WC2.1
+		// Quick Edit
 		add_action( 'manage_product_posts_custom_column', array( __CLASS__, 'column_display'), 10, 2 );
 		add_action( 'woocommerce_product_quick_edit_end',  array( __CLASS__, 'quick_edit') );
-		if ( WC_Name_Your_Price_Helpers::is_woocommerce_2_1() )
-			add_action( 'admin_enqueue_scripts', array( __CLASS__, 'quick_edit_scripts'), 20 );
+		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'quick_edit_scripts'), 20 );
 		add_action( 'woocommerce_product_quick_edit_save', array( __CLASS__, 'quick_edit_save') );
 
-		// Admin Settings
-		if ( WC_Name_Your_Price_Helpers::is_woocommerce_2_1() ) {
-			// new settings API
-			add_filter( 'woocommerce_get_settings_pages', array( __CLASS__, 'add_settings_page' ) );
-		} else {
-			add_filter( 'woocommerce_settings_tabs_array', array( __CLASS__, 'admin_tabs' ), 30 );
-			add_action( 'woocommerce_settings_tabs_nyp', array( __CLASS__, 'admin_panel') );
-			add_action( 'woocommerce_update_options_nyp' , array( __CLASS__, 'process_admin_options' ) );
-		}
+		// Admin Settings via settings API
+		add_filter( 'woocommerce_get_settings_pages', array( __CLASS__, 'add_settings_page' ) );
 
 	}
 
-    /*-----------------------------------------------------------------------------------*/
-	/* Admin Notice */
-	/*-----------------------------------------------------------------------------------*/
-
-	/*
-	 * Display a notice that can be dismissed if less than WooCommerce 2.1
-	 *
-	 * @return print HTML
-	 * @since 1.0
-	 */
-	public static function admin_notice() {
-		global $current_user ;
-		$user_id = $current_user->ID;
-		/* Check that the user hasn't already clicked to ignore the message */
-		if ( current_user_can( 'update_plugins' ) && ! get_user_meta( $user_id, 'nyp_2_0_ignore') ) {
-			echo '<div class="updated woocommerce-message"><div class="squeezer"><h4>';
-			printf( __( 'WooCommerce <strong>Name Your Price</strong> now supports variable products!' ), 'wc_name_your_price' );
-			echo '<p>';
-			printf( __( 'Please upgrade WooCommerce to version 2.1 to take advantage of this feature. %sUpgrade Now%s %sHide Notice%s', 'wc_name_your_price' ), '<a href="'. admin_url( "update-core.php" ) . '" class="wc-update-now button-primary" >', '</a>', '<a href="'. add_query_arg( 'nyp_2_0_nag_ignore', 0 ) . '" class="skip button-primary">', '</a>' );
-
-			echo '</p></div></div>';
-		}
-	}
-
-	/*
-	 * Add notice status to user meta
-	 *
-	 * @param array $options
-	 * @return array
-	 * @since 1.0
-	 */
-	public static function nag_ignore() {
-		global $current_user;
-		$user_id = $current_user->ID;
-		/* If user clicks to ignore the notice, add that to their user meta */
-		if ( isset( $_GET['nyp_2_0_nag_ignore'] ) && '0' == $_GET['nyp_2_0_nag_ignore'] ) {
-			add_user_meta( $user_id, 'nyp_2_0_ignore', 'true', true );
-		}
-	}
 
     /*-----------------------------------------------------------------------------------*/
 	/* Write Panel / metabox */
@@ -163,8 +108,8 @@ class WC_Name_Your_Price_Admin {
 				woocommerce_wp_checkbox( array(
 						'id' => '_variable_billing',
 						'wrapper_class' => 'show_if_subscription',
-						'label' => __('Variable Billing Period', 'wc_name_your_price'),
-						'description' => __('Allow the customer to set the billing period.', 'woocommerce', 'wc_name_your_price' ) ) );
+						'label' => __( 'Variable Billing Period', 'wc_name_your_price' ),
+						'description' => __( 'Allow the customer to set the billing period.', 'wc_name_your_price' ) ) );
 			}
 
 			// Suggested Price
@@ -182,8 +127,8 @@ class WC_Name_Your_Price_Admin {
 				// Suggested Billing Period
 				woocommerce_wp_select( array(
 					'id'          => '_suggested_billing_period',
-					'label'       => __( 'per', WC_Subscriptions::$text_domain ),
-					'options'     => WC_Subscriptions_Manager::get_subscription_period_strings()
+					'label'       => __( 'per', 'wc_name_your_price' ),
+					'options'     => WC_Name_Your_Price_Helpers::get_subscription_period_strings()
 					)
 				);
 			}
@@ -202,8 +147,8 @@ class WC_Name_Your_Price_Admin {
 				// Minimum Billing Period
 				woocommerce_wp_select( array(
 					'id'          => '_minimum_billing_period',
-					'label'       => __( 'per', WC_Subscriptions::$text_domain ),
-					'options'     => WC_Subscriptions_Manager::get_subscription_period_strings()
+					'label'       => __( 'per', 'wc_name_your_price' ),
+					'options'     => WC_Name_Your_Price_Helpers::get_subscription_period_strings()
 					)
 				);
 			}
@@ -238,12 +183,12 @@ class WC_Name_Your_Price_Admin {
 		}
 
 		if ( isset( $_POST['_suggested_price'] ) ) {
-			$suggested = ( trim( $_POST['_suggested_price'] ) === '' ) ? '' : wc_nyp_format_decimal( $_POST['_suggested_price'] );
+			$suggested = ( trim( $_POST['_suggested_price'] ) === '' ) ? '' : wc_format_decimal( $_POST['_suggested_price'] );
 			update_post_meta( $post_id, '_suggested_price', $suggested );
 		}
 
 		if ( isset( $_POST['_min_price'] ) ) {
-			$minimum = ( trim( $_POST['_min_price'] ) === '' ) ? '' : wc_nyp_format_decimal( $_POST['_min_price'] );
+			$minimum = ( trim( $_POST['_min_price'] ) === '' ) ? '' : wc_format_decimal( $_POST['_min_price'] );
 			update_post_meta( $post_id, '_min_price', $minimum );
 		}
 
@@ -257,17 +202,17 @@ class WC_Name_Your_Price_Admin {
 		}
 
 		// suggested period - don't save if no suggested price
-		if ( class_exists( 'WC_Subscriptions_Manager' ) && $suggested && isset( $_POST['_suggested_billing_period'] ) && in_array( $_POST['_suggested_billing_period'], WC_Subscriptions_Manager::get_subscription_period_strings() ) ){
+		if ( class_exists( 'WC_Subscriptions_Manager' ) && $suggested && isset( $_POST['_suggested_billing_period'] ) && in_array( $_POST['_suggested_billing_period'], WC_Name_Your_Price_Helpers::get_subscription_period_strings() ) ){
 
-			$suggested_period = wc_nyp_clean( $_POST['_suggested_billing_period'] );
+			$suggested_period = wc_clean( $_POST['_suggested_billing_period'] );
 
 			update_post_meta( $post_id, '_suggested_billing_period', $suggested_period );
 		}
 
 		// minimum period - don't save if no minimum price
-		if ( class_exists( 'WC_Subscriptions_Manager' ) && isset( $_POST['_min_price'] ) && isset( $_POST['_minimum_billing_period'] ) && in_array( $_POST['_minimum_billing_period'], WC_Subscriptions_Manager::get_subscription_period_strings() ) ){
+		if ( class_exists( 'WC_Subscriptions_Manager' ) && isset( $_POST['_min_price'] ) && isset( $_POST['_minimum_billing_period'] ) && in_array( $_POST['_minimum_billing_period'], WC_Name_Your_Price_Helpers::get_subscription_period_strings() ) ){
 
-			$minimum_period = wc_nyp_clean( $_POST['_minimum_billing_period'] );
+			$minimum_period = wc_clean( $_POST['_minimum_billing_period'] );
 
 			update_post_meta( $post_id, '_minimum_billing_period', $minimum_period );
 		}
@@ -283,11 +228,11 @@ class WC_Name_Your_Price_Admin {
 	 * return print HTML
 	 * @since 2.0
 	 */
-	public static function product_variations_options( $loop, $variation_data ){ ?>
+	public static function product_variations_options( $loop, $variation_data, $variation ){ 
 
-		<label><input type="checkbox" class="checkbox variation_is_nyp" name="variation_is_nyp[<?php echo $loop; ?>]"
+		$variation_is_nyp = get_post_meta( $variation->ID, '_nyp', true ); ?>
 
-			<?php checked( isset( $variation_data['_nyp'][0] ) ? $variation_data['_nyp'][0] : '', 'yes' ); ?> /> <?php _e( 'Name Your Price', 'wc_name_your_price'); ?> <a class="tips" data-tip="<?php _e( 'Customers are allowed to determine their own price.', 'wc_name_your_price'); ?>" href="#">[?]</a></label>
+		<label><input type="checkbox" class="checkbox variation_is_nyp" name="variation_is_nyp[<?php echo $loop; ?>]" <?php checked( $variation_is_nyp, 'yes' ); ?> /> <?php _e( 'Name Your Price', 'wc_name_your_price'); ?> <a class="tips" data-tip="<?php _e( 'Customers are allowed to determine their own price.', 'wc_name_your_price'); ?>" href="#">[?]</a></label>
 
 		<?php
 
@@ -301,19 +246,42 @@ class WC_Name_Your_Price_Admin {
 	 * @return print HTML
 	 * @since 2.0
 	 */
-	public static function add_to_variations_metabox( $loop, $variation_data ){ ?>
+	public static function add_to_variations_metabox( $loop, $variation_data, $variation ){
 
-		<tr class="variable_nyp_pricing">
-			<td>
-				<label><?php echo __( 'Suggested Price:', 'wc_name_your_price' ) . ' ('.get_woocommerce_currency_symbol().')'; ?></label>
-				<input type="text" size="5" class="wc_price_input" name="variation_suggested_price[<?php echo $loop; ?>]" value="<?php if ( isset( $variation_data['_suggested_price'][0] ) ) echo esc_attr( $variation_data['_suggested_price'][0] ); ?>" step="any" min="0" />
-			</td>
-			<td>
-				<label><?php echo __( 'Minimum Price:', 'wc_name_your_price' ) . ' ('.get_woocommerce_currency_symbol().')'; ?></label>
-				<input type="text" size="5" class="wc_price_input" name="variation_min_price[<?php echo $loop; ?>]" value="<?php if ( isset( $variation_data['_min_price'][0] ) ) echo esc_attr( $variation_data['_min_price'][0] ); ?>" step="any" min="0" />
-			</td>
-		</tr>
-	<?php
+		$suggested = get_post_meta( $variation->ID, '_suggested_price', true );
+		$min = get_post_meta( $variation->ID, '_min_price', true );
+
+		if( WC_Name_Your_Price_Helpers::is_woocommerce_2_3() ){ ?>
+
+			<div class="variable_nyp_pricing">
+				<p class="form-row form-row-first">
+					<label><?php echo __( 'Suggested Price:', 'wc_name_your_price' ) . ' ('.get_woocommerce_currency_symbol().')'; ?></label>
+					<input type="text" size="5" class="wc_price_input" name="variation_suggested_price[<?php echo $loop; ?>]" value="<?php echo esc_attr( $suggested ); ?>" />
+				</p>
+				<p class="form-row form-row-last">
+					<label><?php echo __( 'Minimum Price:', 'wc_name_your_price' ) . ' ('.get_woocommerce_currency_symbol().')'; ?></label>
+					<input type="text" size="5" class="wc_price_input" name="variation_min_price[<?php echo $loop; ?>]" value="<?php echo esc_attr( $min ); ?>" />
+				</p>
+			</div>
+
+		<?php 
+
+		} else { ?>
+
+			<tr class="variable_nyp_pricing">
+				<td>
+					<label><?php echo __( 'Suggested Price:', 'wc_name_your_price' ) . ' ('.get_woocommerce_currency_symbol().')'; ?></label>
+					<input type="text" size="5" class="wc_price_input" name="variation_suggested_price[<?php echo $loop; ?>]" value="<?php echo esc_attr( $suggested ); ?>" />
+				</td>
+				<td>
+					<label><?php echo __( 'Minimum Price:', 'wc_name_your_price' ) . ' ('.get_woocommerce_currency_symbol().')'; ?></label>
+					<input type="text" size="5" class="wc_price_input" name="variation_min_price[<?php echo $loop; ?>]" value="<?php echo esc_attr( $min ); ?>" />
+				</td>
+			</tr>
+
+		<?php
+
+		}
 
 	}
 
@@ -333,13 +301,13 @@ class WC_Name_Your_Price_Admin {
 
 		// save suggested price
 		if ( isset( $_POST['variation_suggested_price'][$i] ) ) {
-			$variation_suggested_price = ( trim( $_POST['variation_suggested_price'][$i]  ) === '' ) ? '' : wc_nyp_format_decimal( $_POST['variation_suggested_price'][$i] );
+			$variation_suggested_price = ( trim( $_POST['variation_suggested_price'][$i]  ) === '' ) ? '' : wc_format_decimal( $_POST['variation_suggested_price'][$i] );
 			update_post_meta( $variation_id, '_suggested_price', $variation_suggested_price );
 		}
 
 		// save minimum price
 		if ( isset( $_POST['variation_min_price'][$i] ) ) {
-			$variation_min_price = ( trim( $_POST['variation_min_price'][$i]  ) === '' ) ? '' : wc_nyp_format_decimal( $_POST['variation_min_price'][$i] );
+			$variation_min_price = ( trim( $_POST['variation_min_price'][$i]  ) === '' ) ? '' : wc_format_decimal( $_POST['variation_min_price'][$i] );
 			update_post_meta( $variation_id, '_min_price', $variation_min_price );
 		}
 
@@ -376,10 +344,11 @@ class WC_Name_Your_Price_Admin {
 
 			endfor;
 
-		endif;
-
 		$has_nyp = $has_nyp ? 'yes' : 'no';
 		update_post_meta( $post_id, '_has_nyp', $has_nyp );
+		
+		endif;
+
 	}
 
 
@@ -411,21 +380,23 @@ class WC_Name_Your_Price_Admin {
     public static function meta_box_script( $hook ){
 
 		// check if on Edit-Post page (post.php or new-post.php).
-		if( ! in_array( $hook, array( 'post-new.php', 'post.php' ) ) )
-					return;
+		if( ! in_array( $hook, array( 'post-new.php', 'post.php' ) ) ){
+			return;
+		}
 
 		// now check to see if the $post type is 'product'
 		global $post;
-		if ( ! isset( $post ) || 'product' != $post->post_type )
+		if ( ! isset( $post ) || 'product' != $post->post_type ){
 			return;
+		}
 
 		// enqueue and localize
 		$suffix = ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) ? '' : '.min';
 
 		wp_enqueue_script( 'woocommerce_nyp_metabox',WC_Name_Your_Price()->plugin_url() . '/includes/admin/js/nyp-metabox'. $suffix . '.js', array( 'jquery' ), WC_Name_Your_Price()->version, true );
 
-		$strings = array ( 'enter_value' => __( 'Enter a value', 'wc-name-your-price' ),
-										'price_adjust' => __( 'Enter a value (fixed or %)', 'woocommerce' ) );
+		$strings = array ( 'enter_value' => __( 'Enter a value', 'wc_name_your_price' ),
+							'price_adjust' => __( 'Enter a value (fixed or %)', 'wc_name_your_price' ) );
 
 		wp_localize_script( 'woocommerce_nyp_metabox', 'woocommerce_nyp_metabox', $strings );
 
@@ -495,16 +466,21 @@ class WC_Name_Your_Price_Admin {
 	 */
 	public static function admin_price_html( $price, $product ){
 
-	   if( WC_Name_Your_Price_Helpers::is_nyp( $product ) && ! isset( $product->is_filtered_price_html ) ){
-	   		$minimum = WC_Name_Your_Price_Helpers::get_minimum_price( $product );
-	   		$period = WC_Name_Your_Price_Helpers::is_billing_period_variable( $product ) ? WC_Name_Your_Price_Helpers::get_minimum_billing_period( $product ) : false;
-			$price = _x( 'From:', 'minimum price', 'wc_name_your_price' ) . ' ' . WC_Name_Your_Price_Helpers::get_price_string( $product->id, array ( 'price' => $minimum, 'period' => $period ) );
-	   }
+		if( ( WC_Name_Your_Price_Helpers::is_nyp( $product ) || WC_Name_Your_Price_Helpers::has_nyp( $product ) ) && ! isset( $product->is_filtered_price_html ) ){
+			$price = $product->get_price_html_from_text() . WC_Name_Your_Price_Helpers::get_price_string( $product, 'minimum-variation' );
+		}
 
 		return $price;
 
 	}
 
+	/*
+	 * Add NYP as option to product filters in admin 
+	 *
+	 * @param string $output
+	 * @return string
+	 * @since 2.0.0
+	 */
 	public static function product_filters( $output ){
 		global $wp_query;
 
@@ -531,16 +507,18 @@ class WC_Name_Your_Price_Admin {
 	 * Filter the products in admin based on options
 	 *
 	 * @param mixed $query
+	 * @since 2.0.0
 	 */
 	public static function product_filters_query( $query ) {
-		global $typenow, $wp_query;
+		global $typenow;
 
 	    if ( $typenow == 'product' ) {
 
 	    	if ( isset( $query->query_vars['product_type'] ) ) {
 		    	// Subtypes
 		    	if ( $query->query_vars['product_type'] == 'name-your-price' ) {
-			    	$query->query_vars['product_type'] = '';
+			    	$query->query_vars['product_type']  = '';
+			    	$query->is_tax = false;
 			    	$meta_query = array(
 			    		'relation' => 'OR',
 						array(
@@ -583,10 +561,10 @@ class WC_Name_Your_Price_Admin {
 				$nyp = get_post_meta( $post_id, '_nyp', true );
 
 				$suggested = WC_Name_Your_Price_Helpers::get_suggested_price( $post_id );
-				$suggested = wc_nyp_format_localized_price( $suggested );
+				$suggested = wc_format_localized_price( $suggested );
 
 				$min = WC_Name_Your_Price_Helpers::get_minimum_price( $post_id );
-				$min = wc_nyp_format_localized_price( $min );
+				$min = wc_format_localized_price( $min );
 
 				$is_nyp_allowed = has_term( array( 'simple' ), 'product_type', $post_id ) ? 'yes' : 'no';
 
@@ -672,7 +650,7 @@ class WC_Name_Your_Price_Admin {
 	 *
 	 */
 	public static function quick_edit_save( $product ) {
-		global $woocommerce, $wpdb;
+		global $wpdb;
 
 		if( isset( $product->id ) ){
 			$product_id = $product->id;
@@ -689,12 +667,12 @@ class WC_Name_Your_Price_Admin {
 		}
 
 		if ( isset( $_REQUEST['_suggested_price'] ) ) {
-			$suggested = ( trim( $_REQUEST['_suggested_price'] ) === '' ) ? '' : wc_nyp_format_decimal( $_REQUEST['_suggested_price'] );
+			$suggested = ( trim( $_REQUEST['_suggested_price'] ) === '' ) ? '' : wc_format_decimal( $_REQUEST['_suggested_price'] );
 			update_post_meta( $product_id, '_suggested_price', $suggested );
 		}
 
 		if ( isset( $_REQUEST['_min_price'] ) ) {
-			$min = ( trim( $_REQUEST['_min_price'] ) === '' ) ? '' : wc_nyp_format_decimal( $_REQUEST['_min_price'] );
+			$min = ( trim( $_REQUEST['_min_price'] ) === '' ) ? '' : wc_format_decimal( $_REQUEST['_min_price'] );
 			update_post_meta( $product_id, '_min_price', $min );
 		}
 
@@ -704,142 +682,6 @@ class WC_Name_Your_Price_Admin {
 	/*-----------------------------------------------------------------------------------*/
 	/* Admin Settings */
 	/*-----------------------------------------------------------------------------------*/
-
-	/*
-	 * Add tab to settings
-	 *
-	 * @param array $tabs
-	 * @return array
-	 * @since 1.0
-	 */
-
-	public static function admin_tabs( $tabs ) {
-		$tabs['nyp'] = __( 'Name Your Price', 'wc_name_your_price' );
-		return $tabs;
-	}
-
-	 /**
-	  * add_settings_fields
-	  *
-	  * Add settings fields for the nyp tab.
-	  *
-	  * @return void
-	  * @since 1.0
-	  */
-	public static function add_settings_fields () {
-	  	global $woocommerce_settings;
-
-	  	$woocommerce_settings['nyp'] = apply_filters('woocommerce_nyp_settings', array(
-
-			array( 'title' => __( 'Name Your Price Setup', 'wc_name_your_price' ), 'type' => 'title', 'desc' =>  __( 'Modify the text strings used by the Name Your Own Price extension.', 'wc_name_your_price' ), 'id' => 'woocommerce_nyp_options' ),
-
-			array(
-				'title' => __( 'Suggested Price Text', 'wc_name_your_price' ),
-				'desc' 		=> __( 'This is the text to display before the suggested price.', 'wc_name_your_price' ),
-				'id' 		=> 'woocommerce_nyp_suggested_text',
-				'type' 		=> 'text',
-				'css' 		=> 'min-width:300px;',
-				'default'	=> _x( 'Suggested Price:', 'suggested price', 'wc_name_your_price' ),
-				'desc_tip'	=>  true,
-			),
-
-			array(
-				'title' => __( 'Minimum Price Text', 'wc_name_your_price' ),
-				'desc' 		=> __( 'This is the text to display before the minimum accepted price.', 'wc_name_your_price' ),
-				'id' 		=> 'woocommerce_nyp_minimum_text',
-				'type' 		=> 'text',
-				'css' 		=> 'min-width:300px;',
-				'default'	=> _x( 'Minimum Price:', 'minimum price', 'wc_name_your_price' ),
-				'desc_tip'	=>  true,
-			),
-
-			array(
-				'title' => __( 'Name Your Price Text', 'wc_name_your_price' ),
-				'desc' 		=> __( 'This is the text that appears above the Name Your Price input field.', 'wc_name_your_price' ),
-				'id' 		=> 'woocommerce_nyp_label_text',
-				'type' 		=> 'text',
-				'css' 		=> 'min-width:300px;',
-				'default'	=> __( 'Name Your Price', 'wc_name_your_price' ),
-				'desc_tip'	=>  true,
-			),
-
-			array(
-				'title' => __( 'Add to Cart Button Text for Shop', 'wc_name_your_price' ),
-				'desc' 		=> __( 'This is the text that appears on the Add to Cart buttons on the Shop Pages.', 'wc_name_your_price' ),
-				'id' 		=> 'woocommerce_nyp_button_text',
-				'type' 		=> 'text',
-				'css' 		=> 'min-width:300px;',
-				'default'		=> __( 'Set Price', 'wc_name_your_price' ),
-				'desc_tip'	=>  true,
-			),
-
-			array(
-				'title' => __( 'Add to Cart Button Text for Single Product', 'wc_name_your_price' ),
-				'desc' 		=> __( 'This is the text that appears on the Add to Cart buttons on the Single Product Pages.', 'wc_name_your_price' ),
-				'id' 		=> 'woocommerce_nyp_button_text_single',
-				'type' 		=> 'text',
-				'css' 		=> 'min-width:300px;',
-				'default'		=> __( 'Add to Cart', 'wc_name_your_price' ),
-				'desc_tip'	=>  true,
-			),
-
-			array( 'type' => 'sectionend', 'id' => 'woocommerce_nyp_options' ),
-
-			array( 'title' => __( 'Name Your Price Style', 'wc_name_your_price' ), 'type' => 'title', 'wc_name_your_price', 'id' => 'woocommerce_nyp_style_options' ),
-
-			array(
-				'title' => __( 'Disable Name Your Price Stylesheet', 'wc_name_your_price' ),
-				'id' 		=> 'woocommerce_nyp_disable_css',
-				'type' 		=> 'checkbox',
-				'default'		=> 'no'
-			),
-
-			array( 'type' => 'sectionend', 'id' => 'woocommerce_nyp_style_options' ),
-
-		)); // End nyp settings
-
-	} // End add_settings_fields()
-
-
-	/*
-	 * Display the plugin's options
-	 *
-	 * @return print HTML
-	 * @since 1.0
-	 */
-	public static function admin_panel() {
-
-		if( ! current_user_can( 'manage_options' ) ){
-
-			echo '<p>'. __( 'You do not have sufficient permissions to access this page.', 'wc_name_your_price') . '</p>';
-
-		} else {
-
-			global $woocommerce_settings;
-
-			self::add_settings_fields();
-
-			woocommerce_admin_fields( $woocommerce_settings['nyp'] );
-
-		}
-	}
-
-	/*
-	 * Save the plugin's options
-	 *
-	 * @return void
-	 * @since 1.0
-	 */
-	public static function process_admin_options(){
-		global $woocommerce_settings;
-
-		// Make sure our settings fields are recognised.
-		self::add_settings_fields();
-
-		// Save settings
-		woocommerce_update_options( $woocommerce_settings['nyp'] );
-
-	}
 
 	/*
 	 * Include the settings page class

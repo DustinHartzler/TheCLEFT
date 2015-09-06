@@ -32,6 +32,8 @@
 				case 'bundle':
 				case 'bto':
 				case 'composite':
+				case 'deposit':
+				case 'mix-and-match':
 					$.showHideNYPprices( is_nyp, true );
 					$.showHideNYPvariablePeriods( false )
 					break;
@@ -90,8 +92,8 @@
 			$( '.woocommerce_variation .variable_pricing' ).addClass( 'hide_if_variable_nyp' );
 		},
 		moveNYPvariationFields: function(){
-			$( '#variable_product_options tr.variable_nyp_pricing' ).not( '.nyp_moved' ).each(function(){
-				$(this).insertBefore($(this).siblings( 'tr.variable_pricing' )).addClass( 'nyp_moved' );
+			$( '#variable_product_options .variable_nyp_pricing' ).not( '.nyp_moved' ).each(function(){
+				$(this).insertAfter($(this).siblings( '.variable_pricing' )).addClass( 'nyp_moved' );
 			});
 		},
 		showHideNYPvariableMeta: function(){
@@ -170,13 +172,20 @@
 		$.enableDisableSubscriptionPeriod( this.checked );
 	});
 
-	//handle variable products on load
+	// WC 2.4 compat: handle variable products on load
+	$( '#woocommerce-product-data' ).on( 'woocommerce_variations_loaded', function(){
+		$.addClasstoVariablePrice();
+		$.moveNYPvariationFields();
+		$.showHideNYPvariableMeta();	
+	} );
+
+	// WC 2.3 compat: handle variable products on load
 	if($( '#variable_product_options .woocommerce_variation' ).length > 0) {
 		$.addClasstoVariablePrice();
 		$.moveNYPvariationFields();
 		$.showHideNYPvariableMeta();
 	}
-
+	
 	// When a variation is added
 	$( '#variable_product_options' ).on( 'woocommerce_variations_added',function(){
 		$.addClasstoVariablePrice();

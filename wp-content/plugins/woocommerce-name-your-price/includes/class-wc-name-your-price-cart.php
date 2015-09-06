@@ -42,7 +42,6 @@ class WC_Name_Your_Price_Cart {
 	 * @since 1.0
 	 */
 	public function add_cart_item_data( $cart_item_data, $product_id, $variation_id ) {
-		global $woocommerce;
 
 		if ( $variation_id )
 			$product_id = $variation_id;
@@ -50,15 +49,15 @@ class WC_Name_Your_Price_Cart {
 		$posted_nyp_field = 'nyp' . apply_filters( 'nyp_field_prefix', '', $product_id );
 
 		// no need to check is_nyp b/c this has already been validated by validate_add_cart_item()
-		if( isset( $_POST[ $posted_nyp_field ] ) ) {
-			$cart_item_data['nyp'] = ( double ) WC_Name_Your_Price_Helpers::standardize_number( $_POST[ $posted_nyp_field ] );
+		if( isset( $_REQUEST[ $posted_nyp_field ] ) ) {
+			$cart_item_data['nyp'] = ( double ) WC_Name_Your_Price_Helpers::standardize_number( $_REQUEST[ $posted_nyp_field ] );
 		}
 
 		// add the subscription billing period (the input name is nyp-period)
 		$posted_nyp_period = 'nyp-period' . apply_filters( 'nyp_field_prefix', '', $product_id );
 
-		if ( WC_Name_Your_Price_Helpers::is_subscription( $product_id ) && isset( $_POST[ $posted_nyp_period ] ) && in_array( $_POST[ $posted_nyp_period ], WC_Subscriptions_Manager::get_subscription_period_strings() ) ) {
-			$cart_item_data['nyp_period'] = $_POST[ $posted_nyp_period ];
+		if ( WC_Name_Your_Price_Helpers::is_subscription( $product_id ) && isset( $_REQUEST[ $posted_nyp_period ] ) && in_array( $_REQUEST[ $posted_nyp_period ], WC_Name_Your_Price_Helpers::get_subscription_period_strings() ) ) {
+			$cart_item_data['nyp_period'] = $_REQUEST[ $posted_nyp_period ];
 		}
 
 		return $cart_item_data;
@@ -75,7 +74,7 @@ class WC_Name_Your_Price_Cart {
 			$cart_item['nyp'] = $values['nyp'];
 
 			// add the subscription billing period
-			if ( WC_Name_Your_Price_Helpers::is_subscription( $values['product_id'] ) && isset( $values['nyp_period'] ) && in_array( $values['nyp_period'], WC_Subscriptions_Manager::get_subscription_period_strings() ) )
+			if ( WC_Name_Your_Price_Helpers::is_subscription( $values['product_id'] ) && isset( $values['nyp_period'] ) && in_array( $values['nyp_period'], WC_Name_Your_Price_Helpers::get_subscription_period_strings() ) )
 				$cart_item['nyp_period'] = $values['nyp_period'];
 
 			$cart_item = $this->add_cart_item( $cart_item );
@@ -120,20 +119,19 @@ class WC_Name_Your_Price_Cart {
 	 */
 	public function validate_add_cart_item( $passed, $product_id, $quantity, $variation_id = '', $variations= '' ) {
 
-		if( $variation_id )
+		if( $variation_id ){
 			$product_id = $variation_id;
+		}
 
 		// skip if not a nyp product - send original status back
-		if ( ! WC_Name_Your_Price_Helpers::is_nyp( $product_id ) )
+		if ( ! WC_Name_Your_Price_Helpers::is_nyp( $product_id ) ){
 			return $passed;
+		}
 
 		$posted_nyp_field = 'nyp' . apply_filters( 'nyp_field_prefix', '', $product_id );
 
-		$input = $_POST[ $posted_nyp_field ];
-
 		// set a null string to 0
-		if ( ! isset( $_POST[ $posted_nyp_field ] ) || empty( $_POST[ $posted_nyp_field ] ) )
-			$input = 0;
+		$input = ! empty ( $_REQUEST[ $posted_nyp_field ] ) ? $_REQUEST[ $posted_nyp_field ] : 0;
 
 		// convert input to PHP number with period decimal points
 		$input = WC_Name_Your_Price_Helpers::standardize_number( $input );
@@ -141,26 +139,24 @@ class WC_Name_Your_Price_Cart {
 		// get minimum price
 		$minimum = WC_Name_Your_Price_Helpers::get_minimum_price( $product_id );
 
+		// null error message
+		$error_message = '';
+
 		// the product title
-		$the_product = get_product( $product_id );
+		$the_product = wc_nyp_get_product( $product_id );
 		$product_title = $the_product->get_title();
 
-		// check that it is a numeric value
-		if ( ! is_numeric( $input ) ) {
+		// check that it is a positive numeric value
+		if ( ! is_numeric( $input ) || is_infinite( $input ) || floatval( $input ) < 0 ) {
 			$passed = false;
-			wc_nyp_add_notice( sprintf( __( '&quot;%s&quot; could not be added to the cart: Please enter a valid number.', 'wc_name_your_price' ), $product_title ), 'error' );
-		// check that it is not negative
-		} elseif ( floatval( $input ) < 0 ) {
-			$passed = false;
-			wc_nyp_add_notice( sprintf( __( '&quot;%s&quot; could not be added to the cart: You cannot enter a negative value.', 'wc_name_your_price' ), $product_title ), 'error' );
-
+			$error_message = WC_Name_Your_Price_Helpers::error_message( 'invalid', array( '%%TITLE%%' => $product_title ) );
 		// check that it is greater than minimum price for variable billing subscriptions
 		} elseif ( $minimum && WC_Name_Your_Price_Helpers::is_subscription( $product_id ) && WC_Name_Your_Price_Helpers::is_billing_period_variable( $product_id ) ) {
 
 			$posted_nyp_period = 'nyp_period' . apply_filters( 'nyp_field_prefix', '', $product_id );
 
 			// set a null string to 'month' for billing period
-			if ( ! isset( $_POST[ $posted_nyp_period ] ) || empty( $_POST[ $posted_nyp_period ] ) )
+			if ( ! isset( $_REQUEST[ $posted_nyp_period ] ) || empty( $_REQUEST[ $posted_nyp_period ] ) )
 				$period = 'month';
 
 			// minimum billing period
@@ -188,13 +184,22 @@ class WC_Name_Your_Price_Cart {
 					$error_period = $minimum_period;
 				}
 
-				wc_nyp_add_notice( sprintf(__( '&quot;%s&quot; could not be added to the cart: Please enter at least %s / %s.', 'wc_name_your_price' ), $product_title, woocommerce_price( $error_price ), $error_period ), 'error' );
+				// the minimum is a combo of price and period
+				$minimum_error = woocommerce_price( $error_price ) . ' / ' . $error_period;
+				$error_message = WC_Name_Your_Price_Helpers::error_message( 'minimum', array( '%%TITLE%%' => $product_title, '%%MINIMUM%%' => $minimum_error ), $the_product );
+
 			}
 
 		// check that it is greater than minimum price
-		} elseif ( $minimum && floatval( $input ) < floatval( $minimum ) ) {
+		} elseif ( $minimum && floatval( WC_Name_Your_Price_Helpers::standardize_number( $input ) ) < floatval( $minimum ) ) {
 			$passed = false;
-			wc_nyp_add_notice( sprintf( __( '&quot;%s&quot; could not be added to the cart: Please enter at least %s.', 'wc_name_your_price' ), $product_title, woocommerce_price( $minimum ) ), 'error' );
+			$minimum_error = woocommerce_price( $minimum );
+			$error_message = WC_Name_Your_Price_Helpers::error_message( 'minimum', array( '%%TITLE%%' => $product_title, '%%MINIMUM%%' => $minimum_error ), $the_product );
+		}
+
+		// show the error message
+		if( $error_message ){
+			wc_add_notice( $error_message, 'error' );
 		}
 		return $passed;
 	}

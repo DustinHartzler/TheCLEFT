@@ -22,7 +22,7 @@ class WC_Settings_NYP extends WC_Settings_Page {
 	 */
 	public function __construct() {
 		$this->id    = 'nyp';
-		$this->label = __( 'Name Your Price', 'woocommerce' );
+		$this->label = __( 'Name Your Price', 'wc_name_your_price' );
 
 		add_filter( 'woocommerce_settings_tabs_array', array( $this, 'add_settings_page' ), 20 );
 		add_action( 'woocommerce_settings_' . $this->id, array( $this, 'output' ) );
