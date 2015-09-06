@@ -624,7 +624,14 @@ class WC_PayPal_Standard_Subscriptions {
 
 				// Set the invoice details to the original order's invoice but also append a special string and this renewal orders ID so that we can match it up as a failed renewal order payment later
 				$paypal_args['invoice'] = self::$invoice_prefix . ltrim( $order->get_order_number(), '#' ) . '-wcsfrp-' . $renewal_order->id;
-				$paypal_args['custom']  = serialize( array( $order->id, $order->order_key ) );
+
+				$existing_args = json_decode( $paypal_args['custom'] );
+
+				if ( is_object( $existing_args ) ) { // we have a serialised JSON object, it's WC 2.3.11+, we we need to json_encode()
+					$paypal_args['custom']  = json_encode( array( 'order_id' => $order->id, 'order_key' => $order->order_key ) );
+				} else { // must be WC < 2.3.11
+					$paypal_args['custom']  = serialize( array( $order->id, $order->order_key ) );
+				}
 
 			}
 
@@ -741,8 +748,9 @@ class WC_PayPal_Standard_Subscriptions {
 				$paypal_args['src'] = 1;
 
 				if ( $subscription_installments > 0 ) {
-					if ( $sign_up_fee > 0 && $subscription_trial_length == 0 ) // An initial period is being used to charge a sign-up fee
+					if ( ( $sign_up_fee > 0 || $initial_payment != $price_per_period ) && $subscription_trial_length == 0 ) { // An initial period is being used to charge a sign-up fee
 						$subscription_installments--;
+					}
 
 					$paypal_args['srt'] = $subscription_installments;
 
@@ -779,7 +787,7 @@ class WC_PayPal_Standard_Subscriptions {
 			$woocommerce->payment_gateways->payment_gateways[ $key ]->form_fields['receiver_email']['description'] .= ' </p><p class="description">' . __( 'It is <strong>strongly recommended you do not change the Receiver Email address</strong> if you have active subscriptions with PayPal. Doing so can break existing subscriptions.', 'woocommerce-subscriptions' );
 
 			// WC 2.2 added its own API fields so this is no longer necessary
-			if ( WC_Subscriptions::is_woocommerce_pre_2_2() ) {
+			if ( WC_Subscriptions::is_woocommerce_pre( '2.2' ) ) {
 				$woocommerce->payment_gateways->payment_gateways[ $key ]->form_fields += array(
 
 					'api_credentials' => array(
@@ -824,7 +832,7 @@ class WC_PayPal_Standard_Subscriptions {
 	public static function save_subscription_form_fields() {
 
 		// WC 2.2 added its own API fields so this is no longer necessary
-		if ( WC_Subscriptions::is_woocommerce_pre_2_2() ) {
+		if ( WC_Subscriptions::is_woocommerce_pre( '2.2' ) ) {
 			$paypal_gateway = WC_Subscriptions_Payment_Gateways::get_payment_gateway( 'paypal' );
 			$paypal_gateway->process_admin_options();
 		}
@@ -1017,16 +1025,18 @@ class WC_PayPal_Standard_Subscriptions {
 
 		// Couldn't find the order ID by subscr_id, so it's either not set on the order yet or the $args doesn't have a subscr_id, either way, let's get it from the args
 		if ( ! isset( $order_id ) ) {
-			// WC < 1.6.5
-			if ( is_numeric( $args['custom'] ) ) {
+			if ( is_numeric( $args['custom'] ) ) { // WC < 1.6.5
 				$order_id  = $args['custom'];
 				$order_key = $args['invoice'];
 			} else {
-				$args['custom'] = maybe_unserialize( $args['custom'] );
-				if ( is_array( $args['custom'] ) ) { // WC 2.0+
-					$order_id  = (int) $args['custom'][0];
-					$order_key = $args['custom'][1];
-				} else { // WC 1.6.5 = WC 2.0
+				$order_details = json_decode( $args['custom'] );
+				if ( is_object( $order_details ) ) { // WC 2.3.11+ converted the custom value to JSON
+					$order_id  = $order_details->order_id;
+					$order_key = $order_details->order_key;
+				} elseif ( preg_match( '/^a:2:{/', $args['custom'] ) && ! preg_match( '/[CO]:\+?[0-9]+:"/', $args['custom'] ) && ( $order_id_key = maybe_unserialize( $args['custom'] ) ) ) {  // WC 2.0 - WC 2.3.11, only allow serialized data in the expected format, do not allow objects or anything nasty to sneak in
+					$order_id  = (int) $order_id_key[0];
+					$order_key = $order_id_key[1];
+				} else { // WC 1.6.5 - WC 2.0 or invalid data
 					$order_id  = (int) str_replace( self::$invoice_prefix, '', $args['invoice'] );
 					$order_key = $args['custom'];
 				}
@@ -1115,7 +1125,7 @@ class WC_PayPal_Standard_Subscriptions {
 			$valid_for_use = true;
 		}
 
-		if ( WC_Subscriptions::is_woocommerce_pre_2_1() ) {
+		if ( WC_Subscriptions::is_woocommerce_pre( '2.1' ) ) {
 			$payment_gateway_tab_url = admin_url( 'admin.php?page=woocommerce_settings&tab=payment_gateways&section=WC_Gateway_Paypal' );
 		} else {
 			$payment_gateway_tab_url = admin_url( 'admin.php?page=wc-settings&tab=checkout&section=wc_gateway_paypal' );

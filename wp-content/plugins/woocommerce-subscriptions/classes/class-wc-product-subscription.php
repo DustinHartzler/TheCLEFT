@@ -92,7 +92,11 @@ class WC_Product_Subscription extends WC_Product_Simple {
 
 		$price = parent::get_price_html( $price );
 
-		return WC_Subscriptions_Product::get_price_string( $this, array( 'price' => $price )  );
+		if ( ! empty( $price ) ) {
+			$price = WC_Subscriptions_Product::get_price_string( $this, array( 'price' => $price ) );
+		}
+
+		return $price;
 	}
 
 	/**

@@ -5,7 +5,7 @@
  * Description: Sell products and services with recurring payments in your WooCommerce Store.
  * Author: Prospress Inc.
  * Author URI: http://prospress.com/
- * Version: 1.5.26
+ * Version: 1.5.30
  *
  * Copyright 2015 Prospress, Inc.  (email : freedoms@prospress.com)
  *
@@ -99,7 +99,7 @@ class WC_Subscriptions {
 
 	public static $text_domain = 'deprecated-use-woocommerce-subscriptions-string';
 
-	public static $version = '1.5.26';
+	public static $version = '1.5.30';
 
 	private static $total_subscription_count = null;
 
@@ -155,6 +155,8 @@ class WC_Subscriptions {
 		add_filter( 'action_scheduler_queue_runner_batch_size', __CLASS__ . '::action_scheduler_multisite_batch_size' );
 
 		add_action( 'in_plugin_update_message-' . plugin_basename( __FILE__ ), __CLASS__ . '::update_notice', 10, 2 );
+
+		add_action( 'admin_notices', __CLASS__ . '::show_downgrade_notice' );
 	}
 
 	/**
@@ -164,7 +166,7 @@ class WC_Subscriptions {
 	 */
 	public static function enqueue_styles( $styles ) {
 
-		if ( WC_Subscriptions::is_woocommerce_pre_2_3() && is_page( get_option( 'woocommerce_myaccount_page_id' ) ) ) {
+		if ( self::is_woocommerce_pre( '2.3' ) && is_page( get_option( 'woocommerce_myaccount_page_id' ) ) ) {
 			$styles['woocommerce-subscriptions'] = array(
 				'src'     => str_replace( array( 'http:', 'https:' ), '', plugin_dir_url( __FILE__ )  ) . 'css/woocommerce-subscriptions.css',
 				'deps'    => 'woocommerce-smallscreen',
@@ -345,7 +347,7 @@ class WC_Subscriptions {
 	public static function add_to_cart_redirect( $url ) {
 
 		// If product is of the subscription type
-		if ( is_numeric( $_REQUEST['add-to-cart'] ) && WC_Subscriptions_Product::is_subscription( (int) $_REQUEST['add-to-cart'] ) ) {
+		if ( isset( $_REQUEST['add-to-cart'] ) &&  is_numeric( $_REQUEST['add-to-cart'] ) && WC_Subscriptions_Product::is_subscription( (int) $_REQUEST['add-to-cart'] ) ) {
 
 			// Redirect to checkout if mixed checkout is disabled
 			if ( 'yes' != get_option( WC_Subscriptions_Admin::$option_prefix . '_multiple_purchase', 'no' ) ) {
@@ -558,7 +560,7 @@ class WC_Subscriptions {
 	public static function attach_dependant_hooks() {
 
 		// Redirect the user immediately to the checkout page after clicking "Sign Up Now" buttons to encourage immediate checkout
-		if ( self::is_woocommerce_pre_2_3() ) {
+		if ( self::is_woocommerce_pre( '2.3' ) ) {
 			add_filter( 'add_to_cart_redirect', __CLASS__ . '::add_to_cart_redirect' );
 		} else {
 			add_filter( 'woocommerce_add_to_cart_redirect', __CLASS__ . '::add_to_cart_redirect' );
@@ -1364,55 +1366,19 @@ class WC_Subscriptions {
 	}
 
 	/**
-	 * Check is the installed version of WooCommerce is 2.3 or older.
+	 * Check if the installed version of WooCommerce is older than a specified version.
 	 *
-	 * @since 1.5.17
+	 * @since 1.5.29
 	 */
-	public static function is_woocommerce_pre_2_3() {
+	public static function is_woocommerce_pre( $version ) {
 
-		if ( ! defined( 'WC_VERSION' ) || version_compare( WC_VERSION, '2.3', '<' ) ) {
-			$woocommerce_is_pre_2_3 = true;
+		if ( ! defined( 'WC_VERSION' ) || version_compare( WC_VERSION, $version, '<' ) ) {
+			$woocommerce_is_pre_version = true;
 		} else {
-			$woocommerce_is_pre_2_3 = false;
+			$woocommerce_is_pre_version = false;
 		}
 
-		return $woocommerce_is_pre_2_3;
-	}
-
-	/**
-	 * Check is the installed version of WooCommerce is 2.2 or older.
-	 *
-	 * @since 1.5.10
-	 */
-	public static function is_woocommerce_pre_2_2() {
-
-		if ( ! defined( 'WC_VERSION' ) || version_compare( WC_VERSION, '2.2', '<' ) ) {
-			$woocommerce_is_pre_2_2 = true;
-		} else {
-			$woocommerce_is_pre_2_2 = false;
-		}
-
-		return $woocommerce_is_pre_2_2;
-	}
-
-	/**
-	 * Check is the installed version of WooCommerce is 2.1 or older.
-	 *
-	 * Only for use when we need to check version. If the code in question relys on a specific
-	 * WC2.1 only function or class, then it's better to check that function or class exists rather
-	 * than using this more generic check.
-	 *
-	 * @since 1.4.5
-	 */
-	public static function is_woocommerce_pre_2_1() {
-
-		if ( ! defined( 'WC_VERSION' ) ) {
-			$woocommerce_is_pre_2_1 = true;
-		} else {
-			$woocommerce_is_pre_2_1 = false;
-		}
-
-		return $woocommerce_is_pre_2_1;
+		return $woocommerce_is_pre_version;
 	}
 
 	/**
@@ -1511,6 +1477,22 @@ class WC_Subscriptions {
 		echo wp_kses_post( $update_notice );
 	}
 
+	/**
+	 * Send notice to store admins if they have previously updated Subscriptions to 2.0 and back to v1.5.n.
+	 *
+	 * @since 2.0
+	 */
+	public static function show_downgrade_notice() {
+		if ( version_compare( get_option( WC_Subscriptions_Admin::$option_prefix . '_active_version', '0' ), '2.0', '>=' ) ) {
+
+			echo '<div class="update-nag">';
+			echo sprintf( __( 'Warning! You are running version %s of WooCommerce Subscriptions plugin code but your database has been upgraded to Subscriptions version 2.0. This will cause major problems on your store.', 'woocommerce-subscriptions' ), self::$version ) . '<br />';
+			echo sprintf( __( 'Please upgrade the WooCommerce Subscriptions plugin to version 2.0 or newer immediately. If you need assistance, after upgrading to Subscriptions v2.0, please %sopen a support ticket%s.', 'woocommerce-subscriptions' ), '<a href="https://www.woothemes.com/my-account/create-a-ticket/">', '</a>' );
+			echo '</div> ';
+
+		}
+	}
+
 	/* Deprecated Functions */
 
 	/**
@@ -1554,6 +1536,40 @@ class WC_Subscriptions {
 		_deprecated_function( __CLASS__ . '::' . __FUNCTION__, '1.1', 'WC_Product::is_sold_individually()' );
 
 		return $is_individual;
+	}
+
+	/**
+	 * Check if the installed version of WooCommerce is 2.3 or older.
+	 *
+	 * @since 1.5.17
+	 */
+	public static function is_woocommerce_pre_2_3() {
+		_deprecated_function( __METHOD__, '1.5.29', __CLASS__ . '::is_woocommerce_pre( "2.3" )' );
+		return self::is_woocommerce_pre( '2.3' );
+	}
+
+	/**
+	 * Check if the installed version of WooCommerce is 2.2 or older.
+	 *
+	 * @since 1.5.10
+	 */
+	public static function is_woocommerce_pre_2_2() {
+		_deprecated_function( __METHOD__, '1.5.29', __CLASS__ . '::is_woocommerce_pre( "2.2" )' );
+		return self::is_woocommerce_pre( '2.2' );
+	}
+
+	/**
+	 * Check if the installed version of WooCommerce is 2.1 or older.
+	 *
+	 * Only for use when we need to check version. If the code in question relys on a specific
+	 * WC2.1 only function or class, then it's better to check that function or class exists rather
+	 * than using this more generic check.
+	 *
+	 * @since 1.4.5
+	 */
+	public static function is_woocommerce_pre_2_1() {
+		_deprecated_function( __METHOD__, '1.5.29', __CLASS__ . '::is_woocommerce_pre( "2.1" )' );
+		return self::is_woocommerce_pre( '2.1' );
 	}
 }
 

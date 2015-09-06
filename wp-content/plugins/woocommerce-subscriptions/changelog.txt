@@ -1,5 +1,29 @@
 *** WooCommerce Subscriptions Changelog ***
 
+2015.08.28 - version 1.5.30
+ * Fix: redundant pricing elements in subtotal and cart widget totals
+ * Fix: never given an additional free trials when renewing a cancelled subscription
+ * Fix: always set an end date for the a switched subscription
+ * Fix: don't copy over download permissions meta from initial order to renewal order/s
+
+2015.07.28 - version 1.5.29
+ * Tweak: WooCommerce v2.4 compatibility
+ * Tweak: improve Javascript show/hide field logic on Edit Product to make it easier for 3rd party extensions to work with Subscriptions
+ * Fix: first renewal of synchronised subscriptions that are purchased within 23 hours of the first renewal payment being due
+ * Fix: fix cart calculations thrown off by a simple product that used to be a subscription
+ * Fix: copy multiple meta data values for the same key to renewal orders
+ * Fix: restrict switching if force http setting is enabled in WooCommerce as moving from https to http will log the user out. Switching relies on an ownership check, which will always fail, and will strip the query arguments from switching making people sign up for new subscriptions instead of switching the one they already have.
+ * Fix: manual payment flag being incorrect set on an order initial paid for via a manual payment method, then changed to "Pending" and paid for via a payment method that can process automatic renewals
+
+2015.06.10 - version 1.5.28
+ * Fix: add compatibility for JSON encoded data in the 'custom' field passed to PayPal being changed in WC 2.3.11 to fix an exploit with serialized data
+ * Fix: enforce an array with only two values and no objects in the 'custom' field passed to PayPal to fix an exploit with serialized data
+ * Fix: only apply the price HTML string if there is a price (i.e. not 0 or empty)
+
+2015.06.01 - version 1.5.27
+ * Fix: make sure subscriptions that were manual activated and do not have a corresponding next payment date can not be switched (i.e. upgraded/downgraded) to ensure proration calculations are correct
+ * Fix: make sure the next payment date is calculated properly for variable synced subscriptions.
+
 2015.05.25 - version 1.5.26
  * Tweak: remove reference to "free trial" in coupon error message when attempting to apply a product, cart or sign-up fee coupon to a a synchronised subscription with no initial payment but no free trial
  * Tweak: Use WordPress's SSL verification settings when communicating with PayPal to change a subscription's status to improve compatibility with Windows and Yosemite OS X servers
