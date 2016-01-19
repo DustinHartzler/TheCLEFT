@@ -70,7 +70,7 @@ get_header(); ?>
 </section>
 
 <section>
-	<a href="http://cleft-fix.dev/blog">
+	<a href="http://cleft.dev/blog">
 	<div class="shell background--fill overlay overlay--solid" style="background-image: url(<?php bloginfo('template_url'); ?>/images/Blog_Block.jpg)">
 		
 	</div></a>
