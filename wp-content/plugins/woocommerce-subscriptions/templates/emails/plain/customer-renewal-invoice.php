@@ -31,13 +31,34 @@ echo "\n";
 
 switch ( $order->status ) {
 	case 'completed' :
-		echo $order->email_order_items_table( $order->is_download_permitted(), false, true, '', '', true );
+		echo WC_Subscriptions_Email::email_order_items_table( $order, array(
+			'show_download_links' => $order->is_download_permitted(),
+			'show_sku'            => false,
+			'show_purchase_note'  => true,
+			'show_image'          => '',
+			'image_size'          => '',
+			'plain_text'          => true,
+			) );
 	break;
 	case 'processing' :
-		echo $order->email_order_items_table( $order->is_download_permitted(), true, true, '', '', true );
+		echo WC_Subscriptions_Email::email_order_items_table( $order, array(
+			'show_download_links' => $order->is_download_permitted(),
+			'show_sku'            => true,
+			'show_purchase_note'  => true,
+			'show_image'          => '',
+			'image_size'          => '',
+			'plain_text'          => true,
+			) );
 	break;
 	default :
-		echo $order->email_order_items_table( $order->is_download_permitted(), true, false, '', '', true );
+		echo WC_Subscriptions_Email::email_order_items_table( $order, array(
+			'show_download_links' => $order->is_download_permitted(),
+			'show_sku'            => true,
+			'show_purchase_note'  => false,
+			'show_image'          => '',
+			'image_size'          => '',
+			'plain_text'          => true,
+			) );
 	break;
 }
 

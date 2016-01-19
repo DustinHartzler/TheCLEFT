@@ -23,7 +23,14 @@ echo sprintf( __( 'Order date: %s', 'woocommerce-subscriptions' ), date_i18n( wo
 
 do_action( 'woocommerce_email_order_meta', $order, false, true );
 
-echo "\n" . $order->email_order_items_table( $order->is_download_permitted(), true, ( $order->status == 'processing' ) ? true : false, '', '', true );
+echo "\n" . WC_Subscriptions_Email::email_order_items_table( $order, array(
+	'show_download_links' => $order->is_download_permitted(),
+	'show_sku'            => true,
+	'show_purchase_note'  => ( 'processing' == $order->status ) ? true : false,
+	'show_image'          => '',
+	'image_size'          => '',
+	'plain_text'          => true,
+	) );
 
 echo "----------\n\n";
 

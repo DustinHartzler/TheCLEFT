@@ -1,5 +1,20 @@
 *** WooCommerce Subscriptions Changelog ***
 
+2016.01.07 - version 2.0.8
+ * Happy new year!
+ * Tweak: WooCommerce 2.5 email template compatibility
+ * Tweak: Use "Change Payment Method" as the default button text on the customer facing Change Payment method form instead of the payment gateways's order button text as often gateways will use something like "Place Order".
+ * Tweak: Move hardcoded # symbols used for Subscription ID inside translation functions so they can be localised.
+ * Fix: Display PayPal Subscription Profile ID for PayPal Standard Subscriptions on the Edit Subscription administration screen (but disable the input so that it is not editable by default).
+ * Fix: When changing a subscription's payment method via the Edit Subscription administration screen, make sure the status updated hook is trigger for the old payment method to allow gateways to cancel/suspend it as needed.
+ * Fix: When changing a subscription's payment method from PayPal to a different gateway via the Edit Subscription administration screen, suspend the existing subscription at PayPal to ensure no future payments are processed on it.
+ * Fix: Apply recurring cart discount coupons to products not excluded from that coupon even if the cart contains other products which are excluded from that coupon. Requires WooCommerce 2.5.
+ * Fix: Remove renewal/resubscribe cart items from cart when the renewal/resubscribe order or original subscription has been deleted to prevent errors.
+ * Fix: Correctly cache a subscriptions payment gateway rather than instantiating it again every time it is accessed for a small performance improvement.
+ * Fix: Display the View Subscription page when My Account page is set as the site's front page.
+ * Fix: Allow unlimited subscription suspension by customer from their My Account page
+ * Fix: Display "Total" row heading for My Subscriptions table on small displays
+
 2015.12.16 - version 2.0.7
 * New: Add a payment gateway filter to the dashboard admin subscriptions table
 * New: Implement soft caching for get_related_orders()

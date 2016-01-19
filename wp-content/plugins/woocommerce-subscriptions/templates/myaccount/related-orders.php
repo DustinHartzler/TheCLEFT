@@ -35,7 +35,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			?><tr class="order">
 				<td class="order-number" data-title="<?php esc_attr_e( 'Order Number', 'woocommerce-subscriptions' ); ?>">
 					<a href="<?php echo esc_url( $order->get_view_order_url() ); ?>">
-						#<?php echo esc_html( $order->get_order_number() ); ?>
+						<?php echo sprintf( esc_html_x( '#%s', 'hash before order number', 'woocommerce-subscriptions' ), esc_html( $order->get_order_number() ) ); ?>
 					</a>
 				</td>
 				<td class="order-date" data-title="<?php esc_attr_e( 'Date', 'woocommerce-subscriptions' ); ?>">

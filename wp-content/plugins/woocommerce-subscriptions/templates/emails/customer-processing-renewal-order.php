@@ -29,7 +29,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 		</tr>
 	</thead>
 	<tbody>
-		<?php echo wp_kses_post( $order->email_order_items_table( $order->is_download_permitted(), true, ($order->status == 'processing') ? true : false ) ); ?>
+		<?php echo wp_kses_post( WC_Subscriptions_Email::email_order_items_table( $order, array(
+			'show_download_links' => $order->is_download_permitted(),
+			'show_sku'            => true,
+			'show_purchase_note'  => ( 'processing' == $order->status ) ? true : false,
+			 ) ) ); ?>
 	</tbody>
 	<tfoot>
 		<?php

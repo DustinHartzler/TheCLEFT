@@ -30,7 +30,14 @@ do_action( 'woocommerce_email_order_meta', $subscription, true, true );
 echo "\n\n****************************************************\n\n";
 
 do_action( 'woocommerce_email_before_subscription_table', $subscription, true, true );
-echo $subscription->email_order_items_table( false, true, '', '', '', true );
+echo WC_Subscriptions_Email::email_order_items_table( $subscription, array(
+	'show_download_links' => false,
+	'show_sku'            => true,
+	'show_purchase_note'  => '',
+	'show_image'          => '',
+	'image_size'          => '',
+	'plain_text'          => true,
+) );
 echo "***********\n\n";
 
 if ( $totals = $subscription->get_order_item_totals() ) {

@@ -29,7 +29,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		</tr>
 	</thead>
 	<tbody>
-		<?php echo wp_kses_post( $order->email_order_items_table( true, false, true ) ); ?>
+		<?php echo wp_kses_post( WC_Subscriptions_Email::email_order_items_table( $order, array( 'show_download_links' => true, 'show_sku' => false, 'show_purchase_note' => true ) ) ); ?>
 	</tbody>
 	<tfoot>
 		<?php
@@ -66,7 +66,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			</tr>
 		</thead>
 		<tbody>
-			<?php echo wp_kses_post( $subscription->email_order_items_table( true, false, true ) ); ?>
+			<?php echo wp_kses_post( WC_Subscriptions_Email::email_order_items_table( $subscription, array( 'show_download_links' => true, 'show_sku' => false, 'show_purchase_note' => true ) ) ); ?>
 		</tbody>
 		<tfoot>
 			<?php

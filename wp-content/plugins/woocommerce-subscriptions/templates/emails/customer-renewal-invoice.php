@@ -32,7 +32,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		</tr>
 	</thead>
 	<tbody>
-		<?php echo wp_kses_post( $order->email_order_items_table( false, true, false ) ); ?>
+		<?php echo wp_kses_post( WC_Subscriptions_Email::email_order_items_table( $order, array( 'show_download_links' => false, 'show_sku' => true, 'show_purchase_note' => false ) ) ); ?>
 	</tbody>
 	<tfoot>
 		<?php

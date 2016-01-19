@@ -174,4 +174,10 @@ jQuery(document).ready(function($){
 			return confirm(wcs_admin_meta_boxes.process_renewal_action_warning);
 		}
 	});
+
+	$('body.post-type-shop_subscription #post').submit(function(){
+		if ( typeof wcs_admin_meta_boxes.change_payment_method_warning != 'undefined' && wcs_admin_meta_boxes.payment_method != $('#_payment_method').val() ) {
+			return confirm(wcs_admin_meta_boxes.change_payment_method_warning);
+		}
+	});
 });

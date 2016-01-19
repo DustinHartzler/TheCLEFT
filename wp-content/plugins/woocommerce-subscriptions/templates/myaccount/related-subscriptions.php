@@ -28,7 +28,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<?php foreach ( $subscriptions as $subscription_id => $subscription ) : ?>
 			<tr class="order">
 				<td class="subscription-id order-number" data-title="<?php esc_attr_e( 'ID', 'woocommerce-subscriptions' ); ?>">
-					<a href="<?php echo esc_url( $subscription->get_view_order_url() ); ?>">#<?php echo esc_html( $subscription->get_order_number() ); ?></a>
+					<a href="<?php echo esc_url( $subscription->get_view_order_url() ); ?>">
+						<?php echo sprintf( esc_html_x( '#%s', 'hash before order number', 'woocommerce-subscriptions' ), esc_html( $subscription->get_order_number() ) ); ?>
+					</a>
 				</td>
 				<td class="subscription-status order-status" style="text-align:left; white-space:nowrap;" data-title="<?php esc_attr_e( 'Status', 'woocommerce-subscriptions' ); ?>">
 					<?php echo esc_attr( wcs_get_subscription_status_name( $subscription->get_status() ) ); ?>

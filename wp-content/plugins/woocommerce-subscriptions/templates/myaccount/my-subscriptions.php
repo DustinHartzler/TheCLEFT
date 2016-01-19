@@ -46,7 +46,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 				&nbsp;<small><?php echo esc_attr( $payment_method_to_display ); ?></small>
 				<?php endif; ?>
 			</td>
-			<td class="subscription-total order-total">
+			<td class="subscription-total order-total" data-title="<?php esc_attr_e( 'Total', 'woocommerce-subscriptions' ); ?>">
 				<?php echo wp_kses_post( $subscription->get_formatted_order_total() ); ?>
 			</td>
 			<td class="subscription-actions order-actions">

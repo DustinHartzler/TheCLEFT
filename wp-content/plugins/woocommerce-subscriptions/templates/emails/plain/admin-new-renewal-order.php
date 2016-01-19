@@ -23,7 +23,14 @@ echo sprintf( __( 'Order date: %s', 'woocommerce-subscriptions' ), date_i18n( __
 
 do_action( 'woocommerce_email_order_meta', $order, true, true );
 
-echo "\n" . $order->email_order_items_table( false, true, '', '', '', true );
+echo "\n" . WC_Subscriptions_Email::email_order_items_table( $order, array(
+	'show_download_links' => false,
+	'show_sku'            => true,
+	'show_purchase_note'  => '',
+	'show_image'          => '',
+	'image_size'          => '',
+	'plain_text'          => true,
+) );
 
 echo "----------\n\n";
 

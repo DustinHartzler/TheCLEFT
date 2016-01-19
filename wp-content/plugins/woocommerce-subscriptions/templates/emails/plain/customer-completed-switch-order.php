@@ -23,7 +23,14 @@ echo sprintf( __( 'Order date: %s', 'woocommerce-subscriptions' ), date_i18n( wo
 
 do_action( 'woocommerce_email_order_meta', $order, false, true );
 
-echo "\n" . $order->email_order_items_table( true, false, true, '', '', true );
+echo "\n" . WC_Subscriptions_Email::email_order_items_table( $order, array(
+	'show_download_links' => true,
+	'show_sku'            => false,
+	'show_purchase_note'  => true,
+	'show_image'          => '',
+	'image_size'          => '',
+	'plain_text'          => true,
+) );
 
 echo "***********\n\n";
 
@@ -42,7 +49,14 @@ foreach ( $subscriptions as $subscription ) {
 
 	echo strtoupper( sprintf( __( 'Subscription number: %s', 'woocommerce-subscriptions' ), $subscription->get_order_number() ) ) . "\n";
 
-	echo "\n" . $subscription->email_order_items_table( true, false, true, '', '', true );
+	echo "\n" . WC_Subscriptions_Email::email_order_items_table( $subscription, array(
+		'show_download_links' => true,
+		'show_sku'            => false,
+		'show_purchase_note'  => true,
+		'show_image'          => '',
+		'image_size'          => '',
+		'plain_text'          => true,
+	) );
 	echo "***********\n";
 
 	if ( $totals = $subscription->get_order_item_totals() ) {

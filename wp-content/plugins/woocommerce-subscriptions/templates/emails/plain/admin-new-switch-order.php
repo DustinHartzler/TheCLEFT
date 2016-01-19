@@ -27,7 +27,14 @@ echo date_i18n( _x( 'jS F Y', 'date format for order date in new switching email
 
 do_action( 'woocommerce_email_order_meta', $order, true, true );
 
-echo "\n" . $order->email_order_items_table( false, true, '', '', '', true );
+echo "\n" . WC_Subscriptions_Email::email_order_items_table( $order, array(
+	'show_download_links' => false,
+	'show_sku'            => true,
+	'show_purchase_note'  => '',
+	'show_image'          => '',
+	'image_size'          => '',
+	'plain_text'          => true,
+) );
 
 echo "***********\n\n";
 
@@ -49,7 +56,14 @@ foreach ( $subscriptions as $subscription ) {
 
 	echo strtoupper( sprintf( __( 'Subscription number: %s', 'woocommerce-subscriptions' ), $subscription->get_order_number() ) ) . "\n";
 
-	echo "\n" . $subscription->email_order_items_table( false, true, '', '', '', true );
+	echo "\n" . WC_Subscriptions_Email::email_order_items_table( $subscription, array(
+		'show_download_links' => false,
+		'show_sku'            => true,
+		'show_purchase_note'  => '',
+		'show_image'          => '',
+		'image_size'          => '',
+		'plain_text'          => true,
+	) );
 	echo "***********\n";
 
 	if ( $totals = $subscription->get_order_item_totals() ) {
