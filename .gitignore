@@ -56,8 +56,6 @@ wp-content/*
 !wp-content/themes/
 
 
-wp-content/themes/ywe/sass/.sass-cache/*
-wp-content/themes/ywe/includes/cache/*
 wp-content/themes/twenty*/
  
 # ignore node/grunt dependency directories
