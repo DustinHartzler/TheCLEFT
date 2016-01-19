@@ -109,7 +109,11 @@ class WC_Settings_Payment_Gateways extends WC_Settings_Page {
 				'desc_tip'        => __( 'Force SSL (HTTPS) on the checkout pages (a SSL Certificate is required).', 'woocommerce' ),
 			),
 
+<<<<<<< HEAD
 			array(
+=======
+			'unforce_ssl_checkout' => array(
+>>>>>>> origin/master
 				'desc'            => __( 'Force HTTP when leaving the checkout', 'woocommerce' ),
 				'id'              => 'woocommerce_unforce_ssl_checkout',
 				'default'         => 'no',
@@ -197,6 +201,13 @@ class WC_Settings_Payment_Gateways extends WC_Settings_Page {
 
 		) );
 
+<<<<<<< HEAD
+=======
+		if ( wc_site_is_https() ) {
+			unset( $settings['unforce_ssl_checkout'] );
+		}
+
+>>>>>>> origin/master
 		return apply_filters( 'woocommerce_get_settings_' . $this->id, $settings );
 	}
 

@@ -31,8 +31,11 @@ class URE_User_Other_Roles {
             add_action( 'admin_enqueue_scripts', array($this, 'load_js' ) );
             add_action( 'edit_user_profile', array($this, 'edit_user_profile_html'), 10, 1 );
             add_action( 'user_new_form', array($this, 'user_new_form'), 10, 1 );
+<<<<<<< HEAD
             add_filter( 'manage_users_columns', array($this, 'user_role_column'), 10, 1 );
             add_filter( 'manage_users_custom_column', array($this, 'user_role_row'), 10, 3 );
+=======
+>>>>>>> origin/master
             add_action( 'profile_update', array($this, 'update'), 10 );
         }
         if ($this->lib->multisite) {          
@@ -211,6 +214,13 @@ class URE_User_Other_Roles {
         if (!$this->lib->is_user_profile_extention_allowed()) {  
             return;
         }
+<<<<<<< HEAD
+=======
+        $show = apply_filters('ure_show_additional_capabilities_section', true);
+        if (empty($show)) {
+            return;
+        }
+>>>>>>> origin/master
 ?>
         <h3><?php esc_html_e('Additional Capabilities', 'user-role-editor'); ?></h3>
 <?php
@@ -220,6 +230,14 @@ class URE_User_Other_Roles {
 
     
     public function user_new_form($context) {
+<<<<<<< HEAD
+=======
+        $show = apply_filters('ure_show_additional_capabilities_section', true);
+        if (empty($show)) {
+            return;
+        }
+        
+>>>>>>> origin/master
         $user = new WP_User();
 ?>
         <table>
@@ -231,6 +249,7 @@ class URE_User_Other_Roles {
     }
     // end of edit_user_profile_html()
     
+<<<<<<< HEAD
 
     /**
      *  add 'Other Roles' column to WordPress users list table
@@ -272,6 +291,9 @@ class URE_User_Other_Roles {
     // end of user_role_row()
     
 
+=======
+    
+>>>>>>> origin/master
     // save additional user roles when user profile is updated, as WordPress itself doesn't know about them
     public function update($user_id) {
 

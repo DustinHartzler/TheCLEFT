@@ -10,6 +10,10 @@
 
 require_once(URE_PLUGIN_DIR .'includes/define-constants.php');
 require_once(URE_PLUGIN_DIR .'includes/misc-support-stuff.php');
+<<<<<<< HEAD
+=======
+require_once(URE_PLUGIN_DIR .'includes/classes/bbpress.php');
+>>>>>>> origin/master
 require_once(URE_PLUGIN_DIR .'includes/class-assign-role.php');
 require_once(URE_PLUGIN_DIR .'includes/class-user-other-roles.php');
 require_once(URE_PLUGIN_DIR .'includes/class-protect-admin.php');
