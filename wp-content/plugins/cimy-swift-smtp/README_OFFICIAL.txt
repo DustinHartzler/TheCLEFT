@@ -61,6 +61,9 @@ A lot of times I cannot reproduce the problem and I need more details, so if you
 
 
 CHANGELOG:
+v2.6.2 - 19/01/2016
+- Updated Swift Mailer to 5.4.1
+
 v2.6.1 - 11/05/2015
 - Updated Swift Mailer to 5.4.0
 
