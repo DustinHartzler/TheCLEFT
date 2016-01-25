@@ -1,11 +1,9 @@
 === Authorize.net CIM Gateway for WooCommerce ===
-Author: skyverge
-Requires at least: 3.8
-Tested up to: 4.1
-Requires WooCommerce at least: 2.1
-Tested WooCommerce up to: 2.3
-
-== Description ==
+Author: woothemes, skyverge
+Requires at least: 4.0
+Tested up to: 4.4.1
+Requires WooCommerce at least: 2.3.6
+Tested WooCommerce up to: 2.5.0
 
 Adds the Authorize.net CIM Payment Gateway to your WooCommerce site, offering support for Subscriptions and more!
 

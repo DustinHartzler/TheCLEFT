@@ -2,14 +2,14 @@
 /**
  * Plugin Name: WooCommerce Authorize.net CIM Gateway
  * Plugin URI: http://www.woothemes.com/products/authorize-net-cim/
- * Description: Adds the Authorize.net CIM Payment Gateway to your WooCommerce site, allowing customers to securely save their credit card to their account for use with single purchases, pre-orders, subscriptions, and more!
- * Author: SkyVerge
- * Author URI: http://www.skyverge.com
- * Version: 1.4.1
+ * Description: Adds the Authorize.net CIM Payment Gateway to your WooCommerce site, allowing customers to securely save their credit card or bank account to their account for use with single purchases, pre-orders, subscriptions, and more!
+ * Author: WooThemes / SkyVerge
+ * Author URI: http://www.woothemes.com/
+ * Version: 2.1.0
  * Text Domain: woocommerce-gateway-authorize-net-cim
  * Domain Path: /i18n/languages/
  *
- * Copyright: (c) 2013-2014 SkyVerge, Inc. (info@skyverge.com)
+ * Copyright: (c) 2013-2016 SkyVerge, Inc. (info@skyverge.com)
  *
  * License: GNU General Public License v3.0
  * License URI: http://www.gnu.org/licenses/gpl-3.0.html
@@ -17,7 +17,7 @@
  * @package     WC-Authorize-Net-CIM
  * @author      SkyVerge
  * @category    Payment-Gateways
- * @copyright   Copyright (c) 2013-2015, SkyVerge, Inc.
+ * @copyright   Copyright (c) 2013-2016, SkyVerge, Inc.
  * @license     http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
 
@@ -25,7 +25,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 // Required functions
 if ( ! function_exists( 'woothemes_queue_update' ) ) {
-	require_once( 'woo-includes/woo-functions.php' );
+	require_once( plugin_dir_path( __FILE__ ) . 'woo-includes/woo-functions.php' );
 }
 
 // Plugin updates
@@ -38,31 +38,86 @@ if ( ! is_woocommerce_active() ) {
 
 // Required library class
 if ( ! class_exists( 'SV_WC_Framework_Bootstrap' ) ) {
-	require_once( 'lib/skyverge/woocommerce/class-sv-wc-framework-bootstrap.php' );
+	require_once( plugin_dir_path( __FILE__ ) . 'lib/skyverge/woocommerce/class-sv-wc-framework-bootstrap.php' );
 }
 
-SV_WC_Framework_Bootstrap::instance()->register_plugin( '3.1.0', __( 'WooCommerce Authorize.net CIM Gateway', 'woocommerce-gateway-authorize-net-cim' ), __FILE__, 'init_woocommerce_gateway_authorize_net_cim', array( 'minimum_wc_version' => '2.1', 'backwards_compatible' => '3.1.0' ) );
+SV_WC_Framework_Bootstrap::instance()->register_plugin( '4.2.0', __( 'WooCommerce Authorize.net CIM Gateway', 'woocommerce-gateway-authorize-net-cim' ), __FILE__, 'init_woocommerce_gateway_authorize_net_cim', array( 'is_payment_gateway' => true, 'minimum_wc_version' => '2.3.6', 'backwards_compatible' => '4.2.0' ) );
 
 function init_woocommerce_gateway_authorize_net_cim() {
 
 /**
- * The main class for the Authorize.net CIM Gateway.  This class handles all the
+ * # WooCommerce Authorize.net CIM Gateway Main Plugin Class
+ *
+ * ## Plugin Overview
+ *
+ * This plugin adds Authorize.net CIM as a payment gateway.  This class handles all the
  * non-gateway tasks such as verifying dependencies are met, loading the text
- * domain, etc.  It also loads the Authorize.net CIM Gateway when needed now that the
- * gateway is only created on the checkout & settings pages / api hook.  The gateway is
- * also loaded in the following instances:
+ * domain, etc.
  *
- * + On the My Account page to display / change saved payment methods
+ * ## Features
  *
- * Prefixes used :
- *  + 'wc_authorize_net_cim_' for option keys and actions/filters
- *  + '_wc_authorize_net_cim_' for meta keys
+ * + Credit Card Authorization
+ * + Credit Card Charge
+ * + Credit Card Auth Capture
+ * + Credit Card refund/void
+ * + eCheck Charge
+ *
+ * ## Admin Considerations
+ *
+ * + A 'Capture Charge' order action link is added that allows the admin to capture a previously authorized charge for
+ * an order
+ *
+ * ## Frontend Considerations
+ *
+ * Both the payment fields on checkout (and checkout->pay) and the My cards section on the My Account page are template
+ * files for easy customization.
+ *
+ * ## Database
+ *
+ * ### Global Settings
+ *
+ * + `woocommerce_authorize_net_cim_settings` - the serialized gateway settings array
+ * + `woocommerce_authorize_net_cim_echeck_settings` - the serialized eCheck gateway settings array
+ *
+ * ### Options table
+ *
+ * + `wc_authorize_net_cim_version` - the current plugin version, set on install/upgrade
+ *
+ * ### Credit Card Order Meta
+ *
+ * + `_wc_authorize_net_cim_environment` - the environment the transaction was created in, one of 'test' or 'production'
+ * + `_wc_authorize_net_cim_trans_id` - the credit card transaction ID returned by Authorize.net
+ * + `_wc_authorize_net_cim_trans_date` - the credit card transaction date
+ * + `_wc_authorize_net_cim_account_four` - the last four digits of the card used for the order
+ * + `_wc_authorize_net_cim_card_type` - the card type used for the transaction, if known
+ * + `_wc_authorize_net_cim_card_expiry_date` - the expiration date for the card used for the order
+ * + `_wc_authorize_net_cim_authorization_code` - the authorization code returned by Authorize.net
+ * + `_wc_authorize_net_cim_charge_captured` - indicates if the transaction was captured, either `yes` or `no`
+ *
+ * ### eCheck Order Meta
+ * + `_wc_authorize_net_cim_echeck_environment` - the environment the transaction was created in, one of 'test' or 'production'
+ * + `_wc_authorize_net_cim_echeck_trans_id` - the credit card transaction ID returned by Authorize.net
+ * + `_wc_authorize_net_cim_echeck_trans_date` - the credit card transaction date
+ * + `_wc_authorize_net_cim_echeck_account_four` - the last four digits of the card used for the order
+ * + `_wc_authorize_net_cim_echeck_account_type` - the bank account type used for the transaction, if known, either `checking` or `savings`
+ *
+ * ### User Meta
+ *
+ * + `wc_authorize_net_cim_customer_profile_id` -
+ * + `wc_authorize_net_cim_shipping_address_id` -
+ * + `wc_authorize_net_cim_shipping_address_id_test` -
+ * + `wc_authorize_net_cim_shipping_address_hash` -
+ * + `wc_authorize_net_cim_shipping_address_hash_test` -
+ * + `_wc_authorize_net_cim_credit_card_payment_tokens` -
+ * + `_wc_authorize_net_cim_echeck_payment_tokens` -
+ *
+ * @since 2.0.0
  */
-class WC_Authorize_Net_CIM extends SV_WC_Plugin {
+class WC_Authorize_Net_CIM extends SV_WC_Payment_Gateway_Plugin {
 
 
 	/** string version number */
-	const VERSION = '1.4.1';
+	const VERSION = '2.1.0';
 
 	/** @var WC_Authorize_Net_CIM single instance of this plugin */
 	protected static $instance;
@@ -70,14 +125,20 @@ class WC_Authorize_Net_CIM extends SV_WC_Plugin {
 	/** plugin id */
 	const PLUGIN_ID = 'authorize_net_cim';
 
-	/** string plugin text domain */
+	/** string plugin text domain, DEPRECATED as of 2.1.0 */
 	const TEXT_DOMAIN = 'woocommerce-gateway-authorize-net-cim';
 
-	/** @var string class to load as gateway, can be base or add-ons class */
-	public $gateway_class_name = 'WC_Gateway_Authorize_Net_CIM';
+	/** string the gateway class name */
+	const CREDIT_CARD_GATEWAY_CLASS_NAME = 'WC_Gateway_Authorize_Net_CIM_Credit_Card';
 
-	/** @var string class to load as eCheck gateway, can be base or add-ons class */
-	public $echeck_gateway_class_name = 'WC_Gateway_Authorize_Net_Cim_eCheck';
+	/** string the gateway id */
+	const CREDIT_CARD_GATEWAY_ID = 'authorize_net_cim_credit_card';
+
+	/** string the gateway class name */
+	const ECHECK_GATEWAY_CLASS_NAME = 'WC_Gateway_Authorize_Net_CIM_eCheck';
+
+	/** string the gateway id */
+	const ECHECK_GATEWAY_ID = 'authorize_net_cim_echeck';
 
 
 	/**
@@ -91,27 +152,23 @@ class WC_Authorize_Net_CIM extends SV_WC_Plugin {
 		parent::__construct(
 			self::PLUGIN_ID,
 			self::VERSION,
-			self::TEXT_DOMAIN,
-			array( 'dependencies' => array( 'SimpleXML', 'xmlwriter', 'dom' ) )
+			array(
+				'gateways' => array(
+					self::CREDIT_CARD_GATEWAY_ID => self::CREDIT_CARD_GATEWAY_CLASS_NAME,
+					self::ECHECK_GATEWAY_ID      => self::ECHECK_GATEWAY_CLASS_NAME,
+				),
+				'dependencies'       => array( 'SimpleXML', 'xmlwriter', 'dom' ),
+				'require_ssl'        => true,
+				'supports'           => array(
+					self::FEATURE_CAPTURE_CHARGE,
+					self::FEATURE_MY_PAYMENT_METHODS,
+					self::FEATURE_CUSTOMER_ID,
+				),
+			)
 		);
 
-		// include required files
-		add_action( 'sv_wc_framework_plugins_loaded', array( $this, 'includes' ) );
-
-		// Add the 'Manage My Payment Methods' on the 'My Account' page
-		add_action( 'woocommerce_after_my_account', array( $this, 'add_my_payment_methods' ) );
-
-		// Admin
-		if( is_admin() && ! defined( 'DOING_AJAX' ) ) {
-
-			// show CIM customer profile ID field on edit user pages
-			add_action( 'show_user_profile', array( $this, 'add_cim_customer_profile_id_meta_field' ) );
-			add_action( 'edit_user_profile', array( $this, 'add_cim_customer_profile_id_meta_field' ) );
-
-			// save CIM customer profile ID field
-			add_action( 'personal_options_update',  array( $this, 'save_cim_customer_profile_id_meta_field' ) );
-			add_action( 'edit_user_profile_update', array( $this, 'save_cim_customer_profile_id_meta_field' ) );
-		}
+		// Load gateway files after woocommerce is loaded
+		add_action( 'sv_wc_framework_plugins_loaded', array( $this, 'includes' ), 11 );
 	}
 
 
@@ -122,48 +179,26 @@ class WC_Authorize_Net_CIM extends SV_WC_Plugin {
 	 */
 	public function includes() {
 
-		// Base gateway class
-		require_once( 'classes/class-wc-gateway-authorize-net-cim.php' );
+		// gateway classes
+		require_once( $this->get_plugin_path() . '/includes/class-wc-gateway-authorize-net-cim.php' );
+		require_once( $this->get_plugin_path() . '/includes/class-wc-gateway-authorize-net-cim-credit-card.php' );
+		require_once( $this->get_plugin_path() . '/includes/class-wc-gateway-authorize-net-cim-echeck.php' );
 
-		// eCheck gateway class
-		require_once( 'classes/class-wc-gateway-authorize-net-cim-echeck.php' );
+		// profile classes
+		require_once( $this->get_plugin_path() . '/includes/class-wc-authorize-net-cim-payment-profile.php' );
+		require_once( $this->get_plugin_path() . '/includes/class-wc-authorize-net-cim-shipping-address.php' );
 
-		// load add-ons class if subscriptions and/or pre-orders are active
-		if ( $this->is_subscriptions_active() || $this->is_pre_orders_active() ) {
 
-			require_once( 'classes/class-wc-gateway-authorize-net-cim-addons.php' );
-			require_once( 'classes/class-wc-gateway-authorize-net-cim-echeck-addons.php' );
+		// require checkout billing fields for non-US stores, as all European card processors require the billing fields
+		// in order to successfully process transactions
+		if ( ! is_admin() && ! strncmp( get_option( 'woocommerce_default_country' ), 'US:', 3 ) ) {
 
-			$this->gateway_class_name = 'WC_Gateway_Authorize_Net_CIM_Addons';
-			$this->echeck_gateway_class_name = 'WC_Gateway_Authorize_Net_CIM_eCheck_Addons';
+			// remove blank arrays from the state fields, otherwise it's hidden
+			add_action( 'woocommerce_states', array( $this, 'tweak_states' ), 1 );
+
+			//  require the billing fields
+			add_filter( 'woocommerce_get_country_locale', array( $this, 'require_billing_fields' ), 100 );
 		}
-
-		// Add classes to WC Payment Methods
-		add_filter( 'woocommerce_payment_gateways', array( $this, 'load_gateway' ) );
-
-		// help require the state/province field if a european processor is used
-		// note that this filter *must* be added before WooCommerce::init() is called on `init`
-		$settings = get_option( 'woocommerce_authorize_net_cim_settings' );
-
-		if ( isset( $settings['payment_processor_location'] ) && 'european' === $settings['payment_processor_location'] ) {
-			add_action( 'woocommerce_states', array( $this, 'add_states' ), 1 );
-		}
-	}
-
-
-	/**
-	 * Adds Authorize.net CIM to the list of available payment gateways
-	 *
-	 * @since 1.0
-	 * @param array $gateways
-	 * @return array $gateways
-	 */
-	public function load_gateway( $gateways ) {
-
-		$gateways[] = $this->gateway_class_name;
-		$gateways[] = $this->echeck_gateway_class_name;
-
-		return $gateways;
 	}
 
 
@@ -183,21 +218,22 @@ class WC_Authorize_Net_CIM extends SV_WC_Plugin {
 
 
 	/**
-	 * Before requiring the state/province field, the state array has to be removed of blank arrays, otherwise
+	 * Before requiring all billing fields, the state array has to be removed of blank arrays, otherwise
 	 * the field is hidden
 	 *
 	 * @see WC_Countries::__construct()
 	 *
-	 * @since 1.0.9
+	 * @since 2.0.0
 	 * @param array $countries the available countries
 	 * @return array the available countries
 	 */
-	public function add_states( $countries ) {
+	public function tweak_states( $countries ) {
 
 		foreach ( $countries as $country_code => $states ) {
 
-			if ( is_array( $countries[ $country_code ] ) && empty( $countries[ $country_code ] ) )
+			if ( is_array( $countries[ $country_code ] ) && empty( $countries[ $country_code ] ) ) {
 				$countries[ $country_code ] = null;
+			}
 		}
 
 		return $countries;
@@ -205,19 +241,44 @@ class WC_Authorize_Net_CIM extends SV_WC_Plugin {
 
 
 	/**
-	 * Helper to add the 'My Cards' section to the 'My Account' page
+	 * Require all billing fields to be entered when the merchant is using a European payment processor
 	 *
-	 * @since 1.0
+	 * @since 2.0.0
+	 * @param array $locales array of countries and locale-specific address field info
+	 * @return array the locales array with billing info required
 	 */
-	public function add_my_payment_methods() {
+	public function require_billing_fields( $locales ) {
 
-		$gateway = new WC_Gateway_Authorize_Net_CIM();
+		foreach ( $locales as $country_code => $fields ) {
 
-		$gateway->show_my_payment_methods();
+			if ( isset( $locales[ $country_code ]['state']['required'] ) ) {
+				$locales[ $country_code ]['state']['required'] = true;
+			}
+		}
+
+		return $locales;
 	}
 
 
 	/** Admin methods ******************************************************/
+
+
+	/**
+	 * Returns the "Configure Credit Cards" or "Configure eCheck" plugin action links that go
+	 * directly to the gateway settings page
+	 *
+	 * @since 2.0.0
+	 * @see SV_WC_Payment_Gateway_Plugin::get_settings_url()
+	 * @param string $gateway_id the gateway identifier
+	 * @return string plugin configure link
+	 */
+	public function get_settings_link( $gateway_id = null ) {
+
+		return sprintf( '<a href="%s">%s</a>',
+			$this->get_settings_url( $gateway_id ),
+			self::CREDIT_CARD_GATEWAY_ID === $gateway_id ? __( 'Configure Credit Cards', 'woocommerce-gateway-authorize-net-cim' ) : __( 'Configure eChecks', 'woocommerce-gateway-authorize-net-cim' )
+		);
+	}
 
 
 	/**
@@ -231,36 +292,25 @@ class WC_Authorize_Net_CIM extends SV_WC_Plugin {
 		// show any dependency notices
 		parent::add_admin_notices();
 
-		$settings = get_option( 'woocommerce_authorize_net_cim_settings' );
+		$settings = get_option( 'woocommerce_authorize_net_cim_credit_card_settings' );
 
 		// install notice
 		if ( empty( $settings ) && ! $this->get_admin_notice_handler()->is_notice_dismissed( 'install-notice' ) ) {
 
 			$this->get_admin_notice_handler()->add_admin_notice(
-				sprintf( __( 'Thanks for installing the WooCommerce Authorize.net CIM Gateway! To start accepting payments, %sset your Authorize.net API credentials%s. Need help? See the %sdocumentation%s. ', self::TEXT_DOMAIN ),
+				sprintf( __( 'Thanks for installing the WooCommerce Authorize.net CIM Gateway! To start accepting payments, %sset your Authorize.net API credentials%s. Need help? See the %sdocumentation%s.', 'woocommerce-gateway-authorize-net-cim' ),
 					'<a href="' . $this->get_settings_url() . '">', '</a>',
 					'<a target="_blank" href="' . $this->get_documentation_url() . '">', '</a>'
-				), 'install-notice'
+				), 'install-notice', array( 'notice_class' => 'updated' )
 			);
-		}
-
-		// SSL check (only when enabled in production mode)
-		if ( isset( $settings['enabled'] ) && 'yes' == $settings['enabled'] ) {
-			if ( isset( $settings['test_mode'] ) && 'no' == $settings['test_mode'] ) {
-
-				if ( 'no' === get_option( 'woocommerce_force_ssl_checkout' ) && ! $this->get_admin_notice_handler()->is_notice_dismissed( 'ssl-required-notice' ) ) {
-
-					$this->get_admin_notice_handler()->add_admin_notice( __( 'WooCommerce is not being forced over SSL -- your customer\'s credit card data is at risk. ', self::TEXT_DOMAIN ), 'ssl-required-notice' );
-				}
-			}
 		}
 
 		// check if CIM feature is enabled on customer's authorize.net account
 		if ( ! get_option( 'wc_authorize_net_cim_feature_enabled' ) ) {
 
-			$gateway = new WC_Gateway_Authorize_Net_CIM();
+			$gateway = $this->get_gateway( self::CREDIT_CARD_GATEWAY_ID );
 
-			// don't check if gateway is not available, as proper credentials are needed first
+			// bail if gateway is not available, as proper credentials are needed first
 			if ( ! $gateway->is_available() ) {
 				return;
 			}
@@ -271,59 +321,10 @@ class WC_Authorize_Net_CIM extends SV_WC_Plugin {
 
 				if ( ! $this->get_admin_notice_handler()->is_notice_dismissed( 'cim-add-on-notice' ) ) {
 					$this->get_admin_notice_handler()->add_admin_notice(
-						sprintf( __( 'The CIM Add-On is not enabled on your Authorize.net account. Please %scontact Authorize.net%s to enable CIM. You will be unable to process transactions until CIM is enabled. ', WC_Authorize_Net_CIM::TEXT_DOMAIN ), '<a href="http://support.authorize.net" target="_blank">', '</a>' ),
+						sprintf( __( 'The CIM Add-On is not enabled on your Authorize.net account. Please %scontact Authorize.net%s to enable CIM. You will be unable to process transactions until CIM is enabled. ', 'woocommerce-gateway-authorize-net-cim' ), '<a href="http://support.authorize.net" target="_blank">', '</a>' ),
 						'cim-add-on-notice' );
 				}
 			}
-		}
-	}
-
-
-	/**
-	 * Display a field for the CIM Customer Profile ID meta on the view/edit user page
-	 *
-	 * @since 1.0.2
-	 * @param WP_User $user user object for the current edit page
-	 */
-	public function add_cim_customer_profile_id_meta_field( $user ) {
-
-		// bail if the current user is not allowed to manage woocommerce
-		if ( ! current_user_can( 'manage_woocommerce' ) ) {
-			return;
-		}
-
-		?>
-		<h3><?php _e( 'Authorize.net CIM Customer Details', self::TEXT_DOMAIN ) ?></h3>
-		<table class="form-table">
-			<tr>
-				<th><label for="_wc_authorize_net_cim_profile_id"><?php _e( 'Customer Profile ID', self::TEXT_DOMAIN ); ?></label></th>
-				<td>
-					<input type="text" name="_wc_authorize_net_cim_profile_id" id="_wc_authorize_net_cim_profile_id" value="<?php echo esc_attr( get_user_meta( $user->ID, '_wc_authorize_net_cim_profile_id', true ) ); ?>" class="regular-text" /><br/>
-					<span class="description"><?php _e( 'The CIM customer profile ID for the user. Only edit this if necessary.', WC_Authorize_Net_CIM::TEXT_DOMAIN ); ?></span>
-				</td>
-			</tr>
-		</table>
-	<?php
-	}
-
-
-	/**
-	 * Display a field for the CIM Customer Profile ID meta on the view/edit user page
-	 *
-	 * @since 1.0.2
-	 * @param int $user_id identifies the user to save the settings for
-	 */
-	public function save_cim_customer_profile_id_meta_field( $user_id ) {
-
-		// bail if the current user is not allowed to manage woocommerce
-		if ( ! current_user_can( 'manage_woocommerce' ) ) {
-			return;
-		}
-
-		if ( ! empty( $_POST['_wc_authorize_net_cim_profile_id'] ) ) {
-			update_user_meta( $user_id, '_wc_authorize_net_cim_profile_id', trim( $_POST['_wc_authorize_net_cim_profile_id'] ) );
-		} else {
-			delete_user_meta( $user_id, '_wc_authorize_net_cim_profile_id' );
 		}
 	}
 
@@ -347,26 +348,26 @@ class WC_Authorize_Net_CIM extends SV_WC_Plugin {
 
 
 	/**
-	 * Checks is WooCommerce Subscriptions is active
+	 * Gets the plugin documentation url
 	 *
-	 * @since 1.0
-	 * @return bool true if WCS is active, false if not active
+	 * @since 1.1
+	 * @see SV_WC_Plugin::get_documentation_url()
+	 * @return string documentation URL
 	 */
-	public function is_subscriptions_active() {
-
-		return $this->is_plugin_active( 'woocommerce-subscriptions.php' );
+	public function get_documentation_url() {
+		return 'http://docs.woothemes.com/document/authorize-net-cim/';
 	}
 
 
 	/**
-	 * Checks is WooCommerce Pre-Orders is active
+	 * Gets the plugin support URL
 	 *
-	 * @since 1.0
-	 * @return bool true if WC Pre-Orders is active, false if not active
+	 * @since 2.0.0
+	 * @see SV_WC_Plugin::get_support_url()
+	 * @return string
 	 */
-	public function is_pre_orders_active() {
-
-		return $this->is_plugin_active( 'woocommerce-pre-orders.php' );
+	public function get_support_url() {
+		return 'http://support.woothemes.com/';
 	}
 
 
@@ -378,7 +379,7 @@ class WC_Authorize_Net_CIM extends SV_WC_Plugin {
 	 * @return string the plugin name
 	 */
 	public function get_plugin_name() {
-		return __( 'WooCommerce Authorize.net CIM Gateway', self::TEXT_DOMAIN );
+		return __( 'WooCommerce Authorize.net CIM Gateway', 'woocommerce-gateway-authorize-net-cim' );
 	}
 
 
@@ -394,48 +395,215 @@ class WC_Authorize_Net_CIM extends SV_WC_Plugin {
 	}
 
 
-	/**
-	 * Gets the plugin documentation url
-	 *
-	 * @since 1.1
-	 * @see SV_WC_Plugin::get_documentation_url()
-	 * @return string documentation URL
-	 */
-	public function get_documentation_url() {
-		return 'http://docs.woothemes.com/document/authorize-net-cim/';
-	}
+	/** Lifecycle methods *****/
 
 
 	/**
-	 * Gets the gateway configuration URL
+	 * Upgrade to the currently installed version
 	 *
-	 * @since 1.1
-	 * @see SV_WC_Plugin::get_settings_url()
-	 * @param string $_ unused
-	 * @return string plugin settings URL
+	 * @since 2.0.0
+	 * @param string $installed_version currently installed version
 	 */
-	public function get_settings_url( $_ = null ) {
+	public function upgrade( $installed_version ) {
 
-		return admin_url( 'admin.php?page=wc-settings&tab=checkout&section=' . strtolower( $this->gateway_class_name ) );
+		// upgrade to 2.0.0
+		if ( version_compare( $installed_version, '2.0.0', '<' ) ) {
+
+			$this->log( 'Starting upgrade to 2.0.0' );
+
+
+			/** Upgrade settings */
+
+			$old_cc_settings        = get_option( 'woocommerce_authorize_net_cim_settings' );
+			$old_echeck_settings    = get_option( 'woocommerce_authorize_net_cim_echeck_settings' );
+
+			if ( $old_cc_settings ) {
+
+				// prior to 2.0.0, there was no settings for tokenization (always on) and enable_customer_decline_messages.
+				// eCheck settings were inherited from the credit card gateway by default
+
+				// credit card
+				$new_cc_settings = array(
+					'enabled'                          => ( isset( $old_cc_settings['enabled'] ) && 'yes' === $old_cc_settings['enabled'] ) ? 'yes' : 'no',
+					'title'                            => ( ! empty( $old_cc_settings['title'] ) ) ? $old_cc_settings['title'] : 'Credit Card',
+					'description'                      => ( ! empty( $old_cc_settings['description'] ) ) ? $old_cc_settings['description'] : 'Pay securely using your credit card.',
+					'enable_csc'                       => ( isset( $old_cc_settings['require_cvv'] ) && 'yes' === $old_cc_settings['require_cvv'] ) ? 'yes' : 'no',
+					'transaction_type'                 => ( isset( $old_cc_settings['transaction_type'] ) && 'auth_capture' === $old_cc_settings['transaction_type'] ) ? 'charge' : 'authorization',
+					'card_types'                       => ( ! empty( $old_cc_settings['card_types'] ) ) ? $old_cc_settings['card_types'] : array( 'VISA', 'MC', 'AMEX', 'DISC' ),
+					'tokenization'                     => 'yes',
+					'environment'                      => ( isset( $old_cc_settings['test_mode'] ) && 'yes' === $old_cc_settings['test_mode'] ) ? 'test' : 'production',
+					'inherit_settings'                 => 'no',
+					'api_login_id'                     => ( ! empty( $old_cc_settings['api_login_id'] ) ) ? $old_cc_settings['api_login_id'] : '',
+					'api_transaction_key'              => ( ! empty( $old_cc_settings['api_transaction_key'] ) ) ? $old_cc_settings['api_transaction_key'] : '',
+					'test_api_login_id'                => ( ! empty( $old_cc_settings['test_api_login_id'] ) ) ? $old_cc_settings['test_api_login_id'] : '',
+					'test_api_transaction_key'         => ( ! empty( $old_cc_settings['test_api_transaction_key'] ) ) ? $old_cc_settings['test_api_transaction_key'] : '',
+					'enable_customer_decline_messages' => 'no',
+					'debug_mode'                       => ( ! empty( $old_cc_settings['debug_mode'] ) ) ? $old_cc_settings['debug_mode'] : 'off',
+				);
+
+				// eCheck
+				$new_echeck_settings = array(
+					'enabled'                          => ( isset( $old_echeck_settings['enabled'] ) && 'yes' === $old_echeck_settings['enabled'] ) ? 'yes' : 'no',
+					'title'                            => ( ! empty( $old_echeck_settings['title'] ) ) ? $old_echeck_settings['title'] : 'eCheck',
+					'description'                      => ( ! empty( $old_echeck_settings['description'] ) ) ? $old_echeck_settings['description'] : 'Pay securely using your checking account.',
+					'tokenization'                     => 'yes',
+					'environment'                      => $new_cc_settings['environment'],
+					'inherit_settings'                 => 'yes',
+					'api_login_id'                     => '',
+					'api_transaction_key'              => '',
+					'test_api_login_id'                => '',
+					'test_api_transaction_key'         => '',
+					'enable_customer_decline_messages' => 'no',
+					'debug_mode'                       => $new_cc_settings['debug_mode'],
+				);
+
+				// save new settings, remove old ones
+				update_option( 'woocommerce_authorize_net_cim_credit_card_settings', $new_cc_settings );
+				update_option( 'woocommerce_authorize_net_cim_echeck_settings', $new_echeck_settings );
+				delete_option( 'woocommerce_authorize_net_cim_settings' );
+
+				$this->log( 'Settings upgraded.' );
+			}
+
+
+			/** Update meta key for customer profile ID and shipping profile ID */
+
+			global $wpdb;
+
+			// old key: _wc_authorize_net_cim_profile_id
+			// new key: wc_authorize_net_cim_customer_profile_id
+			// note that we don't know on a per-user basis what environment the customer ID was set in, so we assume production, just to be safe
+			$rows = $wpdb->update( $wpdb->usermeta, array( 'meta_key' => 'wc_authorize_net_cim_customer_profile_id' ), array( 'meta_key' => '_wc_authorize_net_cim_profile_id' ) );
+
+			$this->log( sprintf( '%d users updated for customer profile ID.', $rows ) );
+
+			// old key: _wc_authorize_net_cim_shipping_profile_id
+			// new key: wc_authorize_net_cim_shipping_address_id
+			$rows = $wpdb->update( $wpdb->usermeta, array( 'meta_key' => 'wc_authorize_net_cim_shipping_address_id' ), array( 'meta_key' => '_wc_authorize_net_cim_shipping_profile_id' ) );
+
+			$this->log( sprintf( '%d users updated for shipping address ID', $rows ) );
+
+
+			/** Update meta values for order payment method & recurring payment method */
+
+			// meta key: _payment_method
+			// old value: authorize_net_cim
+			// new value: authorize_net_cim_credit_card
+			// note that the eCheck method has not changed from 1.x to 2.x
+			$rows = $wpdb->update( $wpdb->postmeta, array( 'meta_value' => 'authorize_net_cim_credit_card' ), array( 'meta_key' => '_payment_method', 'meta_value' => 'authorize_net_cim' ) );
+
+			$this->log( sprintf( '%d orders updated for payment method meta', $rows ) );
+
+			// meta key: _recurring_payment_method
+			// old value: authorize_net_cim
+			// new value: authorize_net_cim_credit_card
+			$rows = $wpdb->update( $wpdb->postmeta, array( 'meta_value' => 'authorize_net_cim_credit_card' ), array( 'meta_key' => '_recurring_payment_method', 'meta_value' => 'authorize_net_cim' ) );
+
+			$this->log( sprintf( '%d orders updated for recurring payment method meta', $rows ) );
+
+
+			/** Convert payment profiles stored in legacy format to framework payment token format */
+
+			$this->log( 'Starting payment profile upgrade.' );
+
+			$user_ids = $wpdb->get_col( "SELECT user_id FROM {$wpdb->usermeta} WHERE meta_key = '_wc_authorize_net_cim_payment_profiles'" );
+
+			if ( $user_ids ) {
+
+				// iterate through each user with a payment profile
+				foreach ( $user_ids as $user_id ) {
+
+					$customer_profile_id = get_user_meta( $user_id, 'wc_authorize_net_cim_customer_profile_id', true );
+
+					$payment_profiles = get_user_meta( $user_id, '_wc_authorize_net_cim_payment_profiles', true );
+
+					$cc_tokens = $echeck_tokens = array();
+
+					// iterate through each payment profile
+					foreach ( $payment_profiles as $profile_id => $profile ) {
+
+						// bail if corrupted
+						if ( ! $profile_id || empty( $profile['type'] ) ) {
+							continue;
+						}
+
+						// parse expiry date
+						if ( ! empty( $profile['exp_date'] ) && SV_WC_Helper::str_exists( $profile['exp_date'], '/' ) ) {
+							list( $exp_month, $exp_year ) = explode( '/', $profile['exp_date'] );
+						} else {
+							$exp_month = $exp_year = '';
+						}
+
+						if ( 'Bank Account' === $profile['type'] ) {
+
+							// eCheck tokens
+							$echeck_tokens[ $profile_id ] = array(
+								'type'                => 'echeck',
+								'last_four'           => ! empty( $profile['last_four'] ) ? $profile['last_four'] : '',
+								'customer_profile_id' => $customer_profile_id,
+								'billing_hash'        => '',
+								'payment_hash'        => '',
+								'default'             => ( ! empty( $profile['active'] ) && $profile['active'] ),
+								'exp_month'           => $exp_month,
+								'exp_year'            => $exp_year,
+							);
+
+						} else {
+
+							// parse card type
+							switch ( $profile['type'] ) {
+								case 'Visa':             $card_type = 'visa';   break;
+								case 'American Express': $card_type = 'amex';   break;
+								case 'MasterCard':       $card_type = 'mc';     break;
+								case 'Discover':         $card_type = 'disc';   break;
+								case 'Diners Club':      $card_type = 'diners'; break;
+								case 'JCB':              $card_type = 'jcb';    break;
+								default:                 $card_type = '';
+							}
+
+							// credit card tokens
+							$cc_tokens[ $profile_id ] = array(
+								'type'                => 'credit_card',
+								'last_four'           => ! empty( $profile['last_four'] ) ? $profile['last_four'] : '',
+								'customer_profile_id' => $customer_profile_id,
+								'billing_hash'        => '',
+								'payment_hash'        => '',
+								'default'             => ( ! empty( $profile['active'] ) && $profile['active'] ),
+								'card_type'           => $card_type,
+								'exp_month'           => $exp_month,
+								'exp_year'            => $exp_year,
+							);
+						}
+					}
+
+					// update credit card tokens
+					if ( ! empty( $cc_tokens ) ) {
+						update_user_meta( $user_id, '_wc_authorize_net_cim_credit_card_payment_tokens', $cc_tokens );
+					}
+
+					// update eCheck tokens
+					if ( ! empty( $echeck_tokens ) ) {
+						update_user_meta( $user_id, '_wc_authorize_net_cim_echeck_payment_tokens', $echeck_tokens );
+					}
+
+					// save the legacy payment profiles in case we need them later
+					update_user_meta( $user_id, '_wc_authorize_net_cim_legacy_tokens', $payment_profiles );
+					delete_user_meta( $user_id, '_wc_authorize_net_cim_payment_profiles' );
+
+					$this->log( sprintf( 'Converted payment profile for user ID: %s', $user_id) ) ;
+				}
+			}
+
+			$this->log( 'Completed payment profile upgrade.' );
+
+			$this->log( 'Completed upgrade for 2.0.0' );
+		}
+
+		// TODO: remove _wc_authorize_net_cim_legacy_tokens meta in a future version @MR 2015-07
 	}
 
 
-	/**
-	 * Returns true if on the gateway settings page
-	 *
-	 * @since 1.1
-	 * @see SV_WC_Plugin::is_plugin_settings()
-	 * @return boolean true if on the admin gateway settings page
-	 */
-	public function is_plugin_settings() {
-
-		return isset( $_GET['page'] ) && 'wc-settings' == $_GET['page'] &&
-		isset( $_GET['tab'] ) && 'checkout' == $_GET['tab'] &&
-		isset( $_GET['section'] ) && strtolower( $this->gateway_class_name ) == $_GET['section'];
-	}
-
-
-} // end \WC_Authorize_Net_CIM
+} // end WC_Authorize_Net_CIM
 
 
 /**
@@ -448,15 +616,7 @@ function wc_authorize_net_cim() {
 	return WC_Authorize_Net_CIM::instance();
 }
 
-
-/**
- * The WC_Authorize_Net_CIM global object, exists only for backwards compat
- *
- * @deprecated 1.4.0
- * @name $wc_authorize_net_cim
- * @global WC_Authorize_Net_CIM $GLOBALS['wc_authorize_net_cim']
- */
-$GLOBALS['wc_authorize_net_cim'] = wc_authorize_net_cim();
-
+// fire it up!
+wc_authorize_net_cim();
 
 } // init_woocommerce_gateway_authorize_net_cim()

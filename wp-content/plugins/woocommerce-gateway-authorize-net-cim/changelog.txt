@@ -1,5 +1,52 @@
 *** WooCommerce Authorize.net CIM Gateway Changelog ***
 
+2016.01.14 - version 2.1.0
+ * Tweak - Use 3 character billing/shipping country codes for improved compatibility with European processors
+ * Misc - Added support for WooCommerce 2.5
+ * Misc - Removed support for WooCommerce 2.2
+
+2015.12.11 - version 2.0.8
+ * Fix - Fix address errors when AVS fraud filters are enabled
+
+2015.11.25 - version 2.0.7
+ * Tweak - Temporarily revert to legacy Authorize.net API endpoint pending Akamai endpoint fix
+
+2015.11.04 - version 2.0.6
+ * Fix - Fix most remaining E00039 errors related to legacy payment profiles
+
+2015.10.19 - version 2.0.5
+ * Fix - Fix shipping profile issues when an order does not contain a shipping address
+ * Fix - Improved handling for invalid UTF-8 characters in order descriptions
+
+2015.10.16 - version 2.0.4
+ * Fix - Fix failing subscription renewals in certain cases
+
+2015.09.10 - version 2.0.3
+ * Tweak - Add specific width/height styling for payment method icons
+ * Misc - WooCommerce Subscriptions 2.0 Compatibility
+ * Misc - Update SkyVerge Payment Gateway Framework
+
+2015.08.05 - version 2.0.2
+ * Fix - Fix issue with refunding non-profile transactions
+
+2015.07.29 - version 2.0.1
+ * Fix - Fix issue preventing saved cards from being used in certain cases
+ * Tweak - Adjust payment gateway icon styling to play better with certain themes
+
+2015.07.28 - version 2.0.0
+ * Feature - Simplified responsive payment form with new retina payment method icons and live inline validation
+ * Feature - Customers can add new payment methods from the My Account area
+ * Feature - Unified My Payment Methods section in the My Account area shows both credit cards and eChecks. Bonus: it's now responsive too :)
+ * Feature - Refund/Void/Capture transactions directly from the WooCommerce admin!
+ * Feature - You can now opt to show detailed decline messages to your customers, no more "an error occurred" error messages!
+ * Feature - Customer Billing/Shipping information is now set correctly for every order
+ * Feature - Completely rewritten from the ground-up for massively improved reliability and performance
+ * Feature - Uses new Akamai API endpoints in production
+ * Fix - Permanently exorcised all the E00039/E00040 errors we could find
+ * Misc - Many other small tweaks, fixes, and improvements
+ * Misc - WooCommerce 2.4 Compatibility
+ * Misc - Update SkyVerge Plugin Framework
+
 2015.02.09 - version 1.4.1
  * Fix - Fix failed subscription renewals with free trials
 
