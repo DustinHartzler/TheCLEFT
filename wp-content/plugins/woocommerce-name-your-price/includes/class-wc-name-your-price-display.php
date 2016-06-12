@@ -26,6 +26,8 @@ class WC_Name_Your_Price_Display {
 		// Loop Display
 		add_filter( 'woocommerce_product_add_to_cart_text', array( $this, 'add_to_cart_text' ), 10, 2 );
 		add_filter( 'woocommerce_product_add_to_cart_url', array( $this, 'add_to_cart_url' ), 10, 2 );
+		// Kill AJAX add to cart WC2.5=
+		add_filter( 'woocommerce_product_supports', array( $this, 'supports_ajax_add_to_cart' ), 10, 3 );
 
 		// if quick-view is enabled then we need the style and scripts everywhere
 		add_action( 'wc_quick_view_enqueue_scripts', array( $this, 'nyp_scripts' ) );
@@ -68,7 +70,7 @@ class WC_Name_Your_Price_Display {
 	 * @return void
 	 */
 	function register_scripts() {
-		wp_register_script( 'accounting', WC_Name_Your_Price()->plugin_url() . '/assets/js/accounting.js', '', '0.3.2', true );
+		wp_register_script( 'accounting', WC_Name_Your_Price()->plugin_url() . '/assets/js/accounting.js', array( 'jquery' ), '0.4.2', true );
 
 		$suffix = ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) ? '' : '.min';
 		wp_register_script( 'woocommerce-nyp', WC_Name_Your_Price()->plugin_url() . '/assets/js/name-your-price'. $suffix . '.js', array( 'jquery', 'accounting' ), WC_Name_Your_Price()->version, true );
@@ -219,10 +221,12 @@ class WC_Name_Your_Price_Display {
 
 		if( WC_Name_Your_Price_Helpers::is_nyp( $product ) ){
 			$price =  apply_filters( 'woocommerce_nyp_html', WC_Name_Your_Price_Helpers::get_suggested_price_html( $product ),  $product );
-		}
-
-		if( WC_Name_Your_Price_Helpers::has_nyp( $product ) ){		
-			$price = apply_filters( 'woocommerce_variable_nyp_html', $price = $product->get_price_html_from_text() . WC_Name_Your_Price_Helpers::get_price_string( $product, 'minimum-variation' ), $product );
+		} else if( WC_Name_Your_Price_Helpers::has_nyp( $product ) ){		
+			$min_variation_string = WC_Name_Your_Price_Helpers::get_price_string( $product, 'minimum-variation' );
+			if( $min_variation_string != ''){
+				$price = $product->get_price_html_from_text() . $min_variation_string;
+			}
+			$price = apply_filters( 'woocommerce_variable_nyp_html', $price, $product );
 		}
 
 		return $price;
@@ -263,12 +267,36 @@ class WC_Name_Your_Price_Display {
 
 		if ( WC_Name_Your_Price_Helpers::is_nyp( $product ) ) {
 			$url = get_permalink( $product->id );
-			$product->product_type = 'nyp'; // disables the ajax add to cart
+			// disables the ajax add to cart for WC<2.5
+			if( ! WC_Name_Your_Price_Helpers::is_woocommerce_2_5() ){
+				$product->product_type = 'nyp'; 
+			}
 		}
 
 		return $url;
 
 	}
+
+
+	/*
+	 * if NYP change the loop's add to cart button URL
+	 * disable ajax add to cart and redirect to product page
+	 * supported by WC2.5+
+	 *
+	 * @param string $url
+	 * @return string
+	 * @since 1.0
+	 */
+	public function supports_ajax_add_to_cart( $supports_ajax, $feature, $product ) {
+
+		if ( 'ajax_add_to_cart' == $feature && WC_Name_Your_Price_Helpers::is_nyp( $product ) ) {
+			$supports_ajax = false;
+		}
+
+		return $supports_ajax;
+
+	}
+
 
 	/*-----------------------------------------------------------------------------------*/
 	/* Post Class */

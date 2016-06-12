@@ -43,8 +43,9 @@ class WC_Name_Your_Price_Cart {
 	 */
 	public function add_cart_item_data( $cart_item_data, $product_id, $variation_id ) {
 
-		if ( $variation_id )
+		if ( $variation_id ){
 			$product_id = $variation_id;
+		}
 
 		$posted_nyp_field = 'nyp' . apply_filters( 'nyp_field_prefix', '', $product_id );
 
@@ -79,8 +80,6 @@ class WC_Name_Your_Price_Cart {
 
 			$cart_item = $this->add_cart_item( $cart_item );
 		}
-
-
 
 		return $cart_item;
 	}
@@ -128,13 +127,10 @@ class WC_Name_Your_Price_Cart {
 			return $passed;
 		}
 
-		$posted_nyp_field = 'nyp' . apply_filters( 'nyp_field_prefix', '', $product_id );
+		$prefix = apply_filters( 'nyp_field_prefix', '', $product_id );
 
-		// set a null string to 0
-		$input = ! empty ( $_REQUEST[ $posted_nyp_field ] ) ? $_REQUEST[ $posted_nyp_field ] : 0;
-
-		// convert input to PHP number with period decimal points
-		$input = WC_Name_Your_Price_Helpers::standardize_number( $input );
+		// get the posted price (can be null string)
+		$input = WC_Name_Your_Price_Helpers::get_posted_price( $product_id, $prefix );
 
 		// get minimum price
 		$minimum = WC_Name_Your_Price_Helpers::get_minimum_price( $product_id );
@@ -153,11 +149,8 @@ class WC_Name_Your_Price_Cart {
 		// check that it is greater than minimum price for variable billing subscriptions
 		} elseif ( $minimum && WC_Name_Your_Price_Helpers::is_subscription( $product_id ) && WC_Name_Your_Price_Helpers::is_billing_period_variable( $product_id ) ) {
 
-			$posted_nyp_period = 'nyp_period' . apply_filters( 'nyp_field_prefix', '', $product_id );
-
-			// set a null string to 'month' for billing period
-			if ( ! isset( $_REQUEST[ $posted_nyp_period ] ) || empty( $_REQUEST[ $posted_nyp_period ] ) )
-				$period = 'month';
+			// get the posted billing period, defaults to 'month'
+			$period = WC_Name_Your_Price_Helpers::get_posted_period( $product_id, $prefix );
 
 			// minimum billing period
 			$minimum_period = WC_Name_Your_Price_Helpers::get_minimum_billing_period( $product_id );
@@ -185,7 +178,7 @@ class WC_Name_Your_Price_Cart {
 				}
 
 				// the minimum is a combo of price and period
-				$minimum_error = woocommerce_price( $error_price ) . ' / ' . $error_period;
+				$minimum_error = wc_price( $error_price ) . ' / ' . $error_period;
 				$error_message = WC_Name_Your_Price_Helpers::error_message( 'minimum', array( '%%TITLE%%' => $product_title, '%%MINIMUM%%' => $minimum_error ), $the_product );
 
 			}
@@ -193,7 +186,7 @@ class WC_Name_Your_Price_Cart {
 		// check that it is greater than minimum price
 		} elseif ( $minimum && floatval( WC_Name_Your_Price_Helpers::standardize_number( $input ) ) < floatval( $minimum ) ) {
 			$passed = false;
-			$minimum_error = woocommerce_price( $minimum );
+			$minimum_error = wc_price( $minimum );
 			$error_message = WC_Name_Your_Price_Helpers::error_message( 'minimum', array( '%%TITLE%%' => $product_title, '%%MINIMUM%%' => $minimum_error ), $the_product );
 		}
 

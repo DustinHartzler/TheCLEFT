@@ -1,5 +1,10 @@
 === WooCommerce Name Your Price ===
 
+2015.12.30 - version 2.3.4
+* Fix: bug in validation of subscriptions with variable billing period
+* Fix: display of front-end NYP variation price string
+* Feature: prepare appropriate disabling of ajax add to cart for NYP product in WC2.5
+
 2015.08.26 - version 2.3.3
 * Fix: compatibility of NYP Variations with WooCommerce 2.4
 

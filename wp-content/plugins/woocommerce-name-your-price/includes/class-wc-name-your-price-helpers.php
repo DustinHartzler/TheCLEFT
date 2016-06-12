@@ -26,6 +26,22 @@ class WC_Name_Your_Price_Helpers {
 	}
 
 
+	/**
+	 * Check is the installed version of WooCommerce is 2.5 or newer.
+	 *
+	 * @return	boolean
+	 * @access 	public
+	 * @since 	2.3.4
+	 */
+	public static function is_woocommerce_2_5() {
+		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '2.5.0-dev' ) >= 0 ) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+
 	/*
 	 *  Get the product ID or variation ID if object is a variation
 	 *
@@ -466,17 +482,15 @@ class WC_Name_Your_Price_Helpers {
 		// get subscription price string
 		if( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $product ) && 'woocommerce_get_price_html' != current_filter() ) {
 
-			$variable_billing = self::is_billing_period_variable( $product );
-
-			// minimum or suggested period
-			if( 'minimum' == $type ){
-				$period = $variable_billing ? self::get_minimum_billing_period( $product ) : WC_Subscriptions_Product::get_period( $product );
-			} else {
-				$period = $variable_billing ? self::get_suggested_billing_period( $product ) : WC_Subscriptions_Product::get_period( $product );
-			}
-
 			// if is a variable billing product we need to create our own string
-			if( $variable_billing ) { 
+			if( self::is_billing_period_variable( $product ) ) { 
+
+				// minimum or suggested period
+				if( 'minimum' == $type ){
+					$period = self::get_minimum_billing_period( $product );
+				} else {
+					$period = self::get_suggested_billing_period( $product );
+				}
 
 				$html = sprintf( _x( ' %s / %s', 'Variable subscription price, ex: $10 / day', 'wc_name_your_price' ), wc_price( $price ), self::get_subscription_period_strings( 1, $period ) );
 
@@ -493,8 +507,6 @@ class WC_Name_Your_Price_Helpers {
 			} 
 
 		// non-subscription products
-		} elseif ( intval($price) === 0 ){
-			$html = __( 'Free!', 'wc_name_your_price' );
 		} else { 
 			$html = wc_price( $price );
 		}

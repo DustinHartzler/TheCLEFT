@@ -466,7 +466,9 @@ class WC_Name_Your_Price_Admin {
 	 */
 	public static function admin_price_html( $price, $product ){
 
-		if( ( WC_Name_Your_Price_Helpers::is_nyp( $product ) || WC_Name_Your_Price_Helpers::has_nyp( $product ) ) && ! isset( $product->is_filtered_price_html ) ){
+		if( WC_Name_Your_Price_Helpers::is_nyp( $product ) && ! isset( $product->is_filtered_price_html ) ){
+			$price = $product->get_price_html_from_text() . WC_Name_Your_Price_Helpers::get_price_string( $product, 'minimum' );
+		} else if( WC_Name_Your_Price_Helpers::has_nyp( $product ) && ! isset( $product->is_filtered_price_html ) ){		
 			$price = $product->get_price_html_from_text() . WC_Name_Your_Price_Helpers::get_price_string( $product, 'minimum-variation' );
 		}
 
