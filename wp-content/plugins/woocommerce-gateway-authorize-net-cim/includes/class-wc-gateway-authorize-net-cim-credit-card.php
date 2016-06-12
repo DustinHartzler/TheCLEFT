@@ -22,7 +22,7 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
 
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+defined( 'ABSPATH' ) or exit;
 
 /**
  * Authorize.net CIM Payment Gateway
@@ -55,6 +55,7 @@ class WC_Gateway_Authorize_Net_CIM_Credit_Card extends WC_Gateway_Authorize_Net_
 					self::FEATURE_CARD_TYPES,
 					self::FEATURE_PAYMENT_FORM,
 					self::FEATURE_TOKENIZATION,
+					self::FEATURE_TOKEN_EDITOR,
 					self::FEATURE_CREDIT_CARD_CHARGE,
 					self::FEATURE_CREDIT_CARD_AUTHORIZATION,
 					self::FEATURE_CREDIT_CARD_CAPTURE,

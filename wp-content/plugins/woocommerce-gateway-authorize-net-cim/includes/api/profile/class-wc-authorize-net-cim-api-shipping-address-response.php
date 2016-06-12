@@ -22,7 +22,7 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
 
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+defined( 'ABSPATH' ) or exit;
 
 
 /**
@@ -53,7 +53,7 @@ class WC_Authorize_Net_CIM_API_Shipping_Address_Response extends WC_Authorize_Ne
 	 */
 	public function get_shipping_address_id() {
 
-		return ( ! empty( $this->response->customerAddressId ) ) ? (string) $this->response->customerAddressId : null;
+		return ( ! empty( $this->response_xml->customerAddressId ) ) ? (string) $this->response_xml->customerAddressId : null;
 	}
 
 

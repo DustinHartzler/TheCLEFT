@@ -5,7 +5,7 @@
  * Description: Adds the Authorize.net CIM Payment Gateway to your WooCommerce site, allowing customers to securely save their credit card or bank account to their account for use with single purchases, pre-orders, subscriptions, and more!
  * Author: WooThemes / SkyVerge
  * Author URI: http://www.woothemes.com/
- * Version: 2.1.0
+ * Version: 2.3.0
  * Text Domain: woocommerce-gateway-authorize-net-cim
  * Domain Path: /i18n/languages/
  *
@@ -21,7 +21,7 @@
  * @license     http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
 
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+defined( 'ABSPATH' ) or exit;
 
 // Required functions
 if ( ! function_exists( 'woothemes_queue_update' ) ) {
@@ -41,7 +41,12 @@ if ( ! class_exists( 'SV_WC_Framework_Bootstrap' ) ) {
 	require_once( plugin_dir_path( __FILE__ ) . 'lib/skyverge/woocommerce/class-sv-wc-framework-bootstrap.php' );
 }
 
-SV_WC_Framework_Bootstrap::instance()->register_plugin( '4.2.0', __( 'WooCommerce Authorize.net CIM Gateway', 'woocommerce-gateway-authorize-net-cim' ), __FILE__, 'init_woocommerce_gateway_authorize_net_cim', array( 'is_payment_gateway' => true, 'minimum_wc_version' => '2.3.6', 'backwards_compatible' => '4.2.0' ) );
+SV_WC_Framework_Bootstrap::instance()->register_plugin( '4.4.0', __( 'WooCommerce Authorize.net CIM Gateway', 'woocommerce-gateway-authorize-net-cim' ), __FILE__, 'init_woocommerce_gateway_authorize_net_cim', array(
+	'is_payment_gateway'   => true,
+	'minimum_wc_version'   => '2.4.13',
+	'minimum_wp_version'   => '4.1',
+	'backwards_compatible' => '4.4.0',
+) );
 
 function init_woocommerce_gateway_authorize_net_cim() {
 
@@ -117,7 +122,7 @@ class WC_Authorize_Net_CIM extends SV_WC_Payment_Gateway_Plugin {
 
 
 	/** string version number */
-	const VERSION = '2.1.0';
+	const VERSION = '2.3.0';
 
 	/** @var WC_Authorize_Net_CIM single instance of this plugin */
 	protected static $instance;
@@ -186,12 +191,16 @@ class WC_Authorize_Net_CIM extends SV_WC_Payment_Gateway_Plugin {
 
 		// profile classes
 		require_once( $this->get_plugin_path() . '/includes/class-wc-authorize-net-cim-payment-profile.php' );
+		require_once( $this->get_plugin_path() . '/includes/class-wc-authorize-net-cim-payment-profile-handler.php' );
 		require_once( $this->get_plugin_path() . '/includes/class-wc-authorize-net-cim-shipping-address.php' );
 
+		if ( is_admin() ) {
+
+			require_once( $this->get_plugin_path() . '/includes/class-wc-authorize-net-cim-payment-profile-editor.php' );
 
 		// require checkout billing fields for non-US stores, as all European card processors require the billing fields
 		// in order to successfully process transactions
-		if ( ! is_admin() && ! strncmp( get_option( 'woocommerce_default_country' ), 'US:', 3 ) ) {
+		} elseif ( ! strncmp( get_option( 'woocommerce_default_country' ), 'US:', 3 ) ) {
 
 			// remove blank arrays from the state fields, otherwise it's hidden
 			add_action( 'woocommerce_states', array( $this, 'tweak_states' ), 1 );

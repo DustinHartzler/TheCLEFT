@@ -22,7 +22,7 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
 
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+defined( 'ABSPATH' ) or exit;
 
 
 /**
@@ -156,6 +156,17 @@ abstract class WC_Authorize_Net_CIM_API_Transaction_Response extends WC_Authoriz
 	public function csc_match() {
 
 		return self::CSC_MATCH == $this->get_csc_result();
+	}
+
+
+	/**
+	 * Get the transaction payment type. This should be overridden by concrete classes.
+	 *
+	 * @since 2.2.0
+	 * @return null
+	 */
+	public function get_payment_type() {
+		return null;
 	}
 
 

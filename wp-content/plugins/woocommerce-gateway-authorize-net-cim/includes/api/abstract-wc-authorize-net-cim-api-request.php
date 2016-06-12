@@ -22,7 +22,7 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
 
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+defined( 'ABSPATH' ) or exit;
 
 
 /**
@@ -32,7 +32,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
  *
  * @since 2.0.0
  */
-abstract class WC_Authorize_Net_CIM_API_Request implements SV_WC_Payment_Gateway_API_Request {
+abstract class WC_Authorize_Net_CIM_API_Request extends SV_WC_API_XML_Request implements SV_WC_Payment_Gateway_API_Request {
 
 
 	/** @var WC_Order optional order object if this request was associated with an order */
@@ -40,12 +40,6 @@ abstract class WC_Authorize_Net_CIM_API_Request implements SV_WC_Payment_Gateway
 
 	/** @var string root element name for request, e.g. `createTransactionRequest` */
 	protected $request_type;
-
-	/** @var array request data */
-	protected $request_data;
-
-	/** @var string raw request xml */
-	protected $request_xml;
 
 	/** @var string API login ID value */
 	protected $api_login_id;
@@ -101,7 +95,7 @@ abstract class WC_Authorize_Net_CIM_API_Request implements SV_WC_Payment_Gateway
 					'accountType'   => $this->order->payment->account_type,
 					'routingNumber' => $this->order->payment->routing_number,
 					'accountNumber' => $this->order->payment->account_number,
-					'nameOnAccount' => SV_WC_Helper::str_truncate( sprintf( '%s %s', $this->order->billing_first_name, $this->order->billing_last_name ), 22 ),
+					'nameOnAccount' => SV_WC_Helper::str_truncate( $this->order->get_formatted_billing_full_name(), 22 ),
 					'echeckType'    => 'WEB',
 				),
 			);
@@ -209,19 +203,6 @@ abstract class WC_Authorize_Net_CIM_API_Request implements SV_WC_Payment_Gateway
 	 */
 	protected function to_xml() {
 
-		if ( ! empty( $this->request_xml ) ) {
-			return $this->request_xml;
-		}
-
-		// setup XML document
-		$xml = new XMLWriter();
-
-		// Create XML document in memory
-		$xml->openMemory();
-
-		// Set XML version & encoding
-		$xml->startDocument( '1.0', 'UTF-8' );
-
 		// required for every request
 		$authentication_data = array(
 			'@attributes'            => array( 'xmlns' => 'AnetApi/xml/v1/schema/AnetApiSchema.xsd' ),
@@ -232,7 +213,7 @@ abstract class WC_Authorize_Net_CIM_API_Request implements SV_WC_Payment_Gateway
 		);
 
 		// add specific request data
-		$this->request_data = array( $this->request_type => array_merge( $authentication_data, $this->request_data ) );
+		$this->request_data = array( $this->get_root_element() => array_merge( $authentication_data, $this->request_data ) );
 
 		/**
 		 * API Request Data
@@ -249,12 +230,7 @@ abstract class WC_Authorize_Net_CIM_API_Request implements SV_WC_Payment_Gateway
 		// remove any empty elements
 		$this->request_data = $this->remove_empty_array_elements( $this->request_data );
 
-		// generate XML from request data, recursively using the `request` root element
-		SV_WC_Helper::array_to_xml( $xml, $this->request_type, $this->request_data[ $this->request_type ] );
-
-		$xml->endDocument();
-
-		return $this->request_xml = $xml->outputMemory();
+		return parent::to_xml();
 	}
 
 
@@ -288,18 +264,6 @@ abstract class WC_Authorize_Net_CIM_API_Request implements SV_WC_Payment_Gateway
 		}
 
 		return $haystack;
-	}
-
-
-	/**
-	 * Returns the string representation of this request
-	 *
-	 * @since 2.0.0
-	 * @return string request XML
-	 */
-	public function to_string() {
-
-		return $this->to_xml();
 	}
 
 
@@ -343,37 +307,7 @@ abstract class WC_Authorize_Net_CIM_API_Request implements SV_WC_Payment_Gateway
 			$string = preg_replace( '/<routingNumber>\d+<\/routingNumber>/', '<routingNumber>' . str_repeat( '*', strlen( $matches[1] ) ) . '</routingNumber>', $string );
 		}
 
-		$dom = new DOMDocument();
-
-		// suppress errors for invalid XML syntax issues
-		if ( @$dom->loadXML( $string ) ) {
-			$dom->formatOutput = true;
-			$string = $dom->saveXML();
-		}
-
-		return $string;
-	}
-
-
-	/**
-	 * Returns the method for this request. Authorize.net uses the API default
-	 * (POST)
-	 *
-	 * @since 2.0.0
-	 * @return null
-	 */
-	public function get_method() { }
-
-
-	/**
-	 * Returns the request path for this request. Authorize.net request paths
-	 * do not vary per request.
-	 *
-	 * @since 2.0.0
-	 * @return string
-	 */
-	public function get_path() {
-		return '';
+		return $this->prettify_xml( $string );
 	}
 
 
@@ -403,14 +337,14 @@ abstract class WC_Authorize_Net_CIM_API_Request implements SV_WC_Payment_Gateway
 
 
 	/**
-	 * Return the request data array
+	 * Get the root element for the XML document.
 	 *
-	 * @since 2.0.0
+	 * @since 2.2.0
 	 * @return string
 	 */
-	public function get_request_data() {
+	protected function get_root_element() {
 
-		return $this->request_data;
+		return $this->request_type;
 	}
 
 

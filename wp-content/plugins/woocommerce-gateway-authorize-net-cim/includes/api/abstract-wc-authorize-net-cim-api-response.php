@@ -22,7 +22,7 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
 
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+defined( 'ABSPATH' ) or exit;
 
 
 /**
@@ -37,17 +37,11 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
  * @since 2.0.0
  * @see SV_WC_Payment_Gateway_API_Response
  */
-abstract class WC_Authorize_Net_CIM_API_Response implements SV_WC_API_Response {
+abstract class WC_Authorize_Net_CIM_API_Response extends SV_WC_API_XML_Response {
 
 
 	/** @var WC_Authorize_Net_CIM_API_Request request that resulted in this response */
 	protected $request;
-
-	/** @var string string representation of this response */
-	private $raw_response_xml;
-
-	/** @var SimpleXMLElement response XML object */
-	protected $response;
 
 	/** @var string the response root element name */
 	protected $name;
@@ -57,24 +51,21 @@ abstract class WC_Authorize_Net_CIM_API_Response implements SV_WC_API_Response {
 	 * Build a response object from the raw response xml
 	 *
 	 * @since 2.0.0
-	 * @param SV_WC_Payment_Gateway_API_Request $request that resulted in this response
+	 * @param SV_WC_Payment_Gateway_API_Request $request the original request object
 	 * @param string $raw_response_xml the raw response XML
 	 */
 	public function __construct( $request, $raw_response_xml ) {
 
 		$this->request = $request;
 
-		$this->raw_response_xml = $raw_response_xml;
-
 		// Remove namespace as SimpleXML throws warnings with invalid namespace URI provided by Authorize.net
 		$raw_response_xml = preg_replace( '/[[:space:]]xmlns[^=]*="[^"]*"/i', '', $raw_response_xml );
 
-		// LIBXML_NOCDATA ensures that any XML fields wrapped in [CDATA] will be included as text nodes
-		$this->response = new SimpleXMLElement( $raw_response_xml, LIBXML_NOCDATA );
+		parent::__construct( $raw_response_xml );
 
 		// root element name, useful for identifying exact type of response, e.g. `createTransactionResponse`
 		// note that for hard errors, the response type will be `ErrorResponse`
-		$this->name = $this->response->getName();
+		$this->name = $this->response_xml->getName();
 	}
 
 
@@ -86,11 +77,11 @@ abstract class WC_Authorize_Net_CIM_API_Response implements SV_WC_API_Response {
 	 */
 	public function has_api_error() {
 
-		if ( ! isset( $this->response->messages->resultCode ) ) {
+		if ( ! isset( $this->response_xml->messages->resultCode ) ) {
 			return true;
 		}
 
-		return 'error' == strtolower( (string) $this->response->messages->resultCode );
+		return 'error' == strtolower( (string) $this->response_xml->messages->resultCode );
 	}
 
 
@@ -102,11 +93,11 @@ abstract class WC_Authorize_Net_CIM_API_Response implements SV_WC_API_Response {
 	 */
 	public function get_api_error_code() {
 
-		if ( ! isset( $this->response->messages->message->code ) ) {
+		if ( ! isset( $this->response_xml->messages->message->code ) ) {
 			return __( 'N/A', 'woocommerce-gateway-authorize-net-cim' );
 		}
 
-		return (string) $this->response->messages->message->code;
+		return (string) $this->response_xml->messages->message->code;
 	}
 
 
@@ -118,11 +109,11 @@ abstract class WC_Authorize_Net_CIM_API_Response implements SV_WC_API_Response {
 	 */
 	public function get_api_error_message() {
 
-		if ( ! isset( $this->response->messages->message->text ) ) {
+		if ( ! isset( $this->response_xml->messages->message->text ) ) {
 			return __( 'N/A', 'woocommerce-gateway-authorize-net-cim' );
 		}
 
-		$message = (string) $this->response->messages->message->text;
+		$message = (string) $this->response_xml->messages->message->text;
 
 		return $message;
 	}
@@ -164,44 +155,6 @@ abstract class WC_Authorize_Net_CIM_API_Response implements SV_WC_API_Response {
 		$helper = new WC_Authorize_Net_CIM_API_Response_Message_Handler( $this );
 
 		return $helper->get_message();
-	}
-
-
-	/**
-	 * Returns the string representation of this response
-	 *
-	 * @since 2.0.0
-	 * @see SV_WC_Payment_Gateway_API_Response::to_string()
-	 * @return string response
-	 */
-	public function to_string() {
-
-		$string = $this->raw_response_xml;
-
-		$dom = new DOMDocument();
-
-		// suppress errors for invalid XML syntax issues
-		if ( @$dom->loadXML( $string ) ) {
-			$dom->formatOutput = true;
-			$string = $dom->saveXML();
-		}
-
-		return $string;
-	}
-
-
-	/**
-	 * Returns the string representation of this response with any and all
-	 * sensitive elements masked or removed
-	 *
-	 * @since 2.0.0
-	 * @see SV_WC_Payment_Gateway_API_Response::to_string_safe()
-	 * @return string response safe for logging/displaying
-	 */
-	public function to_string_safe() {
-
-		// no sensitive data to mask
-		return $this->to_string();
 	}
 
 

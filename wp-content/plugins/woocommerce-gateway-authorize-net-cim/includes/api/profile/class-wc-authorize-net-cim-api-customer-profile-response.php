@@ -22,7 +22,7 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
 
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+defined( 'ABSPATH' ) or exit;
 
 
 /**
@@ -69,7 +69,7 @@ class WC_Authorize_Net_CIM_API_Customer_Profile_Response extends WC_Authorize_Ne
 			),
 		);
 
-		return new WC_Authorize_Net_CIM_Payment_Profile( (string) (string) $this->response->customerPaymentProfileIdList->numericString, $data );
+		return new WC_Authorize_Net_CIM_Payment_Profile( (string) (string) $this->response_xml->customerPaymentProfileIdList->numericString, $data );
 	}
 
 
@@ -87,9 +87,9 @@ class WC_Authorize_Net_CIM_API_Customer_Profile_Response extends WC_Authorize_Ne
 
 		$profiles = array();
 
-		if ( isset( $this->response->profile->paymentProfiles ) ) {
+		if ( isset( $this->response_xml->profile->paymentProfiles ) ) {
 
-			foreach ( $this->response->profile->paymentProfiles as $profile ) {
+			foreach ( $this->response_xml->profile->paymentProfiles as $profile ) {
 
 				// card type, and exp date are not included in the response
 				$data = array(
@@ -128,15 +128,15 @@ class WC_Authorize_Net_CIM_API_Customer_Profile_Response extends WC_Authorize_Ne
 
 		$customer_profile_id = null;
 
-		if ( ! empty( $this->response->customerProfileId ) ) {
+		if ( ! empty( $this->response_xml->customerProfileId ) ) {
 
 			// from createCustomerProfileRequest
-			$customer_profile_id = (string) $this->response->customerProfileId;
+			$customer_profile_id = (string) $this->response_xml->customerProfileId;
 
-		} elseif ( ! empty( $this->response->profile->customerProfileId ) ) {
+		} elseif ( ! empty( $this->response_xml->profile->customerProfileId ) ) {
 
 			// from getCustomerProfileRequest
-			$customer_profile_id = (string) $this->response->profile->customerProfileId;
+			$customer_profile_id = (string) $this->response_xml->profile->customerProfileId;
 		}
 
 		return $customer_profile_id;
@@ -154,9 +154,9 @@ class WC_Authorize_Net_CIM_API_Customer_Profile_Response extends WC_Authorize_Ne
 
 		$addresses = array();
 
-		if ( ! empty( $this->response->profile->shipToList ) ) {
+		if ( ! empty( $this->response_xml->profile->shipToList ) ) {
 
-			foreach ( $this->response->profile->shipToList as $ship ) {
+			foreach ( $this->response_xml->profile->shipToList as $ship ) {
 
 				$addresses[ (string) $ship->customerAddressId ] = array(
 					'first_name' => (string) $ship->firstName,

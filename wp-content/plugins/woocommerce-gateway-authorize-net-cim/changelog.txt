@@ -1,5 +1,23 @@
 *** WooCommerce Authorize.net CIM Gateway Changelog ***
 
+2016.06.02 - version 2.3.0
+ * Misc - Added support for WooCommerce 2.6
+ * Misc - Removed support for WooCommerce 2.3
+
+2016.05.04 - version 2.2.1
+ * Fix - Fix an error when a guest attempts to process a transaction with a pre-order
+
+2016.04.20 - version 2.2.0
+ * Feature - View saved payment methods for customers on the Edit User screen
+ * Feature - Customers are now prevented from deleting a payment method that's associated with an active subscription
+ * Tweak - Uses new Akamai API endpoints in production
+
+2016.03.08 - version 2.1.2
+ * Fix - Fix a rare fatal error for new installs when old profile data exists
+
+2016.01.26 - version 2.1.1
+ * Fix - Fix a PHP warning that could be logged during payment processing
+
 2016.01.14 - version 2.1.0
  * Tweak - Use 3 character billing/shipping country codes for improved compatibility with European processors
  * Misc - Added support for WooCommerce 2.5

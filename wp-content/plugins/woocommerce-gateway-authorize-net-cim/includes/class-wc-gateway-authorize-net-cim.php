@@ -22,7 +22,7 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
 
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+defined( 'ABSPATH' ) or exit;
 
 /**
  * Authorize.net CIM Payment Gateway Parent Class
@@ -133,7 +133,7 @@ class WC_Gateway_Authorize_Net_CIM extends SV_WC_Payment_Gateway_Direct {
 			return parent::do_transaction( $order );
 		}
 
-		$token = $this->get_payment_token( $order->get_user_id(), $order->payment->token );
+		$token = $this->get_payment_tokens_handler()->get_token( $order->get_user_id(), $order->payment->token );
 
 		// compare the billing information saved on the token with the billing information for the order
 		if ( ! $token->billing_matches_order( $order ) ) {
@@ -145,7 +145,7 @@ class WC_Gateway_Authorize_Net_CIM extends SV_WC_Payment_Gateway_Direct {
 			$token->update_billing_hash( $order );
 
 			// persist the token to user meta
-			$this->update_payment_token( $order->get_user_id(), $token );
+			$this->get_payment_tokens_handler()->update_token( $order->get_user_id(), $token );
 		}
 
 		$shipping_address = $this->get_shipping_address( $order->get_user_id() );
@@ -210,7 +210,7 @@ class WC_Gateway_Authorize_Net_CIM extends SV_WC_Payment_Gateway_Direct {
 		}
 
 		// add shipping address ID for profile transactions (using existing payment method or adding a new one)
-		if ( $order->get_user_id() && ( ! empty( $order->payment->token ) || $this->should_tokenize_payment_method() ) ) {
+		if ( $order->get_user_id() && ( ! empty( $order->payment->token ) || $this->get_payment_tokens_handler()->should_tokenize() ) ) {
 
 			$shipping_address = $this->get_shipping_address( $order->get_user_id() );
 
@@ -285,6 +285,18 @@ class WC_Gateway_Authorize_Net_CIM extends SV_WC_Payment_Gateway_Direct {
 
 
 	/**
+	 * Get the payment tokens handler class instance.
+	 *
+	 * @since 2.2.0
+	 * @return \WC_Authorize_Net_CIM_Payment_Tokens_Handler
+	 */
+	protected function build_payment_tokens_handler() {
+
+		return new WC_Authorize_Net_CIM_Payment_Profile_Handler( $this );
+	}
+
+
+	/**
 	 * Auth.net tokenizes payment methods prior to sale
 	 *
 	 * @since 2.0.0
@@ -293,60 +305,6 @@ class WC_Gateway_Authorize_Net_CIM extends SV_WC_Payment_Gateway_Direct {
 	 */
 	public function tokenize_before_sale() {
 		return true;
-	}
-
-
-	/**
-	 * Return a custom payment token class instance
-	 *
-	 * @since 2.0.0
-	 * @see SV_WC_Payment_Gateway_Direct::build_payment_token()
-	 * @return bool
-	 */
-	public function build_payment_token( $token, $data ) {
-
-		return new WC_Authorize_Net_CIM_Payment_Profile( $token, $data );
-	}
-
-
-	/**
-	 * Add additional attributes to be used when merging local token data into
-	 * remote tokens, as Authorize.net doesn't include certain things like
-	 * expiration dates or card types when fetching tokens from the API, but that
-	 * info is saved with the token locally when it's first created
-	 *
-	 * @since 2.0.0
-	 * @see SV_WC_Payment_Gateway_Direct::get_payment_token_merge_attributes()
-	 * @return array merge attributes
-	 */
-	protected function get_payment_token_merge_attributes() {
-
-		return array_merge( parent::get_payment_token_merge_attributes(), array( 'billing_hash', 'payment_hash' ) );
-	}
-
-
-	/**
-	 * When retrieving payment profiles via the Auth.net API, it returns both
-	 * credit/debit card *and* eCheck payment profiles from a single call. Overriding
-	 * the core framework update method ensures that eChecks aren't saved to
-	 * the credit card token meta entry, and vice versa.
-	 *
-	 * @since 2.0.0
-	 * @param int $user_id WP user ID
-	 * @param array $tokens array of tokens
-	 * @param string $environment_id optional environment id, defaults to plugin current environment
-	 * @return string updated user meta id
-	 */
-	protected function update_payment_tokens( $user_id, $tokens, $environment_id = null ) {
-
-		foreach ( $tokens as $token_id => $token ) {
-
-			if ( ( $this->is_credit_card_gateway() && ! $token->is_credit_card() ) || ( $this->is_echeck_gateway() && ! $token->is_echeck() ) ) {
-				unset( $tokens[ $token_id ] );
-			}
-		}
-
-		return parent::update_payment_tokens( $user_id, $tokens, $environment_id );
 	}
 
 
@@ -621,6 +579,31 @@ class WC_Gateway_Authorize_Net_CIM extends SV_WC_Payment_Gateway_Direct {
 		}
 
 		return 'production' == $environment_id ? $this->api_transaction_key : $this->test_api_transaction_key;
+	}
+
+
+	/**
+	 * Ensure a customer ID is created in CIM for guest customers
+	 *
+	 * A customer ID must exist in CIM before it can be used so a guest
+	 * customer ID cannot be generated on the fly. This ensures a customer is
+	 * created when a payment method is tokenized for transactions such as a
+	 * pre-order guest purchase.
+	 *
+	 * @since 2.2.1
+	 * @see SV_WC_Payment_Gateway::get_guest_customer_id()
+	 * @param WC_Order $order
+	 * @return bool false
+	 */
+	public function get_guest_customer_id( WC_Order $order ) {
+
+		// is there a customer id already tied to this order?
+		if ( $customer_id = $this->get_order_meta( $order->id, 'customer_id' ) ) {
+			return $customer_id;
+		}
+
+		// default to false as a customer must be created first
+		return false;
 	}
 
 

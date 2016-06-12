@@ -22,7 +22,7 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
 
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+defined( 'ABSPATH' ) or exit;
 
 
 /**
@@ -58,9 +58,9 @@ class WC_Authorize_Net_CIM_API_Profile_Response extends WC_Authorize_Net_CIM_API
 
 		// only createCustomerProfile, createCustomerPaymentProfile, and
 		// validateCustomerPaymentProfile contain the direct response element
-		if ( ! empty( $this->response->validationDirectResponseList->string ) ||
-			 ! empty( $this->response->validationDirectResponse ) ||
-			 ! empty( $this->response->directResponse )
+		if ( ! empty( $this->response_xml->validationDirectResponseList->string ) ||
+			 ! empty( $this->response_xml->validationDirectResponse ) ||
+			 ! empty( $this->response_xml->directResponse )
 		) {
 
 			$this->parse_direct_response();
@@ -103,20 +103,20 @@ class WC_Authorize_Net_CIM_API_Profile_Response extends WC_Authorize_Net_CIM_API
 
 		$direct_response = null;
 
-		if ( ! empty( $this->response->validationDirectResponseList->string ) ) {
+		if ( ! empty( $this->response_xml->validationDirectResponseList->string ) ) {
 
 			// from createCustomerProfileRequest
-			$direct_response = $this->response->validationDirectResponseList->string;
+			$direct_response = $this->response_xml->validationDirectResponseList->string;
 
-		} elseif ( ! empty( $this->response->validationDirectResponse ) ) {
+		} elseif ( ! empty( $this->response_xml->validationDirectResponse ) ) {
 
 			// from createCustomerPaymentProfileRequest
-			$direct_response = $this->response->validationDirectResponse;
+			$direct_response = $this->response_xml->validationDirectResponse;
 
-		} elseif ( ! empty( $this->response->directResponse ) ) {
+		} elseif ( ! empty( $this->response_xml->directResponse ) ) {
 
 			// from validateCustomerPaymentProfileRequest
-			$direct_response = $this->response->directResponse;
+			$direct_response = $this->response_xml->directResponse;
 		}
 
 		// TODO: direct response from a customer/payment profile transaction
@@ -329,7 +329,7 @@ class WC_Authorize_Net_CIM_API_Profile_Response extends WC_Authorize_Net_CIM_API
 	 */
 	public function get_account_type() {
 
-		return strtolower( $this->direct_response->account_type);
+		return strtolower( $this->direct_response->account_type );
 	}
 
 
@@ -354,6 +354,18 @@ class WC_Authorize_Net_CIM_API_Profile_Response extends WC_Authorize_Net_CIM_API
 	public function get_card_type() {
 
 		return strtolower( $this->direct_response->card_type );
+	}
+
+
+	/**
+	 * Get the transaction payment type.
+	 *
+	 * @since 2.2.0
+	 * @return string either `credit-card` or `echeck`
+	 */
+	public function get_payment_type() {
+
+		return ( 'CC' === $this->get_account_type() ) ? 'credit-card' : 'echeck';
 	}
 
 

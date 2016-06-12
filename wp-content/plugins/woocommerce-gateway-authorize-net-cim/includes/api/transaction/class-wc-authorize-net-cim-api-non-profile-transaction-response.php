@@ -22,7 +22,7 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
 
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+defined( 'ABSPATH' ) or exit;
 
 
 /**
@@ -83,7 +83,7 @@ class WC_Authorize_Net_CIM_API_Non_Profile_Transaction_Response extends WC_Autho
 	 */
 	public function is_test_request() {
 
-		return isset( $this->response->transactionResponse->testRequest ) && '1' === (string) $this->response->transactionResponse->testRequest;
+		return isset( $this->response_xml->transactionResponse->testRequest ) && '1' === (string) $this->response_xml->transactionResponse->testRequest;
 	}
 
 
@@ -97,7 +97,7 @@ class WC_Authorize_Net_CIM_API_Non_Profile_Transaction_Response extends WC_Autho
 	 */
 	public function get_transaction_id() {
 
-		return isset( $this->response->transactionResponse->transId ) ? (string) $this->response->transactionResponse->transId : null;
+		return isset( $this->response_xml->transactionResponse->transId ) ? (string) $this->response_xml->transactionResponse->transId : null;
 	}
 
 
@@ -109,7 +109,7 @@ class WC_Authorize_Net_CIM_API_Non_Profile_Transaction_Response extends WC_Autho
 	 */
 	public function get_transaction_response_code() {
 
-		return isset( $this->response->transactionResponse->responseCode ) ? (string) $this->response->transactionResponse->responseCode : null;
+		return isset( $this->response_xml->transactionResponse->responseCode ) ? (string) $this->response_xml->transactionResponse->responseCode : null;
 	}
 
 
@@ -124,18 +124,18 @@ class WC_Authorize_Net_CIM_API_Non_Profile_Transaction_Response extends WC_Autho
 		$messages = array();
 
 		// messages
-		if ( isset( $this->response->transactionResponse->messages->message ) ) {
+		if ( isset( $this->response_xml->transactionResponse->messages->message ) ) {
 
-			foreach ( $this->response->transactionResponse->messages->message as $message ) {
+			foreach ( $this->response_xml->transactionResponse->messages->message as $message ) {
 
 				$messages[] = sprintf( __( 'Message Code: %s - %s', 'woocommerce-gateway-authorize-net-cim' ), (string) $message->code, (string) $message->description );
 			}
 		}
 
 		// errors
-		if ( isset( $this->response->transactionResponse->errors->error ) ) {
+		if ( isset( $this->response_xml->transactionResponse->errors->error ) ) {
 
-			foreach ( $this->response->transactionResponse->errors->error as $error ) {
+			foreach ( $this->response_xml->transactionResponse->errors->error as $error ) {
 
 				$messages[] = sprintf( __( 'Error Code: %s - %s', 'woocommerce-gateway-authorize-net-cim' ), (string) $error->errorCode, (string) $error->errorText );
 			}
@@ -153,7 +153,7 @@ class WC_Authorize_Net_CIM_API_Non_Profile_Transaction_Response extends WC_Autho
 	 */
 	public function get_transaction_response_reason_code() {
 
-		return isset( $this->response->transactionResponse->errors->error->errorCode ) ? (string) $this->response->transactionResponse->errors->error->errorCode : null;
+		return isset( $this->response_xml->transactionResponse->errors->error->errorCode ) ? (string) $this->response_xml->transactionResponse->errors->error->errorCode : null;
 	}
 
 
@@ -164,7 +164,7 @@ class WC_Authorize_Net_CIM_API_Non_Profile_Transaction_Response extends WC_Autho
 	 * @return string response reason code
 	 */
 	public function get_transaction_response_reason_text() {
-		return isset( $this->response->transactionResponse->errors->error->errorText ) ? $this->response->transactionResponse->errors->error->errorText : null;
+		return isset( $this->response_xml->transactionResponse->errors->error->errorText ) ? $this->response_xml->transactionResponse->errors->error->errorText : null;
 	}
 
 
@@ -178,7 +178,7 @@ class WC_Authorize_Net_CIM_API_Non_Profile_Transaction_Response extends WC_Autho
 	 */
 	public function get_authorization_code() {
 
-		return isset( $this->response->transactionResponse->authCode ) ? (string) $this->response->transactionResponse->authCode : null;
+		return isset( $this->response_xml->transactionResponse->authCode ) ? (string) $this->response_xml->transactionResponse->authCode : null;
 	}
 
 
@@ -193,7 +193,7 @@ class WC_Authorize_Net_CIM_API_Non_Profile_Transaction_Response extends WC_Autho
 	 */
 	public function get_avs_result() {
 
-		return isset( $this->response->transactionResponse->avsResultCode ) ? (string) $this->response->transactionResponse->avsResultCode : null;
+		return isset( $this->response_xml->transactionResponse->avsResultCode ) ? (string) $this->response_xml->transactionResponse->avsResultCode : null;
 	}
 
 
@@ -206,7 +206,7 @@ class WC_Authorize_Net_CIM_API_Non_Profile_Transaction_Response extends WC_Autho
 	 */
 	public function get_csc_result() {
 
-		return isset( $this->response->transactionResponse->cvvResultCode ) ? (string) $this->response->transactionResponse->cvvResultCode : null;
+		return isset( $this->response_xml->transactionResponse->cvvResultCode ) ? (string) $this->response_xml->transactionResponse->cvvResultCode : null;
 	}
 
 
@@ -220,7 +220,19 @@ class WC_Authorize_Net_CIM_API_Non_Profile_Transaction_Response extends WC_Autho
 	 */
 	public function get_cavv_result() {
 
-		return isset( $this->response->transactionResponse->cavvResultCode ) ? (string) $this->response->transactionResponse->cavvResultCode : null;
+		return isset( $this->response_xml->transactionResponse->cavvResultCode ) ? (string) $this->response_xml->transactionResponse->cavvResultCode : null;
+	}
+
+
+	/**
+	 * Get the transaction payment type.
+	 *
+	 * @since 2.2.0
+	 * @return string either `credit-card` or `echeck`
+	 */
+	public function get_payment_type() {
+
+		return ( 'eCheck' === $this->response_xml->transactionResponse->accountType ) ? 'echeck' : 'credit-card';
 	}
 
 

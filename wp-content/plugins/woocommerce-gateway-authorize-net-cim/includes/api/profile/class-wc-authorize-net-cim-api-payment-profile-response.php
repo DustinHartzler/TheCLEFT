@@ -22,7 +22,7 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
 
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+defined( 'ABSPATH' ) or exit;
 
 
 /**
@@ -52,19 +52,19 @@ class WC_Authorize_Net_CIM_API_Payment_Profile_Response extends WC_Authorize_Net
 		if ( 'getCustomerPaymentProfile' === $this->get_request()->get_request_type() ) {
 
 			$data = array(
-				'type'                => isset( $this->response->paymentProfile->payment->creditCard ) ? 'credit_card' : 'echeck',
+				'type'                => isset( $this->response_xml->paymentProfile->payment->creditCard ) ? 'credit_card' : 'echeck',
 				'last_four'           => ltrim( $this->get_account_number(), 'X' ),
 				'customer_profile_id' => $this->get_request()->get_customer_profile_id(),
 				'billing'             => array(
-					'first_name' => isset( $this->response->paymentProfile->billTo->firstName )   ? (string) $this->response->paymentProfile->billTo->firstName : '',
-					'last_name'  => isset( $this->response->paymentProfile->billTo->lastName )    ? (string) $this->response->paymentProfile->billTo->lastName : '',
-					'company'    => isset( $this->response->paymentProfile->billTo->company )     ? (string) $this->response->paymentProfile->billTo->company : '',
-					'address'    => isset( $this->response->paymentProfile->billTo->address )     ? (string) $this->response->paymentProfile->billTo->address : '',
-					'city'       => isset( $this->response->paymentProfile->billTo->city )        ? (string) $this->response->paymentProfile->billTo->city : '',
-					'state'      => isset( $this->response->paymentProfile->billTo->state )       ? (string) $this->response->paymentProfile->billTo->state : '',
-					'postcode'   => isset( $this->response->paymentProfile->billTo->zip )         ? (string) $this->response->paymentProfile->billTo->zip : '',
-					'country'    => isset( $this->response->paymentProfile->billTo->country )     ? (string) $this->response->paymentProfile->billTo->country : '',
-					'phone'      => isset( $this->response->paymentProfile->billTo->phoneNumber ) ? (string) $this->response->paymentProfile->billTo->phoneNumber : '',
+					'first_name' => isset( $this->response_xml->paymentProfile->billTo->firstName )   ? (string) $this->response_xml->paymentProfile->billTo->firstName : '',
+					'last_name'  => isset( $this->response_xml->paymentProfile->billTo->lastName )    ? (string) $this->response_xml->paymentProfile->billTo->lastName : '',
+					'company'    => isset( $this->response_xml->paymentProfile->billTo->company )     ? (string) $this->response_xml->paymentProfile->billTo->company : '',
+					'address'    => isset( $this->response_xml->paymentProfile->billTo->address )     ? (string) $this->response_xml->paymentProfile->billTo->address : '',
+					'city'       => isset( $this->response_xml->paymentProfile->billTo->city )        ? (string) $this->response_xml->paymentProfile->billTo->city : '',
+					'state'      => isset( $this->response_xml->paymentProfile->billTo->state )       ? (string) $this->response_xml->paymentProfile->billTo->state : '',
+					'postcode'   => isset( $this->response_xml->paymentProfile->billTo->zip )         ? (string) $this->response_xml->paymentProfile->billTo->zip : '',
+					'country'    => isset( $this->response_xml->paymentProfile->billTo->country )     ? (string) $this->response_xml->paymentProfile->billTo->country : '',
+					'phone'      => isset( $this->response_xml->paymentProfile->billTo->phoneNumber ) ? (string) $this->response_xml->paymentProfile->billTo->phoneNumber : '',
 				),
 			);
 
@@ -120,14 +120,14 @@ class WC_Authorize_Net_CIM_API_Payment_Profile_Response extends WC_Authorize_Net
 
 		$payment_profile_id = null;
 
-		if ( isset( $this->response->paymentProfile->customerPaymentProfileId ) ) {
+		if ( isset( $this->response_xml->paymentProfile->customerPaymentProfileId ) ) {
 
 			// getCustomerPaymentProfileResponse
-			$payment_profile_id = (string) $this->response->paymentProfile->customerPaymentProfileId;
+			$payment_profile_id = (string) $this->response_xml->paymentProfile->customerPaymentProfileId;
 		} else {
 
 			// createCustomerPaymentProfileResponse
-			$payment_profile_id = (string) $this->response->customerPaymentProfileId;
+			$payment_profile_id = (string) $this->response_xml->customerPaymentProfileId;
 		}
 
 		return $payment_profile_id;
@@ -150,13 +150,13 @@ class WC_Authorize_Net_CIM_API_Payment_Profile_Response extends WC_Authorize_Net
 
 		$account_number = null;
 
-		if ( isset( $this->response->paymentProfile->payment->creditCard->cardNumber ) ) {
+		if ( isset( $this->response_xml->paymentProfile->payment->creditCard->cardNumber ) ) {
 
-			$account_number = (string) $this->response->paymentProfile->payment->creditCard->cardNumber;
+			$account_number = (string) $this->response_xml->paymentProfile->payment->creditCard->cardNumber;
 
-		} elseif ( isset( $this->response->paymentProfile->payment->bankAccount->accountNumber ) ) {
+		} elseif ( isset( $this->response_xml->paymentProfile->payment->bankAccount->accountNumber ) ) {
 
-			$account_number = (string) $this->response->paymentProfile->payment->bankAccount->accountNumber;
+			$account_number = (string) $this->response_xml->paymentProfile->payment->bankAccount->accountNumber;
 		}
 
 		return $account_number;
@@ -171,7 +171,7 @@ class WC_Authorize_Net_CIM_API_Payment_Profile_Response extends WC_Authorize_Net
 	 */
 	public function get_expiration_date() {
 
-		return isset( $this->response->paymentProfile->payment->creditCard->expirationDate ) ? $this->response->paymentProfile->payment->creditCard->expirationDate : null;
+		return isset( $this->response_xml->paymentProfile->payment->creditCard->expirationDate ) ? $this->response_xml->paymentProfile->payment->creditCard->expirationDate : null;
 	}
 
 
@@ -183,7 +183,7 @@ class WC_Authorize_Net_CIM_API_Payment_Profile_Response extends WC_Authorize_Net
 	 */
 	public function get_account_type() {
 
-		return isset( $this->response->paymentProfile->payment->bankAccount->accountType ) ? $this->response->paymentProfile->payment->bankAccount->accountType : null;
+		return isset( $this->response_xml->paymentProfile->payment->bankAccount->accountType ) ? $this->response_xml->paymentProfile->payment->bankAccount->accountType : null;
 	}
 
 
@@ -195,7 +195,7 @@ class WC_Authorize_Net_CIM_API_Payment_Profile_Response extends WC_Authorize_Net
 	 */
 	public function get_routing_number() {
 
-		return isset( $this->response->paymentProfile->payment->bankAccount->routingNumber ) ? $this->response->paymentProfile->payment->bankAccount->routingNumber : null;
+		return isset( $this->response_xml->paymentProfile->payment->bankAccount->routingNumber ) ? $this->response_xml->paymentProfile->payment->bankAccount->routingNumber : null;
 	}
 
 
@@ -207,7 +207,7 @@ class WC_Authorize_Net_CIM_API_Payment_Profile_Response extends WC_Authorize_Net
 	 */
 	public function get_name_on_account() {
 
-		return isset( $this->response->paymentProfile->payment->bankAccount->nameOnAccount) ? $this->response->paymentProfile->payment->bankAccount->nameOnAccount : null;
+		return isset( $this->response_xml->paymentProfile->payment->bankAccount->nameOnAccount) ? $this->response_xml->paymentProfile->payment->bankAccount->nameOnAccount : null;
 	}
 
 
@@ -219,7 +219,7 @@ class WC_Authorize_Net_CIM_API_Payment_Profile_Response extends WC_Authorize_Net
 	 */
 	public function get_echeck_type() {
 
-		return isset( $this->response->paymentProfile->payment->bankAccount->echeckType ) ? $this->response->paymentProfile->payment->bankAccount->echeckType : null;
+		return isset( $this->response_xml->paymentProfile->payment->bankAccount->echeckType ) ? $this->response_xml->paymentProfile->payment->bankAccount->echeckType : null;
 	}
 
 

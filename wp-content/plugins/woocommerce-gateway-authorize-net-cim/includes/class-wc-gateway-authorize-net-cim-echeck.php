@@ -22,7 +22,7 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
 
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+defined( 'ABSPATH' ) or exit;
 
 /**
  * Authorize.net CIM eCheck Payment Gateway
@@ -53,6 +53,7 @@ class WC_Gateway_Authorize_Net_CIM_eCheck extends WC_Gateway_Authorize_Net_CIM {
 					self::FEATURE_PRODUCTS,
 					self::FEATURE_PAYMENT_FORM,
 					self::FEATURE_TOKENIZATION,
+					self::FEATURE_TOKEN_EDITOR,
 					self::FEATURE_DETAILED_CUSTOMER_DECLINE_MESSAGES,
 					self::FEATURE_CUSTOMER_ID,
 					self::FEATURE_ADD_PAYMENT_METHOD,

@@ -22,7 +22,7 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
 
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+defined( 'ABSPATH' ) or exit;
 
 
 /**
@@ -43,8 +43,20 @@ class WC_Authorize_Net_CIM_API_Hosted_Profile_Page_Response extends WC_Authorize
 	 */
 	public function get_page_token() {
 
-		return ! empty( $this->response->token ) ? (string) $this->response->token : null;
+		return ! empty( $this->response_xml->token ) ? (string) $this->response_xml->token : null;
 	}
 
 
+	/**
+	 * Determine if this was a test request.
+	 *
+	 * @since 2.1.2
+	 * @return bool
+	 */
+	public function is_test_request() {
+
+		// TODO: If \WC_Authorize_Net_CIM_API_Hosted_Profile_Page_Request is ever used for anything other
+		// than to check if CIM is available, then actually check something here.
+		return false;
+	}
 }

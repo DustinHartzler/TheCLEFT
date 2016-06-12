@@ -22,7 +22,7 @@
  * @license   http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
 
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+defined( 'ABSPATH' ) or exit;
 
 /**
  * Authorize.net CIM API Class
@@ -39,7 +39,7 @@ class WC_Authorize_Net_CIM_API extends SV_WC_API_Base implements SV_WC_Payment_G
 
 
 	/** the production endpoint */
-	const PRODUCTION_ENDPOINT = 'https://api.authorize.net/xml/v1/request.api';
+	const PRODUCTION_ENDPOINT = 'https://api2.authorize.net/xml/v1/request.api';
 
 	/** the test endpoint */
 	const TEST_ENDPOINT = 'https://apitest.authorize.net/xml/v1/request.api';
@@ -345,7 +345,7 @@ class WC_Authorize_Net_CIM_API extends SV_WC_API_Base implements SV_WC_Payment_G
 					// since it is not stored locally. Instead, clear the token transient
 					// so when the user reloads the page, the remote tokens will
 					// be correctly loaded
-					$this->get_gateway()->clear_payment_tokens_transient( $order->get_user_id() );
+					$this->get_gateway()->get_payment_tokens_handler()->clear_transient( $order->get_user_id() );
 				}
 			}
 
@@ -424,7 +424,7 @@ class WC_Authorize_Net_CIM_API extends SV_WC_API_Base implements SV_WC_Payment_G
 	protected function handle_duplicate_payment_profile( WC_Order $order ) {
 
 		// get the current tokens
-		$tokens = $this->get_gateway()->get_payment_tokens( $order->get_user_id() );
+		$tokens = $this->get_gateway()->get_payment_tokens_handler()->get_tokens( $order->get_user_id() );
 
 		foreach ( $tokens as $token ) {
 
@@ -432,7 +432,7 @@ class WC_Authorize_Net_CIM_API extends SV_WC_API_Base implements SV_WC_Payment_G
 			if ( $token->is_duplicate_of( $order ) ) {
 
 				// remove the duplicate profile from CIM
-				$this->get_gateway()->remove_payment_token( $order->get_user_id(), $token );
+				$this->get_gateway()->get_payment_tokens_handler()->remove_token( $order->get_user_id(), $token );
 
 				// safety flag
 				$order->auth_net_cim_removed_duplicate_payment_profile = true;
