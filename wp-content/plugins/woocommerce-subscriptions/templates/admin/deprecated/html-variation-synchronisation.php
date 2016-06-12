@@ -15,9 +15,6 @@ global $wp_locale;
 ?>
 <tr class="variable_subscription_sync show_if_variable-subscription">
 	<td colspan="1" class="subscription_sync_week_month"<?php echo esc_attr( $display_week_month_select ); ?>>
-		<?php if ( WC_Subscriptions::is_woocommerce_pre( '2.3' ) ) : ?>
-		<label><?php esc_html_e( 'Synchronise Renewals', 'woocommerce-subscriptions' ); ?></label>
-		<?php endif; ?>
 		<?php woocommerce_wp_select( array(
 			'id'            => 'variable' . WC_Subscriptions_Synchroniser::$post_meta_key . '[' . $loop . ']',
 			'class'         => 'wc_input_subscription_payment_sync',
@@ -36,7 +33,7 @@ global $wp_locale;
 			'class'         => 'wc_input_subscription_payment_sync',
 			'wrapper_class' => '_subscription_payment_sync_field',
 			'label'         => WC_Subscriptions_Synchroniser::$sync_field_label,
-			'placeholder'   => _x( 'Day', 'used in sync settings on product', 'woocommerce-subscriptions' ),
+			'placeholder'   => _x( 'Day', 'input field placeholder for day field for annual subscriptions', 'woocommerce-subscriptions' ),
 			'value'         => $payment_day,
 			'type'          => 'number',
 			'custom_attributes' => array(

@@ -5,9 +5,9 @@
  * Description: Sell products and services with recurring payments in your WooCommerce Store.
  * Author: Prospress Inc.
  * Author URI: http://prospress.com/
- * Version: 2.0.8
+ * Version: 2.0.15
  *
- * Copyright 2015 Prospress, Inc.  (email : freedoms@prospress.com)
+ * Copyright 2016 Prospress, Inc.  (email : freedoms@prospress.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @package		WooCommerce Subscriptions
- * @author		Brent Shepherd
+ * @author		Prospress Inc.
  * @since		1.0
  */
 
@@ -118,7 +118,7 @@ class WC_Subscriptions {
 
 	public static $plugin_file = __FILE__;
 
-	public static $version = '2.0.8';
+	public static $version = '2.0.15';
 
 	private static $total_subscription_count = null;
 
@@ -139,26 +139,24 @@ class WC_Subscriptions {
 		// Register our custom subscription order statuses before WC_Post_types::register_post_status()
 		add_action( 'init', __CLASS__ . '::register_post_status', 9 );
 
-		add_action( 'admin_init', __CLASS__ . '::maybe_activate_woocommerce_subscriptions' );
+		add_action( 'init', __CLASS__ . '::maybe_activate_woocommerce_subscriptions' );
 
 		register_deactivation_hook( __FILE__, __CLASS__ . '::deactivate_woocommerce_subscriptions' );
 
 		// Override the WC default "Add to Cart" text to "Sign Up Now" (in various places/templates)
 		add_filter( 'woocommerce_order_button_text', __CLASS__ . '::order_button_text' );
 		add_action( 'woocommerce_subscription_add_to_cart', __CLASS__ . '::subscription_add_to_cart', 30 );
+		add_action( 'woocommerce_variable-subscription_add_to_cart', __CLASS__ . '::variable_subscription_add_to_cart', 30 );
 		add_action( 'wcopc_subscription_add_to_cart', __CLASS__ . '::wcopc_subscription_add_to_cart' ); // One Page Checkout compatibility
 
 		// Ensure a subscription is never in the cart with products
-		add_filter( 'woocommerce_add_to_cart_validation', __CLASS__ . '::maybe_empty_cart', 10, 3 );
+		add_filter( 'woocommerce_add_to_cart_validation', __CLASS__ . '::maybe_empty_cart', 10, 4 );
 
-		// Enqueue front-end styles
-		add_filter( 'woocommerce_enqueue_styles', __CLASS__ . '::enqueue_styles', 10, 1 );
-
-		// Display Subscriptions on a User's account page
-		add_action( 'woocommerce_before_my_account', __CLASS__ . '::get_my_subscriptions_template' );
+		// Enqueue front-end styles, run after Storefront because it sets the styles to be empty
+		add_filter( 'woocommerce_enqueue_styles', __CLASS__ . '::enqueue_styles', 100, 1 );
 
 		// Load translation files
-		add_action( 'plugins_loaded', __CLASS__ . '::load_plugin_textdomain' );
+		add_action( 'init', __CLASS__ . '::load_plugin_textdomain', 3 );
 
 		// Load dependent files
 		add_action( 'plugins_loaded', __CLASS__ . '::load_dependant_classes' );
@@ -199,8 +197,8 @@ class WC_Subscriptions {
 				array(
 					// register_post_type() params
 					'labels'              => array(
-						'name'               => _x( 'Subscriptions', 'custom post type setting', 'woocommerce-subscriptions' ),
-						'singular_name'      => _x( 'Subscription', 'custom post type setting', 'woocommerce-subscriptions' ),
+						'name'               => __( 'Subscriptions', 'woocommerce-subscriptions' ),
+						'singular_name'      => __( 'Subscription', 'woocommerce-subscriptions' ),
 						'add_new'            => _x( 'Add Subscription', 'custom post type setting', 'woocommerce-subscriptions' ),
 						'add_new_item'       => _x( 'Add New Subscription', 'custom post type setting', 'woocommerce-subscriptions' ),
 						'edit'               => _x( 'Edit', 'custom post type setting', 'woocommerce-subscriptions' ),
@@ -208,11 +206,11 @@ class WC_Subscriptions {
 						'new_item'           => _x( 'New Subscription', 'custom post type setting', 'woocommerce-subscriptions' ),
 						'view'               => _x( 'View Subscription', 'custom post type setting', 'woocommerce-subscriptions' ),
 						'view_item'          => _x( 'View Subscription', 'custom post type setting', 'woocommerce-subscriptions' ),
-						'search_items'       => _x( 'Search Subscriptions', 'custom post type setting', 'woocommerce-subscriptions' ),
+						'search_items'       => __( 'Search Subscriptions', 'woocommerce-subscriptions' ),
 						'not_found'          => self::get_not_found_text(),
 						'not_found_in_trash' => _x( 'No Subscriptions found in trash', 'custom post type setting', 'woocommerce-subscriptions' ),
 						'parent'             => _x( 'Parent Subscriptions', 'custom post type setting', 'woocommerce-subscriptions' ),
-						'menu_name'          => _x( 'Subscriptions', 'Admin menu name', 'woocommerce-subscriptions' ),
+						'menu_name'          => __( 'Subscriptions', 'woocommerce-subscriptions' ),
 					),
 					'description'         => __( 'This is where subscriptions are stored.', 'woocommerce-subscriptions' ),
 					'public'              => false,
@@ -307,12 +305,19 @@ class WC_Subscriptions {
 	 */
 	public static function enqueue_styles( $styles ) {
 
-		if ( self::is_woocommerce_pre( '2.3' ) && is_page( get_option( 'woocommerce_myaccount_page_id' ) ) ) {
-			$styles['woocommerce-subscriptions'] = array(
-				'src'     => str_replace( array( 'http:', 'https:' ), '', plugin_dir_url( __FILE__ ) ) . 'assets/css/woocommerce-subscriptions.css',
-				'deps'    => 'woocommerce-smallscreen',
+		if ( is_checkout() ) {
+			$styles['wcs-checkout'] = array(
+				'src'     => str_replace( array( 'http:', 'https:' ), '', plugin_dir_url( __FILE__ ) ) . 'assets/css/checkout.css',
+				'deps'    => 'wc-checkout',
 				'version' => WC_VERSION,
-				'media'   => '',
+				'media'   => 'all',
+			);
+		} elseif ( is_account_page() ) {
+			$styles['wcs-view-subscription'] = array(
+				'src'     => str_replace( array( 'http:', 'https:' ), '', plugin_dir_url( __FILE__ ) ) . 'assets/css/view-subscription.css',
+				'deps'    => 'woocommerce-smallscreen',
+				'version' => self::$version,
+				'media'   => 'only screen and (max-width: ' . apply_filters( 'woocommerce_style_smallscreen_breakpoint', $breakpoint = '768px' ) . ')',
 			);
 		}
 
@@ -355,12 +360,13 @@ class WC_Subscriptions {
 	 *
 	 * @since 1.0
 	 */
-	public static function maybe_empty_cart( $valid, $product_id, $quantity ) {
+	public static function maybe_empty_cart( $valid, $product_id, $quantity, $variation_id = '' ) {
 
 		$is_subscription                 = WC_Subscriptions_Product::is_subscription( $product_id );
 		$cart_contains_subscription      = WC_Subscriptions_Cart::cart_contains_subscription();
 		$multiple_subscriptions_possible = WC_Subscriptions_Payment_Gateways::one_gateway_supports( 'multiple_subscriptions' );
 		$manual_renewals_enabled         = ( 'yes' == get_option( WC_Subscriptions_Admin::$option_prefix . '_accept_manual_renewals', 'no' ) ) ? true : false;
+		$canonical_product_id            = ( ! empty( $variation_id ) ) ? $variation_id : $product_id;
 
 		if ( $is_subscription && 'yes' != get_option( WC_Subscriptions_Admin::$option_prefix . '_multiple_purchase', 'no' ) ) {
 
@@ -372,7 +378,7 @@ class WC_Subscriptions {
 
 			self::add_notice( __( 'A subscription renewal has been removed from your cart. Multiple subscriptions can not be purchased at the same time.', 'woocommerce-subscriptions' ), 'notice' );
 
-		} elseif ( $is_subscription && $cart_contains_subscription && ! $multiple_subscriptions_possible && ! $manual_renewals_enabled ) {
+		} elseif ( $is_subscription && $cart_contains_subscription && ! $multiple_subscriptions_possible && ! $manual_renewals_enabled && ! WC_Subscriptions_Cart::cart_contains_product( $canonical_product_id ) ) {
 
 			self::remove_subscriptions_from_cart();
 
@@ -468,6 +474,30 @@ class WC_Subscriptions {
 	}
 
 	/**
+	 * Load the variable subscription add_to_cart template
+	 *
+	 * Use a very similar cart template as that of a variable product with added functionality.
+	 *
+	 * @since 2.0.9
+	 */
+	public static function variable_subscription_add_to_cart() {
+		global $product;
+
+		// Enqueue variation scripts
+		wp_enqueue_script( 'wc-add-to-cart-variation' );
+
+		// Get Available variations?
+		$get_variations = sizeof( $product->get_children() ) <= apply_filters( 'woocommerce_ajax_variation_threshold', 30, $product );
+
+		// Load the template
+		wc_get_template( 'single-product/add-to-cart/variable-subscription.php', array(
+			'available_variations' => $get_variations ? $product->get_available_variations() : false,
+			'attributes'           => $product->get_variation_attributes(),
+			'selected_attributes'  => $product->get_variation_default_attributes(),
+		), '', plugin_dir_path( __FILE__ ) . 'templates/' );
+	}
+
+	/**
 	 * Compatibility with WooCommerce On One Page Checkout.
 	 *
 	 * Use OPC's simple add to cart template for simple subscription products (to ensure data attributes required by OPC are added).
@@ -532,8 +562,10 @@ class WC_Subscriptions {
 			if ( ! is_woocommerce_active() ) : ?>
 <div id="message" class="error">
 	<p><?php
+		$install_url = wp_nonce_url( add_query_arg( array( 'action' => 'install-plugin', 'plugin' => 'woocommerce' ), admin_url( 'update.php' ) ), 'install-plugin_woocommerce' );
+
 		// translators: 1$-2$: opening and closing <strong> tags, 3$-4$: link tags, takes to woocommerce plugin on wp.org, 5$-6$: opening and closing link tags, leads to plugins.php in admin
-		printf( esc_html__( '%1$sWooCommerce Subscriptions is inactive.%2$s The %3$sWooCommerce plugin%4$s must be active for WooCommerce Subscriptions to work. Please %5$sinstall & activate WooCommerce &raquo;%6$s',  'woocommerce-subscriptions' ), '<strong>', '</strong>', '<a href="http://wordpress.org/extend/plugins/woocommerce/">', '</a>', '<a href="' . esc_url( admin_url( 'plugins.php' ) ) . '">', '</a>' ); ?>
+		printf( esc_html__( '%1$sWooCommerce Subscriptions is inactive.%2$s The %3$sWooCommerce plugin%4$s must be active for WooCommerce Subscriptions to work. Please %5$sinstall & activate WooCommerce &raquo;%6$s',  'woocommerce-subscriptions' ), '<strong>', '</strong>', '<a href="http://wordpress.org/extend/plugins/woocommerce/">', '</a>', '<a href="' .  esc_url( $install_url ) . '">', '</a>' ); ?>
 	</p>
 </div>
 		<?php elseif ( version_compare( get_option( 'woocommerce_db_version' ), '2.3', '<' ) ) : ?>
@@ -586,6 +618,8 @@ class WC_Subscriptions {
 
 			set_transient( self::$activation_transient, true, 60 * 60 );
 
+			flush_rewrite_rules();
+
 			do_action( 'woocommerce_subscriptions_activated' );
 		}
 
@@ -599,6 +633,8 @@ class WC_Subscriptions {
 	public static function deactivate_woocommerce_subscriptions() {
 
 		delete_option( WC_Subscriptions_Admin::$option_prefix . '_is_active' );
+
+		flush_rewrite_rules();
 
 		do_action( 'woocommerce_subscriptions_deactivated' );
 	}
@@ -688,12 +724,12 @@ class WC_Subscriptions {
 	public static function attach_dependant_hooks() {
 
 		// Redirect the user immediately to the checkout page after clicking "Sign Up Now" buttons to encourage immediate checkout
-		if ( self::is_woocommerce_pre( '2.3' ) ) {
-			add_filter( 'add_to_cart_redirect', __CLASS__ . '::add_to_cart_redirect' );
-		} else {
-			add_filter( 'woocommerce_add_to_cart_redirect', __CLASS__ . '::add_to_cart_redirect' );
-		}
+		add_filter( 'woocommerce_add_to_cart_redirect', __CLASS__ . '::add_to_cart_redirect' );
 
+		if ( self::is_woocommerce_pre( '2.6' ) ) {
+			// Display Subscriptions on a User's account page
+			add_action( 'woocommerce_before_my_account', __CLASS__ . '::get_my_subscriptions_template' );
+		}
 	}
 
 	/**
@@ -742,7 +778,7 @@ class WC_Subscriptions {
 				<div id="message" class="error">
 					<p><?php
 						// translators: 1$-2$: opening and closing <strong> tags, 3$-4$: opening and closing link tags. Leads to duplicate site article on docs
-						printf( esc_html__( 'It looks like this site has moved or is a duplicate site. %1$sWooCommerce Subscriptions%2$s has disabled automatic payments and subscription related emails on this site to prevent duplicate payments from a staging or test environment. %3$sLearn more%4$s', 'woocommerce-subscriptions' ), '<strong>', '</strong>', '<a href="http://docs.woothemes.com/document/subscriptions/faq/#section-39" target="_blank">', '&raquo;</a>' ); ?></p>
+						printf( esc_html__( 'It looks like this site has moved or is a duplicate site. %1$sWooCommerce Subscriptions%2$s has disabled automatic payments and subscription related emails on this site to prevent duplicate payments from a staging or test environment. %3$sLearn more &raquo;%4$s.', 'woocommerce-subscriptions' ), '<strong>', '</strong>', '<a href="http://docs.woothemes.com/document/subscriptions/faq/#section-39" target="_blank">', '</a>' ); ?></p>
 					<div style="margin: 5px 0;">
 						<a class="button button-primary" href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'wc_subscription_duplicate_site', 'ignore' ), 'wcs_duplicate_site', '_wcsnonce' ) ); ?>"><?php esc_html_e( 'Quit nagging me (but don\'t enable automatic payments)', 'woocommerce-subscriptions' ); ?></a>
 						<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'wc_subscription_duplicate_site', 'update' ), 'wcs_duplicate_site', '_wcsnonce' ) ); ?>"><?php esc_html_e( 'Enable automatic payments', 'woocommerce-subscriptions' ); ?></a>
@@ -754,15 +790,15 @@ class WC_Subscriptions {
 	}
 
 	/**
-	 * Get's a WC_Product using the new core WC @see get_product() function if available, otherwise
+	 * Get's a WC_Product using the new core WC @see wc_get_product() function if available, otherwise
 	 * instantiating an instance of the WC_Product class.
 	 *
 	 * @since 1.2.4
 	 */
 	public static function get_product( $product_id ) {
 
-		if ( function_exists( 'get_product' ) ) {
-			$product = get_product( $product_id );
+		if ( function_exists( 'wc_get_product' ) ) {
+			$product = wc_get_product( $product_id );
 		} else {
 			$product = new WC_Product( $product_id );  // Shouldn't matter if product is variation as all we need is the product_type
 		}
