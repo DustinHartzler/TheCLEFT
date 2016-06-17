@@ -11,8 +11,4 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
-wc_print_notices();
-
-wc_get_template( 'myaccount/navigation.php' );
-
 WC_Subscriptions::get_my_subscriptions_template();

@@ -10,11 +10,8 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
-if ( WC_Subscriptions::is_woocommerce_pre( '2.6' ) ) : ?>
+?>
 <div class="woocommerce_account_subscriptions">
-<?php else : ?>
-<div class="woocommerce-MyAccount-content woocommerce_account_subscriptions">
-<?php endif; ?>
 
 	<?php if ( WC_Subscriptions::is_woocommerce_pre( '2.6' ) ) : ?>
 	<h2><?php esc_html_e( 'My Subscriptions', 'woocommerce-subscriptions' ); ?></h2>

@@ -1,5 +1,18 @@
 *** WooCommerce Subscriptions Changelog ***
 
+2016.06.10 - version 2.0.16
+ * Tweak: display recurring shipping selection fields on cart page instead of notice to select recurring shipping on checkout page (when unique recurring shipping methods are required). (PR#1431)
+ * Tweak: update cart hash creation for latest logic used in WooCommerce 2.6. (PR#1426)
+ * Tweak: throw an exception if a scheduled next payment or expiration hook is triggered for a subscription ID that no longer exists (due to a corrupted database). (PR#1429)
+ * Tweak: add order type parameter to WC_Subscription::get_last_order() so it can be used to return switch orders. (PR#1398)
+ * Fix: only validate recurring shipping for carts that have future recurring payments. (PR#1440)
+ * Fix: trigger subscription.created webhook for subscriptions purchased via checkout. (PR#1428)
+ * Fix: function declaration incompatible with WooCommerce 2.6 release candidate (specifically: WC_Subscription::set_payment_method()). (PR#1434)
+ * Fix: duplicate My Account navigation with WooCommerce 2.6 release candidate. (PR#1437)
+ * Fix: incorrect recurring shipping amount being applied to subscription products that do not require recurring shipping if a product with an identical billing schedule that required shipping was added then removed from the cart. (PR#1394)
+ * Fix: remove unused global variable in WCS_Query. (PR#1424)
+ * Fix: remove redundant in_the_loop() call in WCS_Query. (PR#1424)
+
 2016.05.28 - version 2.0.15
  * Tweak: WooCommerce 2.6 Compatibility.
  * Tweak: with the upcoming WooCommerce 2.6, add a Subscriptions tab to the My Account tabs and display subscriptions on that page instead of the My Account page, which is now a "Dashboard" in WooCommerce 2.6. (PR#1377)

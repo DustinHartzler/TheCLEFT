@@ -5,7 +5,7 @@
  * Description: Sell products and services with recurring payments in your WooCommerce Store.
  * Author: Prospress Inc.
  * Author URI: http://prospress.com/
- * Version: 2.0.15
+ * Version: 2.0.16
  *
  * Copyright 2016 Prospress, Inc.  (email : freedoms@prospress.com)
  *
@@ -118,7 +118,7 @@ class WC_Subscriptions {
 
 	public static $plugin_file = __FILE__;
 
-	public static $version = '2.0.15';
+	public static $version = '2.0.16';
 
 	private static $total_subscription_count = null;
 
@@ -305,7 +305,7 @@ class WC_Subscriptions {
 	 */
 	public static function enqueue_styles( $styles ) {
 
-		if ( is_checkout() ) {
+		if ( is_checkout() || is_cart() ) {
 			$styles['wcs-checkout'] = array(
 				'src'     => str_replace( array( 'http:', 'https:' ), '', plugin_dir_url( __FILE__ ) ) . 'assets/css/checkout.css',
 				'deps'    => 'wc-checkout',
