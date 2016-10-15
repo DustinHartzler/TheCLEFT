@@ -1,6 +1,6 @@
 <?php
 /**
- * WooCommerce Authorize.net CIM Gateway
+ * WooCommerce Authorize.Net CIM Gateway
  *
  * This source file is subject to the GNU General Public License v3.0
  * that is bundled with this package in the file license.txt.
@@ -12,8 +12,8 @@
  *
  * DISCLAIMER
  *
- * Do not edit or add to this file if you wish to upgrade WooCommerce Authorize.net CIM Gateway to newer
- * versions in the future. If you wish to customize WooCommerce Authorize.net CIM Gateway for your
+ * Do not edit or add to this file if you wish to upgrade WooCommerce Authorize.Net CIM Gateway to newer
+ * versions in the future. If you wish to customize WooCommerce Authorize.Net CIM Gateway for your
  * needs please refer to http://docs.woothemes.com/document/authorize-net-cim/
  *
  * @package   WC-Gateway-Authorize-Net-CIM/API/Response
@@ -26,7 +26,7 @@ defined( 'ABSPATH' ) or exit;
 
 
 /**
- * Authorize.net CIM Customer Profile Response Class
+ * Authorize.Net CIM Customer Profile Response Class
  *
  * Parses XML received from customer profile requests
  *

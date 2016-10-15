@@ -1,6 +1,6 @@
 <?php
 /**
- * WooCommerce Authorize.net CIM Gateway
+ * WooCommerce Authorize.Net CIM Gateway
  *
  * This source file is subject to the GNU General Public License v3.0
  * that is bundled with this package in the file license.txt.
@@ -12,8 +12,8 @@
  *
  * DISCLAIMER
  *
- * Do not edit or add to this file if you wish to upgrade WooCommerce Authorize.net CIM Gateway to newer
- * versions in the future. If you wish to customize WooCommerce Authorize.net CIM Gateway for your
+ * Do not edit or add to this file if you wish to upgrade WooCommerce Authorize.Net CIM Gateway to newer
+ * versions in the future. If you wish to customize WooCommerce Authorize.Net CIM Gateway for your
  * needs please refer to http://docs.woothemes.com/document/authorize-net-cim/
  *
  * @package   WC-Gateway-Authorize-Net-CIM/Gateway
@@ -25,7 +25,7 @@
 defined( 'ABSPATH' ) or exit;
 
 /**
- * Authorize.net CIM Payment Gateway
+ * Authorize.Net CIM Payment Gateway
  *
  * Handles all credit card purchases
  *
@@ -35,6 +35,19 @@ defined( 'ABSPATH' ) or exit;
  * @since 2.0.0
  */
 class WC_Gateway_Authorize_Net_CIM_Credit_Card extends WC_Gateway_Authorize_Net_CIM {
+
+
+	/** @var string API client key */
+	protected $client_key;
+
+	/** @var bool is Accept.js enabled */
+	protected $accept_js_enabled;
+
+	/** @var string API test client key */
+	protected $test_client_key;
+
+	/** @var bool test is Accept.js enabled */
+	protected $test_accept_js_enabled;
 
 
 	/**
@@ -48,8 +61,8 @@ class WC_Gateway_Authorize_Net_CIM_Credit_Card extends WC_Gateway_Authorize_Net_
 			WC_Authorize_Net_CIM::CREDIT_CARD_GATEWAY_ID,
 			wc_authorize_net_cim(),
 			array(
-				'method_title'       => __( 'Authorize.net CIM', 'woocommerce-gateway-authorize-net-cim' ),
-				'method_description' => __( 'Allow customers to securely pay using their credit cards with Authorize.net CIM.', 'woocommerce-gateway-authorize-net-cim' ),
+				'method_title'       => __( 'Authorize.Net CIM', 'woocommerce-gateway-authorize-net-cim' ),
+				'method_description' => __( 'Allow customers to securely pay using their credit cards with Authorize.Net CIM.', 'woocommerce-gateway-authorize-net-cim' ),
 				'supports'           => array(
 					self::FEATURE_PRODUCTS,
 					self::FEATURE_CARD_TYPES,
@@ -70,6 +83,268 @@ class WC_Gateway_Authorize_Net_CIM_Credit_Card extends WC_Gateway_Authorize_Net_
 				'shared_settings'    => $this->shared_settings_names,
 			)
 		);
+
+		// add scripts & markup when Accept.js is enabled
+		if ( $this->is_accept_js_enabled() ) {
+
+			// remove card number/csc input names so they're not POSTed
+			add_filter( 'wc_' . $this->get_id() . '_payment_form_default_credit_card_fields', array( $this, 'remove_credit_card_field_input_names' ) );
+
+			// render a hidden input for the payment nonce before the credit card fields
+			add_action( 'wc_' . $this->get_id() . '_payment_form', array( $this, 'render_accept_js_fields' ) );
+		}
+	}
+
+
+	/**
+	 * Get the form fields specific to this method.
+	 *
+	 * @since 2.4.0
+	 * @see WC_Gateway_Authorize_Net_CIM::get_method_form_fields()
+	 * @return array
+	 */
+	protected function get_method_form_fields() {
+
+		$fields = array_merge( parent::get_method_form_fields(), array(
+
+			/** Accept.js settings **/
+
+			// production settings
+			'accept_js_enabled' => array(
+				'title'       => __( 'Accept.js', 'woocommerce-gateway-authorize-net-cim' ),
+				'type'        => 'checkbox',
+				'class'       => 'environment-field production-field accept-js-toggle',
+				'label'       => __( 'Enable Accept.js to minimize PCI compliance and send credit card details directly to Authorize.Net', 'woocommerce-gateway-authorize-net-cim' ),
+				/** translators: Placeholders: %1$s - <a> tag, %2$s = </a> tag **/
+				'description' => sprintf( __( 'You must obtain a Client Key to use Accept.js at checkout. %1$sLearn more &raquo;%2$s', 'woocommerce-gateway-authorize-net-cim' ), '<a href="' . esc_url( $this->get_plugin()->get_documentation_url() ) . '#accept-js-support" target="_blank">', '</a>' ), // TODO: docs link
+				'default'     => 'no',
+			),
+			'client_key' => array(
+				'title' => __( 'Client Key', 'woocommerce-gateway-authorize-net-cim' ),
+				'class' => 'environment-field production-field',
+			),
+
+			// test settings
+			'test_accept_js_enabled' => array(
+				'title'       => __( 'Accept.js', 'woocommerce-gateway-authorize-net-cim' ),
+				'type'        => 'checkbox',
+				'class'       => 'environment-field test-field accept-js-toggle',
+				'label'       => __( 'Enable Accept.js to minimize PCI compliance and send credit card details directly to Authorize.Net', 'woocommerce-gateway-authorize-net-cim' ),
+				/** translators: Placeholders: %1$s - <a> tag, %2$s = </a> tag **/
+				'description' => sprintf( __( 'You must obtain a Client Key to use Accept.js at checkout. %1$sLearn more &raquo;%2$s', 'woocommerce-gateway-authorize-net-cim' ), '<a href="' . esc_url( $this->get_plugin()->get_documentation_url() ) . '#accept-js-support" target="_blank">', '</a>' ), // TODO: docs link
+				'default'     => 'no',
+			),
+			'test_client_key' => array(
+				'title' => __( 'Client Key', 'woocommerce-gateway-authorize-net-cim' ),
+				'class' => 'environment-field test-field',
+			),
+
+		) );
+
+		return $fields;
+	}
+
+	/**
+	 * Display settings page with some additional JS for hiding conditional fields.
+	 *
+	 * @since 2.4.0
+	 * @see SV_WC_Payment_Gateway::admin_options()
+	 */
+	public function admin_options() {
+
+		parent::admin_options();
+
+		// add inline javascript
+		ob_start();
+		?>
+
+		$( '.accept-js-toggle' ).change( function() {
+
+			if ( $( this ).is( ':checked' ) ) {
+				$( this ).closest( 'tr' ).next().show();
+			} else {
+				$( this ).closest( 'tr' ).next().hide();
+			}
+
+		} ).change();
+
+		$( '#woocommerce_<?php echo $this->get_id(); ?>_environment' ).change( function() {
+
+			if ( 'production' === $( this ).val() ) {
+				var accept_js_setting = $( '#woocommerce_<?php echo $this->get_id(); ?>_accept_js_enabled' );
+			} else {
+				var accept_js_setting = $( '#woocommerce_<?php echo $this->get_id(); ?>_test_accept_js_enabled' );
+			}
+
+			$( accept_js_setting ).change();
+
+		} ).change();
+		<?php
+
+		wc_enqueue_js( ob_get_clean() );
+
+	}
+
+
+	/**
+	 * Enqueue the gateway-specific assets if present.
+	 *
+	 * @since 2.4.0
+	 */
+	protected function enqueue_gateway_assets() {
+
+		parent::enqueue_gateway_assets();
+
+		if ( $this->is_accept_js_enabled() ) {
+
+			$url = $this->is_production_environment() ? 'https://js.authorize.net/v1/Accept.js' : 'https://jstest.authorize.net/v1/Accept.js';
+
+			wp_enqueue_script( $this->get_gateway_js_handle() . '-accept-js', $url, array(), null );
+		}
+	}
+
+
+	/**
+	 * Get the localized parameters for the gateway JS.
+	 *
+	 * @since 2.4.0
+	 * @return array
+	 */
+	protected function get_gateway_js_localized_script_params() {
+
+		$params = array(
+			'accept_js_enabled' => $this->is_accept_js_enabled(),
+			'login_id'          => $this->get_api_login_id(),
+			'client_key'        => $this->get_client_key(),
+			'general_error'     => __( 'An error occurred, please try again or try an alternate form of payment.', 'woocommerce-gateway-authorize-net-cim' ),
+		);
+
+		return $params;
+	}
+
+
+	/**
+	 * Remove the input names for the card number and CSC fields so they're
+	 * not POSTed to the server, for security and compliance with Accept.js
+	 *
+	 * @since 2.4.0
+	 * @param array $fields credit card fields
+	 * @return array
+	 */
+	public function remove_credit_card_field_input_names( $fields ) {
+
+		$fields['card-number']['name'] = '';
+
+		if ( isset( $fields['card-csc'] ) ) {
+			$fields['card-csc']['name'] = '';
+		}
+
+		return $fields;
+	}
+
+
+	/**
+	 * Render a hidden input for the payment nonce before the credit card fields. This is populated
+	 * by the gateway JS when it receives a nonce from Accept.js.
+	 *
+	 * @since 2.4.0
+	 */
+	public function render_accept_js_fields() {
+
+		$fields = array(
+			'payment-nonce',
+			'payment-descriptor',
+			'card-type',
+			'last-four',
+		);
+
+		foreach ( $fields as $field ) {
+
+			$name = 'wc-' . $this->get_id_dasherized() . '-' . $field;
+
+			echo '<input type="hidden" id="' . esc_attr( $name ) . '" name="' . esc_attr( $name ) . '" />';
+		}
+	}
+
+
+	/**
+	 * Bypass credit card validation if Accept.js is enabled.
+	 *
+	 * @since 2.4.0
+	 * @param bool $is_valid whether the credit card fields are valid
+	 * @return bool
+	 */
+	protected function validate_credit_card_fields( $is_valid ) {
+
+		if ( ! $this->is_accept_js_enabled() ) {
+			return parent::validate_credit_card_fields( $is_valid );
+		}
+
+		if ( ! SV_WC_Helper::get_post( 'wc-' . $this->get_id_dasherized() . '-payment-nonce' ) ) {
+			$this->add_debug_message( 'Accept.js Error: payment nonce is missing', 'error' );
+			$is_valid = false;
+		}
+
+		if ( ! SV_WC_Helper::get_post( 'wc-' . $this->get_id_dasherized() . '-payment-descriptor' ) ) {
+			$this->add_debug_message( 'Accept.js Error: payment descriptor is missing', 'error' );
+			$is_valid = false;
+		}
+
+		if ( ! $is_valid ) {
+
+			$params = $this->get_gateway_js_localized_script_params();
+
+			SV_WC_Helper::wc_add_notice( $params['general_error'], 'error' );
+		}
+
+		return $is_valid;
+	}
+
+
+	/**
+	 * Validates the customer's CSC input.
+	 *
+	 * @since 2.4.0
+	 * @param string $field
+	 * @return bool
+	 */
+	protected function validate_csc( $field ) {
+
+		// the CSC field is verified client-side and thus always valid
+		if ( $this->is_accept_js_enabled() ) {
+			return true;
+		}
+
+		return parent::validate_csc( $field );
+	}
+
+
+	/**
+	 * Add payment data to the order.
+	 *
+	 * @since 2.4.0
+	 * @param int $order_id the order ID
+	 * @return \WC_Order
+	 */
+	public function get_order( $order_id ) {
+
+		$order = parent::get_order( $order_id );
+
+		if ( $this->is_accept_js_enabled() && $nonce = SV_WC_Helper::get_post( 'wc-' . $this->get_id_dasherized() . '-payment-nonce' ) ) {
+
+			// expiry month/year
+			list( $order->payment->exp_month, $order->payment->exp_year ) = array_map( 'trim', explode( '/', SV_WC_Helper::get_post( 'wc-' . $this->get_id_dasherized() . '-expiry' ) ) );
+
+			// card data
+			$order->payment->card_type = SV_WC_Helper::get_post( 'wc-' . $this->get_id_dasherized() . '-card-type' );
+			$order->payment->account_number = $order->payment->last_four = SV_WC_Helper::get_post( 'wc-' . $this->get_id_dasherized() . '-last-four' );
+
+			// nonce data
+			$order->payment->descriptor = SV_WC_Helper::get_post( 'wc-' . $this->get_id_dasherized() . '-payment-descriptor' );
+			$order->payment->nonce      = $nonce;
+		}
+
+		return $order;
 	}
 
 
@@ -92,7 +367,7 @@ class WC_Gateway_Authorize_Net_CIM_Credit_Card extends WC_Gateway_Authorize_Net_
 
 
 	/**
-	 * Add Authorize.net specific data to the order for performing a refund/void,
+	 * Add Authorize.Net specific data to the order for performing a refund/void,
 	 * all transactions require transaction ID and amount.
 	 *
 	 * Profile transactions require the customer profile ID and payment profile ID
@@ -143,7 +418,7 @@ class WC_Gateway_Authorize_Net_CIM_Credit_Card extends WC_Gateway_Authorize_Net_
 
 
 	/**
-	 * Authorize.net allows for an authorized & captured transaction that has not
+	 * Authorize.Net allows for an authorized & captured transaction that has not
 	 * yet settled to be voided. This overrides the refund method when a refund
 	 * request encounters the "Code 54 - The referenced transaction does not meet
 	 * the criteria for issuing a credit." error and attempts a void instead.
@@ -179,6 +454,52 @@ class WC_Gateway_Authorize_Net_CIM_Credit_Card extends WC_Gateway_Authorize_Net_
 		}
 
 		return $defaults;
+	}
+
+
+	/**
+	 * Get the API client key.
+	 *
+	 * @since 2.4.0
+	 * @param string $environment_id the desired environment
+	 * @return string
+	 */
+	public function get_client_key( $environment_id = '' ) {
+
+		if ( ! $environment_id ) {
+			$environment_id = $this->get_environment();
+		}
+
+		return 'production' === $environment_id ? $this->client_key : $this->test_client_key;
+	}
+
+
+	/**
+	 * Determine if Accept.js is enabled.
+	 *
+	 * @since 2.4.0
+	 * @param string $environment_id the desired environment
+	 * @return bool
+	 */
+	public function is_accept_js_enabled( $environment_id = '' ) {
+
+		if ( ! $environment_id ) {
+			$environment_id = $this->get_environment();
+		}
+
+		return 'yes' === ( 'production' === $environment_id ? $this->accept_js_enabled : $this->test_accept_js_enabled );
+	}
+
+
+	/**
+	 * Determine if Accept.js is properly configured.
+	 *
+	 * @since 2.4.0
+	 * @return bool
+	 */
+	public function is_accept_js_configured() {
+
+		return $this->is_accept_js_enabled() && $this->get_client_key();
 	}
 
 

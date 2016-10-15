@@ -1,4 +1,14 @@
-*** WooCommerce Authorize.net CIM Gateway Changelog ***
+*** WooCommerce Authorize.Net CIM Gateway Changelog ***
+
+2016.09.28 - version 2.4.0
+ * Feature - Add Accept.js support for reduced PCI compliance scope
+ * Feature - Add an optional eCheck authorization confirmation message at checkout
+
+2016.08.02 - version 2.3.2
+ * Tweak - Correctly capitalize "Authorize.Net"
+
+2016.07.27 - version 2.3.1
+ * Misc - WordPress 4.6 compatibility
 
 2016.06.02 - version 2.3.0
  * Misc - Added support for WooCommerce 2.6

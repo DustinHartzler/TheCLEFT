@@ -1,6 +1,6 @@
 <?php
 /**
- * WooCommerce Authorize.net CIM Gateway
+ * WooCommerce Authorize.Net CIM Gateway
  *
  * This source file is subject to the GNU General Public License v3.0
  * that is bundled with this package in the file license.txt.
@@ -12,8 +12,8 @@
  *
  * DISCLAIMER
  *
- * Do not edit or add to this file if you wish to upgrade WooCommerce Authorize.net CIM Gateway to newer
- * versions in the future. If you wish to customize WooCommerce Authorize.net CIM Gateway for your
+ * Do not edit or add to this file if you wish to upgrade WooCommerce Authorize.Net CIM Gateway to newer
+ * versions in the future. If you wish to customize WooCommerce Authorize.Net CIM Gateway for your
  * needs please refer to http://docs.woothemes.com/document/authorize-net-cim/
  *
  * @package   WC-Gateway-Authorize-Net-CIM/API/Response
@@ -26,9 +26,9 @@ defined( 'ABSPATH' ) or exit;
 
 
 /**
- * Authorize.net CIM Customer Profile Response Class
+ * Authorize.Net CIM Customer Profile Response Class
  *
- * Parses XML received from the Authorize.net CIM API
+ * Parses XML received from the Authorize.Net CIM API
  *
  * @link http://developer.authorize.net/api/reference/#manage-customer-profiles
  * @link http://www.authorize.net/support/CIM_guide_XML.pdf
@@ -139,7 +139,7 @@ class WC_Authorize_Net_CIM_API_Profile_Response extends WC_Authorize_Net_CIM_API
 			throw new SV_WC_Payment_Gateway_Exception( __( 'Could not parse direct response.', 'woocommerce-gateway-authorize-net-cim' ) );
 		}
 
-		// offset array by 1 to match Authorize.net's order, mainly for readability
+		// offset array by 1 to match Authorize.Net's order, mainly for readability
 		array_unshift( $response, null );
 
 		$this->direct_response = new stdClass();
@@ -174,7 +174,7 @@ class WC_Authorize_Net_CIM_API_Profile_Response extends WC_Authorize_Net_CIM_API
 	 * Checks if the transaction was successful. For customer/payment profile
 	 * creation/validation, we consider both TRANSACTION_APPROVED and TRANSACTION_HELD
 	 * to be the same, since either results in the profile being created within
-	 * Authorize.net -- note there are two distinct possible situations:
+	 * Authorize.Net -- note there are two distinct possible situations:
 	 *
 	 * 1) profile creation results in a "held" response due to CVV/AVS rules -
 	 * profile is created, even if admin later voids the associated profile transaction

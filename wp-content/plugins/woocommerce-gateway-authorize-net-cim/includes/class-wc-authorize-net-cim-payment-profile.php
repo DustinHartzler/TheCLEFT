@@ -1,6 +1,6 @@
 <?php
 /**
- * WooCommerce Authorize.net CIM Gateway
+ * WooCommerce Authorize.Net CIM Gateway
  *
  * This source file is subject to the GNU General Public License v3.0
  * that is bundled with this package in the file license.txt.
@@ -12,8 +12,8 @@
  *
  * DISCLAIMER
  *
- * Do not edit or add to this file if you wish to upgrade WooCommerce Authorize.net CIM Gateway to newer
- * versions in the future. If you wish to customize WooCommerce Authorize.net CIM Gateway for your
+ * Do not edit or add to this file if you wish to upgrade WooCommerce Authorize.Net CIM Gateway to newer
+ * versions in the future. If you wish to customize WooCommerce Authorize.Net CIM Gateway for your
  * needs please refer to http://docs.woothemes.com/document/authorize-net-cim/
  *
  * @package   WC-Gateway-Authorize-Net-CIM/Gateway
@@ -25,7 +25,7 @@
 defined( 'ABSPATH' ) or exit;
 
 /**
- * Authorize.net CIM Payment Profile
+ * Authorize.Net CIM Payment Profile
  *
  * Extends the default payment token class to provide CIM-specific functionality,
  * like billing/payment hashes for checking if an existing saved profile is a
@@ -88,7 +88,7 @@ class WC_Authorize_Net_CIM_Payment_Profile extends SV_WC_Payment_Gateway_Payment
 	/**
 	 * Add payment-specific info to the data array used to build the token given
 	 * an order. This is used when creating a customer profile or payment profile,
-	 * as the response from Authorize.net does not contain some useful information
+	 * as the response from Authorize.Net does not contain some useful information
 	 * (like the card/account type) that improves the token display
 	 *
 	 * @since 2.0.0
@@ -107,7 +107,7 @@ class WC_Authorize_Net_CIM_Payment_Profile extends SV_WC_Payment_Gateway_Payment
 
 		if ( 'credit_card' === $data['type'] ) {
 
-			$data['card_type'] = SV_WC_Payment_Gateway_Helper::card_type_from_account_number( $order->payment->account_number );
+			$data['card_type'] = isset( $order->payment->card_type ) ? $order->payment->card_type : SV_WC_Payment_Gateway_Helper::card_type_from_account_number( $order->payment->account_number );
 			$data['exp_month'] = $order->payment->exp_month;
 			$data['exp_year']  = $order->payment->exp_year;
 
@@ -122,7 +122,7 @@ class WC_Authorize_Net_CIM_Payment_Profile extends SV_WC_Payment_Gateway_Payment
 
 	/**
 	 * Calculate the billing hash from an order or the billTo information provided
-	 * by Authorize.net. The exact hashed value is the md5 hash of a JSON-encoded
+	 * by Authorize.Net. The exact hashed value is the md5 hash of a JSON-encoded
 	 * array in format:
 	 *
 	 * {
@@ -183,7 +183,7 @@ class WC_Authorize_Net_CIM_Payment_Profile extends SV_WC_Payment_Gateway_Payment
 	/**
 	 * Return true if the billing info saved for this profile matches that on the
 	 * provided order. Primarily used to determine if we need to update the billing
-	 * info on the token in Authorize.net prior to processing a transaction.
+	 * info on the token in Authorize.Net prior to processing a transaction.
 	 *
 	 * @since 2.0.0
 	 * @param \WC_Order $order
@@ -223,7 +223,7 @@ class WC_Authorize_Net_CIM_Payment_Profile extends SV_WC_Payment_Gateway_Payment
 
 	/**
 	 * Calculate the payment hash from an order for a payment profile that is being
-	 * added to Authorize.net -- note this cannot be generated as a result of
+	 * added to Authorize.Net -- note this cannot be generated as a result of
 	 * retrieving existing tokens from the API because the card type is not returned.
 	 * The exact hashed value is the md5 hash of a JSON-encoded array in format:
 	 *
@@ -282,7 +282,7 @@ class WC_Authorize_Net_CIM_Payment_Profile extends SV_WC_Payment_Gateway_Payment
 
 	/**
 	 * Returns true if the payment information for the given order is a duplicate
-	 * of an existing profile within Authorize.net. A duplicate profile indicates
+	 * of an existing profile within Authorize.Net. A duplicate profile indicates
 	 * that we should first remove it, then re-add the submitted profile.
 	 *
 	 * @since 2.0.0

@@ -1,6 +1,6 @@
 <?php
 /**
- * WooCommerce Authorize.net CIM Gateway
+ * WooCommerce Authorize.Net CIM Gateway
  *
  * This source file is subject to the GNU General Public License v3.0
  * that is bundled with this package in the file license.txt.
@@ -12,8 +12,8 @@
  *
  * DISCLAIMER
  *
- * Do not edit or add to this file if you wish to upgrade WooCommerce Authorize.net CIM Gateway to newer
- * versions in the future. If you wish to customize WooCommerce Authorize.net CIM Gateway for your
+ * Do not edit or add to this file if you wish to upgrade WooCommerce Authorize.Net CIM Gateway to newer
+ * versions in the future. If you wish to customize WooCommerce Authorize.Net CIM Gateway for your
  * needs please refer to http://docs.woothemes.com/document/authorize-net-cim/
  *
  * @package   WC-Gateway-Authorize-Net-CIM/API/Request
@@ -26,7 +26,7 @@ defined( 'ABSPATH' ) or exit;
 
 
 /**
- * Authorize.net CIM Abstract API Request Class
+ * Authorize.Net CIM Abstract API Request Class
  *
  * Provides helper methods for requests
  *
@@ -75,17 +75,30 @@ abstract class WC_Authorize_Net_CIM_API_Request extends SV_WC_API_XML_Request im
 
 		if ( 'credit_card' === $this->order->payment->type ) {
 
-			// credit card payment
-			$payment = array(
-				'creditCard' => array(
-					'cardNumber'     => $this->order->payment->account_number,
-					'expirationDate' => sprintf( '%s-%s', $this->order->payment->exp_month, $this->order->payment->exp_year ),
-				),
-			);
+			// Accept.js payment
+			if ( isset( $this->order->payment->nonce ) ) {
 
-			// add CSC is available
-			if ( ! empty( $this->order->payment->csc ) ) {
-				$payment['creditCard']['cardCode'] = $this->order->payment->csc;
+				$payment = array(
+					'opaqueData' => array(
+						'dataDescriptor' => $this->order->payment->descriptor,
+						'dataValue'      => $this->order->payment->nonce,
+					),
+				);
+
+			// direct credit card payment
+			} else {
+
+				$payment = array(
+					'creditCard' => array(
+						'cardNumber'     => $this->order->payment->account_number,
+						'expirationDate' => sprintf( '%s-%s', $this->order->payment->exp_month, $this->order->payment->exp_year ),
+					),
+				);
+
+				// add CSC is available
+				if ( ! empty( $this->order->payment->csc ) ) {
+					$payment['creditCard']['cardCode'] = $this->order->payment->csc;
+				}
 			}
 
 		} else {
@@ -218,7 +231,7 @@ abstract class WC_Authorize_Net_CIM_API_Request extends SV_WC_API_XML_Request im
 		/**
 		 * API Request Data
 		 *
-		 * Allow actors to modify the request data before it's sent to Authorize.net
+		 * Allow actors to modify the request data before it's sent to Authorize.Net
 		 *
 		 * @since 2.0.0
 		 * @param array $data request data to be filtered

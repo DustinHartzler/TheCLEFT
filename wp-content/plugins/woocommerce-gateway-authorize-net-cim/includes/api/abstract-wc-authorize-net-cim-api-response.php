@@ -1,6 +1,6 @@
 <?php
 /**
- * WooCommerce Authorize.net CIM Gateway
+ * WooCommerce Authorize.Net CIM Gateway
  *
  * This source file is subject to the GNU General Public License v3.0
  * that is bundled with this package in the file license.txt.
@@ -12,8 +12,8 @@
  *
  * DISCLAIMER
  *
- * Do not edit or add to this file if you wish to upgrade WooCommerce Authorize.net CIM Gateway to newer
- * versions in the future. If you wish to customize WooCommerce Authorize.net CIM Gateway for your
+ * Do not edit or add to this file if you wish to upgrade WooCommerce Authorize.Net CIM Gateway to newer
+ * versions in the future. If you wish to customize WooCommerce Authorize.Net CIM Gateway for your
  * needs please refer to http://docs.woothemes.com/document/authorize-net-cim/
  *
  * @package   WC-Gateway-Authorize-Net-CIM/API/Response
@@ -26,7 +26,7 @@ defined( 'ABSPATH' ) or exit;
 
 
 /**
- * Authorize.net CIM Response Class
+ * Authorize.Net CIM Response Class
  *
  * Provides helper methods for parsing responses
  *
@@ -58,7 +58,7 @@ abstract class WC_Authorize_Net_CIM_API_Response extends SV_WC_API_XML_Response 
 
 		$this->request = $request;
 
-		// Remove namespace as SimpleXML throws warnings with invalid namespace URI provided by Authorize.net
+		// Remove namespace as SimpleXML throws warnings with invalid namespace URI provided by Authorize.Net
 		$raw_response_xml = preg_replace( '/[[:space:]]xmlns[^=]*="[^"]*"/i', '', $raw_response_xml );
 
 		parent::__construct( $raw_response_xml );

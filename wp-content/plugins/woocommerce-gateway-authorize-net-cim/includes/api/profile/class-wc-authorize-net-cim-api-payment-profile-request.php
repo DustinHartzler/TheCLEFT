@@ -1,6 +1,6 @@
 <?php
 /**
- * WooCommerce Authorize.net CIM Gateway
+ * WooCommerce Authorize.Net CIM Gateway
  *
  * This source file is subject to the GNU General Public License v3.0
  * that is bundled with this package in the file license.txt.
@@ -12,8 +12,8 @@
  *
  * DISCLAIMER
  *
- * Do not edit or add to this file if you wish to upgrade WooCommerce Authorize.net CIM Gateway to newer
- * versions in the future. If you wish to customize WooCommerce Authorize.net CIM Gateway for your
+ * Do not edit or add to this file if you wish to upgrade WooCommerce Authorize.Net CIM Gateway to newer
+ * versions in the future. If you wish to customize WooCommerce Authorize.Net CIM Gateway for your
  * needs please refer to http://docs.woothemes.com/document/authorize-net-cim/
  *
  * @package   WC-Gateway-Authorize-Net-CIM/API/Request
@@ -26,7 +26,7 @@ defined( 'ABSPATH' ) or exit;
 
 
 /**
- * Authorize.net CIM API Payment Profile Request Class
+ * Authorize.Net CIM API Payment Profile Request Class
  *
  * Generates XML required by API specs to perform a payment profile API request
  *
@@ -145,7 +145,7 @@ class WC_Authorize_Net_CIM_API_Payment_Profile_Request extends WC_Authorize_Net_
 
 
 	/**
-	 * Get the payment info data required for updating a profile. Authorize.net
+	 * Get the payment info data required for updating a profile. Authorize.Net
 	 * "best practice" is to first retrieve the payment profile before updating
 	 * it so as to include the masked values for things like cardNumber.
 	 *

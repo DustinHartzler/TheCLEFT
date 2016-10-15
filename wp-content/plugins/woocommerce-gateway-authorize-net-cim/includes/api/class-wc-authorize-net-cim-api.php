@@ -1,6 +1,6 @@
 <?php
 /**
- * WooCommerce Authorize.net CIM Gateway
+ * WooCommerce Authorize.Net CIM Gateway
  *
  * This source file is subject to the GNU General Public License v3.0
  * that is bundled with this package in the file license.txt.
@@ -12,8 +12,8 @@
  *
  * DISCLAIMER
  *
- * Do not edit or add to this file if you wish to upgrade WooCommerce Authorize.net CIM Gateway to newer
- * versions in the future. If you wish to customize WooCommerce Authorize.net CIM Gateway for your
+ * Do not edit or add to this file if you wish to upgrade WooCommerce Authorize.Net CIM Gateway to newer
+ * versions in the future. If you wish to customize WooCommerce Authorize.Net CIM Gateway for your
  * needs please refer to http://docs.woothemes.com/document/authorize-net-cim/
  *
  * @package   WC-Gateway-Authorize-Net-CIM/API
@@ -25,10 +25,10 @@
 defined( 'ABSPATH' ) or exit;
 
 /**
- * Authorize.net CIM API Class
+ * Authorize.Net CIM API Class
  *
- * Handles sending/receiving/parsing of Authorize.net CIM XML, this is the main API
- * class responsible for communication with the Authorize.net CIM API
+ * Handles sending/receiving/parsing of Authorize.Net CIM XML, this is the main API
+ * class responsible for communication with the Authorize.Net CIM API
  *
  * @link http://developer.authorize.net/api/reference/
  * @link http://www.authorize.net/support/CIM_guide_XML.pdf
@@ -92,7 +92,7 @@ class WC_Authorize_Net_CIM_API extends SV_WC_API_Base implements SV_WC_Payment_G
 	 * @since 2.0.0
 	 * @see SV_WC_Payment_Gateway_API::credit_card_charge()
 	 * @param \WC_Order $order order
-	 * @return \WC_Authorize_Net_CIM_API_Response Authorize.net API response object
+	 * @return \WC_Authorize_Net_CIM_API_Response Authorize.Net API response object
 	 * @throws \SV_WC_API_Exception
 	 */
 	public function credit_card_charge( WC_Order $order ) {
@@ -109,7 +109,7 @@ class WC_Authorize_Net_CIM_API extends SV_WC_API_Base implements SV_WC_Payment_G
 	 * Create a new credit card auth transaction
 	 *
 	 * Note: The authorization is valid only for a fixed amount of time, which
-	 * may vary by card issuer, but which is usually several days. Authorize.net imposes
+	 * may vary by card issuer, but which is usually several days. Authorize.Net imposes
 	 * its own maximum of 30 days after the date of the original authorization,
 	 * but most issuers are expected to have a validity period significantly
 	 * less than this.
@@ -117,7 +117,7 @@ class WC_Authorize_Net_CIM_API extends SV_WC_API_Base implements SV_WC_Payment_G
 	 * @since 2.0.0
 	 * @see SV_WC_Payment_Gateway_API::credit_card_authorization()
 	 * @param \WC_Order $order order
-	 * @return \WC_Authorize_Net_CIM_API_Response Authorize.net API response object
+	 * @return \WC_Authorize_Net_CIM_API_Response Authorize.Net API response object
 	 * @throws \SV_WC_API_Exception
 	 */
 	public function credit_card_authorization( WC_Order $order ) {
@@ -146,14 +146,14 @@ class WC_Authorize_Net_CIM_API extends SV_WC_API_Base implements SV_WC_Payment_G
 	 *
 	 * Note: The authorization to be captured is valid only for a fixed amount
 	 * of time, which may vary by card issuer, but which is usually several
-	 * days. Authorize.net imposes its own maximum of 30 days after the date of the
+	 * days. Authorize.Net imposes its own maximum of 30 days after the date of the
 	 * original authorization, but most issuers are expected to have a validity
 	 * period significantly less than this.
 	 *
 	 * @since 2.0.0
 	 * @see SV_WC_Payment_Gateway_API::credit_card_capture()
 	 * @param WC_Order $order order
-	 * @return \WC_Authorize_Net_CIM_API_Response Authorize.net API response object
+	 * @return \WC_Authorize_Net_CIM_API_Response Authorize.Net API response object
 	 * @throws \SV_WC_API_Exception
 	 */
 	public function credit_card_capture( WC_Order $order ) {
@@ -171,7 +171,7 @@ class WC_Authorize_Net_CIM_API extends SV_WC_API_Base implements SV_WC_Payment_G
 	 *
 	 * @since 2.0.0
 	 * @param WC_Order $order order
-	 * @return \WC_Authorize_Net_CIM_API_Response Authorize.net API response object
+	 * @return \WC_Authorize_Net_CIM_API_Response Authorize.Net API response object
 	 * @throws \SV_WC_API_Exception
 	 */
 	public function check_debit( WC_Order $order ) {
@@ -195,7 +195,7 @@ class WC_Authorize_Net_CIM_API extends SV_WC_API_Base implements SV_WC_Payment_G
 	 * @since 2.0.0
 	 * @param \WC_Authorize_Net_CIM_API_Request $request
 	 * @param \WC_Order $order order
-	 * @return \WC_Authorize_Net_CIM_API_Response Authorize.net API response object
+	 * @return \WC_Authorize_Net_CIM_API_Response Authorize.Net API response object
 	 * @throws \SV_WC_API_Exception
 	 */
 	protected function perform_transaction( $request, WC_Order $order ) {
@@ -233,7 +233,7 @@ class WC_Authorize_Net_CIM_API extends SV_WC_API_Base implements SV_WC_Payment_G
 	 *
 	 * @since 2.0.0
 	 * @param \WC_Order $order the order
-	 * @return \WC_Authorize_Net_CIM_API_Response Authorize.net API response object
+	 * @return \WC_Authorize_Net_CIM_API_Response Authorize.Net API response object
 	 * @throws \SV_WC_API_Exception
 	 */
 	public function refund( WC_Order $order ) {
@@ -260,7 +260,7 @@ class WC_Authorize_Net_CIM_API extends SV_WC_API_Base implements SV_WC_Payment_G
 	 *
 	 * @since 2.0.0
 	 * @param \WC_Order $order the order
-	 * @return \WC_Authorize_Net_CIM_API_Response Authorize.net API response object
+	 * @return \WC_Authorize_Net_CIM_API_Response Authorize.Net API response object
 	 * @throws SV_WC_API_Exception
 	 */
 	public function void( WC_Order $order ) {
@@ -334,7 +334,7 @@ class WC_Authorize_Net_CIM_API extends SV_WC_API_Base implements SV_WC_Payment_G
 					$id = str_replace( 'ID ', '', $id[0] );
 
 					if ( ! is_numeric( $id ) ) {
-						throw new SV_WC_Payment_Gateway_Exception( sprintf( 'Invalid customer profile ID (%s) provided by Authorize.net for duplicate customer profile.', $id ), 500, $e );
+						throw new SV_WC_Payment_Gateway_Exception( sprintf( 'Invalid customer profile ID (%s) provided by Authorize.Net for duplicate customer profile.', $id ), 500, $e );
 					}
 
 					// update the customer ID for the user and the current order
@@ -406,7 +406,7 @@ class WC_Authorize_Net_CIM_API extends SV_WC_API_Base implements SV_WC_Payment_G
 
 	/**
 	 * Handle a duplicate payment profile error when trying to add a payment
-	 * profile to an existing customer profile. Authorize.net does not return
+	 * profile to an existing customer profile. Authorize.Net does not return
 	 * which profile it considers a duplicate, so we use the payment hash
 	 * saved on the local token and compare it against the generated hash for
 	 * the payment method that is being added.
@@ -524,7 +524,7 @@ class WC_Authorize_Net_CIM_API extends SV_WC_API_Base implements SV_WC_Payment_G
 
 
 	/**
-	 * Authorize.net CIM supports retrieving tokenized payment methods
+	 * Authorize.Net CIM supports retrieving tokenized payment methods
 	 *
 	 * @since 2.0.0
 	 * @see SV_WC_Payment_Gateway_API::supports_get_tokenized_payment_methods()
@@ -537,7 +537,7 @@ class WC_Authorize_Net_CIM_API extends SV_WC_API_Base implements SV_WC_Payment_G
 
 
 	/**
-	 * Authorize.net CIM supports removing tokenized payment methods
+	 * Authorize.Net CIM supports removing tokenized payment methods
 	 *
 	 * @since 2.0.0
 	 * @see SV_WC_Payment_Gateway_API::supports_remove_tokenized_payment_method()
@@ -633,7 +633,7 @@ class WC_Authorize_Net_CIM_API extends SV_WC_API_Base implements SV_WC_Payment_G
 
 	/**
 	 * Return the token for the hosted profile page, currently only used to
-	 * determine if the CIM feature is enabled for the Authorize.net account
+	 * determine if the CIM feature is enabled for the Authorize.Net account
 	 *
 	 * @since 2.0.0
 	 * @return \WC_Authorize_Net_CIM_API_Hosted_Profile_Page_Response response object
@@ -686,7 +686,7 @@ class WC_Authorize_Net_CIM_API extends SV_WC_API_Base implements SV_WC_Payment_G
 
 		} elseif ( $this->get_response()->is_test_request() ) {
 
-			throw new SV_WC_API_Exception( __( 'Test request detected -- please disable test mode in your Authorize.net control panel and use a separate Authorize.net test account for testing.' ) );
+			throw new SV_WC_API_Exception( __( 'Test request detected -- please disable test mode in your Authorize.Net control panel and use a separate Authorize.Net test account for testing.' ) );
 		}
 	}
 

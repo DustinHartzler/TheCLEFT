@@ -1,6 +1,6 @@
 <?php
 /**
- * WooCommerce Authorize.net CIM Gateway
+ * WooCommerce Authorize.Net CIM Gateway
  *
  * This source file is subject to the GNU General Public License v3.0
  * that is bundled with this package in the file license.txt.
@@ -12,8 +12,8 @@
  *
  * DISCLAIMER
  *
- * Do not edit or add to this file if you wish to upgrade WooCommerce Authorize.net CIM Gateway to newer
- * versions in the future. If you wish to customize WooCommerce Authorize.net CIM Gateway for your
+ * Do not edit or add to this file if you wish to upgrade WooCommerce Authorize.Net CIM Gateway to newer
+ * versions in the future. If you wish to customize WooCommerce Authorize.Net CIM Gateway for your
  * needs please refer to http://docs.woothemes.com/document/authorize-net-cim/
  *
  * @package   WC-Gateway-Authorize-Net-CIM/Gateway
@@ -25,7 +25,7 @@
 defined( 'ABSPATH' ) or exit;
 
 /**
- * Authorize.net CIM Payment Gateway Parent Class
+ * Authorize.Net CIM Payment Gateway Parent Class
  *
  * Functionality which is shared between the credit card and echeck gateways
  *
@@ -77,28 +77,28 @@ class WC_Gateway_Authorize_Net_CIM extends SV_WC_Payment_Gateway_Direct {
 				'title'    => __( 'API Login ID', 'woocommerce-gateway-authorize-net-cim' ),
 				'type'     => 'text',
 				'class'    => 'environment-field production-field',
-				'desc_tip' => __( 'Your Authorize.net API Login ID', 'woocommerce-gateway-authorize-net-cim' ),
+				'desc_tip' => __( 'Your Authorize.Net API Login ID', 'woocommerce-gateway-authorize-net-cim' ),
 			),
 
 			'api_transaction_key' => array(
 				'title'    => __( 'API Transaction Key', 'woocommerce-gateway-authorize-net-cim' ),
 				'type'     => 'password',
 				'class'    => 'environment-field production-field',
-				'desc_tip' => __( 'Your Authorize.net API Transaction Key', 'woocommerce-gateway-authorize-net-cim' ),
+				'desc_tip' => __( 'Your Authorize.Net API Transaction Key', 'woocommerce-gateway-authorize-net-cim' ),
 			),
 
 			'test_api_login_id' => array(
 				'title'    => __( 'Test API Login ID', 'woocommerce-gateway-authorize-net-cim' ),
 				'type'     => 'text',
 				'class'    => 'environment-field test-field',
-				'desc_tip' => __( 'Your test Authorize.net API Login ID', 'woocommerce-gateway-authorize-net-cim' ),
+				'desc_tip' => __( 'Your test Authorize.Net API Login ID', 'woocommerce-gateway-authorize-net-cim' ),
 			),
 
 			'test_api_transaction_key' => array(
 				'title'    => __( 'Test API Transaction Key', 'woocommerce-gateway-authorize-net-cim' ),
 				'type'     => 'password',
 				'class'    => 'environment-field test-field',
-				'desc_tip' => __( 'Your test Authorize.net API Transaction Key', 'woocommerce-gateway-authorize-net-cim' ),
+				'desc_tip' => __( 'Your test Authorize.Net API Transaction Key', 'woocommerce-gateway-authorize-net-cim' ),
 			),
 		);
 	}
@@ -181,7 +181,7 @@ class WC_Gateway_Authorize_Net_CIM extends SV_WC_Payment_Gateway_Direct {
 
 
 	/**
-	 * Add any Authorize.net CIM specific transaction information as
+	 * Add any Authorize.Net CIM specific transaction information as
 	 * class members of WC_Order instance.  Added members can include:
 	 *
 	 * + po_number - PO Number to be included with the transaction via the legacy filter below
@@ -449,7 +449,7 @@ class WC_Gateway_Authorize_Net_CIM extends SV_WC_Payment_Gateway_Direct {
 
 	/**
 	 * Returns true if the gateway is properly configured to perform transactions.
-	 * Authorize.net CIM requires: API Login ID & API Transaction Key
+	 * Authorize.Net CIM requires: API Login ID & API Transaction Key
 	 *
 	 * @since 2.0.0
 	 * @see SV_WC_Payment_Gateway::is_configured()

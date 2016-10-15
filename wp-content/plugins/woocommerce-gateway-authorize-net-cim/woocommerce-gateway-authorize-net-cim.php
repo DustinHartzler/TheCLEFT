@@ -1,11 +1,11 @@
 <?php
 /**
- * Plugin Name: WooCommerce Authorize.net CIM Gateway
+ * Plugin Name: WooCommerce Authorize.Net CIM Gateway
  * Plugin URI: http://www.woothemes.com/products/authorize-net-cim/
- * Description: Adds the Authorize.net CIM Payment Gateway to your WooCommerce site, allowing customers to securely save their credit card or bank account to their account for use with single purchases, pre-orders, subscriptions, and more!
+ * Description: Adds the Authorize.Net CIM Payment Gateway to your WooCommerce site, allowing customers to securely save their credit card or bank account to their account for use with single purchases, pre-orders, subscriptions, and more!
  * Author: WooThemes / SkyVerge
  * Author URI: http://www.woothemes.com/
- * Version: 2.3.0
+ * Version: 2.4.0
  * Text Domain: woocommerce-gateway-authorize-net-cim
  * Domain Path: /i18n/languages/
  *
@@ -41,7 +41,7 @@ if ( ! class_exists( 'SV_WC_Framework_Bootstrap' ) ) {
 	require_once( plugin_dir_path( __FILE__ ) . 'lib/skyverge/woocommerce/class-sv-wc-framework-bootstrap.php' );
 }
 
-SV_WC_Framework_Bootstrap::instance()->register_plugin( '4.4.0', __( 'WooCommerce Authorize.net CIM Gateway', 'woocommerce-gateway-authorize-net-cim' ), __FILE__, 'init_woocommerce_gateway_authorize_net_cim', array(
+SV_WC_Framework_Bootstrap::instance()->register_plugin( '4.4.1', __( 'WooCommerce Authorize.Net CIM Gateway', 'woocommerce-gateway-authorize-net-cim' ), __FILE__, 'init_woocommerce_gateway_authorize_net_cim', array(
 	'is_payment_gateway'   => true,
 	'minimum_wc_version'   => '2.4.13',
 	'minimum_wp_version'   => '4.1',
@@ -51,11 +51,11 @@ SV_WC_Framework_Bootstrap::instance()->register_plugin( '4.4.0', __( 'WooCommerc
 function init_woocommerce_gateway_authorize_net_cim() {
 
 /**
- * # WooCommerce Authorize.net CIM Gateway Main Plugin Class
+ * # WooCommerce Authorize.Net CIM Gateway Main Plugin Class
  *
  * ## Plugin Overview
  *
- * This plugin adds Authorize.net CIM as a payment gateway.  This class handles all the
+ * This plugin adds Authorize.Net CIM as a payment gateway.  This class handles all the
  * non-gateway tasks such as verifying dependencies are met, loading the text
  * domain, etc.
  *
@@ -91,17 +91,17 @@ function init_woocommerce_gateway_authorize_net_cim() {
  * ### Credit Card Order Meta
  *
  * + `_wc_authorize_net_cim_environment` - the environment the transaction was created in, one of 'test' or 'production'
- * + `_wc_authorize_net_cim_trans_id` - the credit card transaction ID returned by Authorize.net
+ * + `_wc_authorize_net_cim_trans_id` - the credit card transaction ID returned by Authorize.Net
  * + `_wc_authorize_net_cim_trans_date` - the credit card transaction date
  * + `_wc_authorize_net_cim_account_four` - the last four digits of the card used for the order
  * + `_wc_authorize_net_cim_card_type` - the card type used for the transaction, if known
  * + `_wc_authorize_net_cim_card_expiry_date` - the expiration date for the card used for the order
- * + `_wc_authorize_net_cim_authorization_code` - the authorization code returned by Authorize.net
+ * + `_wc_authorize_net_cim_authorization_code` - the authorization code returned by Authorize.Net
  * + `_wc_authorize_net_cim_charge_captured` - indicates if the transaction was captured, either `yes` or `no`
  *
  * ### eCheck Order Meta
  * + `_wc_authorize_net_cim_echeck_environment` - the environment the transaction was created in, one of 'test' or 'production'
- * + `_wc_authorize_net_cim_echeck_trans_id` - the credit card transaction ID returned by Authorize.net
+ * + `_wc_authorize_net_cim_echeck_trans_id` - the credit card transaction ID returned by Authorize.Net
  * + `_wc_authorize_net_cim_echeck_trans_date` - the credit card transaction date
  * + `_wc_authorize_net_cim_echeck_account_four` - the last four digits of the card used for the order
  * + `_wc_authorize_net_cim_echeck_account_type` - the bank account type used for the transaction, if known, either `checking` or `savings`
@@ -122,7 +122,7 @@ class WC_Authorize_Net_CIM extends SV_WC_Payment_Gateway_Plugin {
 
 
 	/** string version number */
-	const VERSION = '2.3.0';
+	const VERSION = '2.4.0';
 
 	/** @var WC_Authorize_Net_CIM single instance of this plugin */
 	protected static $instance;
@@ -307,22 +307,22 @@ class WC_Authorize_Net_CIM extends SV_WC_Payment_Gateway_Plugin {
 		if ( empty( $settings ) && ! $this->get_admin_notice_handler()->is_notice_dismissed( 'install-notice' ) ) {
 
 			$this->get_admin_notice_handler()->add_admin_notice(
-				sprintf( __( 'Thanks for installing the WooCommerce Authorize.net CIM Gateway! To start accepting payments, %sset your Authorize.net API credentials%s. Need help? See the %sdocumentation%s.', 'woocommerce-gateway-authorize-net-cim' ),
+				sprintf( __( 'Thanks for installing the WooCommerce Authorize.Net CIM Gateway! To start accepting payments, %sset your Authorize.Net API credentials%s. Need help? See the %sdocumentation%s.', 'woocommerce-gateway-authorize-net-cim' ),
 					'<a href="' . $this->get_settings_url() . '">', '</a>',
 					'<a target="_blank" href="' . $this->get_documentation_url() . '">', '</a>'
 				), 'install-notice', array( 'notice_class' => 'updated' )
 			);
 		}
 
+		$gateway = $this->get_gateway( self::CREDIT_CARD_GATEWAY_ID );
+
+		// bail if gateway is not available, as proper credentials are needed first
+		if ( ! $gateway->is_available() ) {
+			return;
+		}
+
 		// check if CIM feature is enabled on customer's authorize.net account
 		if ( ! get_option( 'wc_authorize_net_cim_feature_enabled' ) ) {
-
-			$gateway = $this->get_gateway( self::CREDIT_CARD_GATEWAY_ID );
-
-			// bail if gateway is not available, as proper credentials are needed first
-			if ( ! $gateway->is_available() ) {
-				return;
-			}
 
 			if ( $gateway->is_cim_feature_enabled() ) {
 				update_option( 'wc_authorize_net_cim_feature_enabled', true );
@@ -330,9 +330,27 @@ class WC_Authorize_Net_CIM extends SV_WC_Payment_Gateway_Plugin {
 
 				if ( ! $this->get_admin_notice_handler()->is_notice_dismissed( 'cim-add-on-notice' ) ) {
 					$this->get_admin_notice_handler()->add_admin_notice(
-						sprintf( __( 'The CIM Add-On is not enabled on your Authorize.net account. Please %scontact Authorize.net%s to enable CIM. You will be unable to process transactions until CIM is enabled. ', 'woocommerce-gateway-authorize-net-cim' ), '<a href="http://support.authorize.net" target="_blank">', '</a>' ),
+						sprintf( __( 'The CIM Add-On is not enabled on your Authorize.Net account. Please %scontact Authorize.Net%s to enable CIM. You will be unable to process transactions until CIM is enabled. ', 'woocommerce-gateway-authorize-net-cim' ), '<a href="http://support.authorize.net" target="_blank">', '</a>' ),
 						'cim-add-on-notice' );
 				}
+			}
+		}
+
+		if ( $gateway->is_accept_js_enabled() && isset( $_GET['page'] ) && 'wc-settings' === $_GET['page'] ) {
+
+			$message = '';
+
+			if ( ! $gateway->get_client_key() ) {
+				$message = sprintf( __( "%s: A valid Client Key is required to use Accept.js at checkout.", 'woocommerce-gateway-authorize-net-cim' ), '<strong>' . $this->get_plugin_name() . '</strong>' );
+			} elseif ( ! SV_WC_Plugin_Compatibility::wc_checkout_is_https() ) {
+				$message = sprintf( __( "%s: SSL is required to use Accept.js at checkout.", 'woocommerce-gateway-authorize-net-cim' ), '<strong>' . $this->get_plugin_name() . '</strong>' );
+			}
+
+			if ( $message ) {
+				$this->get_admin_notice_handler()->add_admin_notice( $message, 'accept-js-status', array(
+					'dismissible'  => false,
+					'notice_class' => 'error',
+				) );
 			}
 		}
 	}
@@ -342,7 +360,7 @@ class WC_Authorize_Net_CIM extends SV_WC_Payment_Gateway_Plugin {
 
 
 	/**
-	 * Main Authorize.net CIM Instance, ensures only one instance is/can be loaded
+	 * Main Authorize.Net CIM Instance, ensures only one instance is/can be loaded
 	 *
 	 * @since 1.4.0
 	 * @see wc_authorize_net_cim()
@@ -388,7 +406,7 @@ class WC_Authorize_Net_CIM extends SV_WC_Payment_Gateway_Plugin {
 	 * @return string the plugin name
 	 */
 	public function get_plugin_name() {
-		return __( 'WooCommerce Authorize.net CIM Gateway', 'woocommerce-gateway-authorize-net-cim' );
+		return __( 'WooCommerce Authorize.Net CIM Gateway', 'woocommerce-gateway-authorize-net-cim' );
 	}
 
 
@@ -616,7 +634,7 @@ class WC_Authorize_Net_CIM extends SV_WC_Payment_Gateway_Plugin {
 
 
 /**
- * Returns the One True Instance of Authorize.net CIM
+ * Returns the One True Instance of Authorize.Net CIM
  *
  * @since 1.4.0
  * @return WC_Authorize_Net_CIM

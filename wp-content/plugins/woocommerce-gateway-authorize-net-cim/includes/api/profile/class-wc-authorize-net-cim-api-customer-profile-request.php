@@ -1,6 +1,6 @@
 <?php
 /**
- * WooCommerce Authorize.net CIM Gateway
+ * WooCommerce Authorize.Net CIM Gateway
  *
  * This source file is subject to the GNU General Public License v3.0
  * that is bundled with this package in the file license.txt.
@@ -12,8 +12,8 @@
  *
  * DISCLAIMER
  *
- * Do not edit or add to this file if you wish to upgrade WooCommerce Authorize.net CIM Gateway to newer
- * versions in the future. If you wish to customize WooCommerce Authorize.net CIM Gateway for your
+ * Do not edit or add to this file if you wish to upgrade WooCommerce Authorize.Net CIM Gateway to newer
+ * versions in the future. If you wish to customize WooCommerce Authorize.Net CIM Gateway for your
  * needs please refer to http://docs.woothemes.com/document/authorize-net-cim/
  *
  * @package   WC-Gateway-Authorize-Net-CIM/API/Request
@@ -26,7 +26,7 @@ defined( 'ABSPATH' ) or exit;
 
 
 /**
- * Authorize.net CIM API Customer Profile Request Class
+ * Authorize.Net CIM API Customer Profile Request Class
  *
  * Generates XML required by API specs to perform a customer profile API request
  *
@@ -143,7 +143,7 @@ class WC_Authorize_Net_CIM_API_Customer_Profile_Request extends WC_Authorize_Net
 
 
 	/**
-	 * Get *all* the customer profile IDs that exist in Authorize.net for
+	 * Get *all* the customer profile IDs that exist in Authorize.Net for
 	 * the given merchant account info
 	 *
 	 * @since 2.0.0

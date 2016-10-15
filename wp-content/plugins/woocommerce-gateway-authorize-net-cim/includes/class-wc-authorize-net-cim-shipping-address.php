@@ -1,6 +1,6 @@
 <?php
 /**
- * WooCommerce Authorize.net CIM Gateway
+ * WooCommerce Authorize.Net CIM Gateway
  *
  * This source file is subject to the GNU General Public License v3.0
  * that is bundled with this package in the file license.txt.
@@ -12,8 +12,8 @@
  *
  * DISCLAIMER
  *
- * Do not edit or add to this file if you wish to upgrade WooCommerce Authorize.net CIM Gateway to newer
- * versions in the future. If you wish to customize WooCommerce Authorize.net CIM Gateway for your
+ * Do not edit or add to this file if you wish to upgrade WooCommerce Authorize.Net CIM Gateway to newer
+ * versions in the future. If you wish to customize WooCommerce Authorize.Net CIM Gateway for your
  * needs please refer to http://docs.woothemes.com/document/authorize-net-cim/
  *
  * @package   WC-Gateway-Authorize-Net-CIM/Gateway
@@ -25,7 +25,7 @@
 defined( 'ABSPATH' ) or exit;
 
 /**
- * Authorize.net CIM Shipping Address
+ * Authorize.Net CIM Shipping Address
  *
  * Represents a single CIM shipping address -- each registered customer can
  * have a single shipping address which is used for every profile transaction
@@ -93,7 +93,7 @@ class WC_Authorize_Net_CIM_Shipping_Address {
 
 
 	/**
-	 * Get the shipping address ID, this is provided by Authorize.net
+	 * Get the shipping address ID, this is provided by Authorize.Net
 	 * @since 2.0.0
 	 * @return string
 	 */
@@ -119,7 +119,7 @@ class WC_Authorize_Net_CIM_Shipping_Address {
 	 * Update the shipping address ID in user meta
 	 *
 	 * @since 2.0.0
-	 * @param string $id shipping address ID provided by Authorize.net
+	 * @param string $id shipping address ID provided by Authorize.Net
 	 */
 	public function update_id( $id ) {
 
@@ -201,7 +201,7 @@ class WC_Authorize_Net_CIM_Shipping_Address {
 	/**
 	 * Returns true if the shipping info on the provided order matches that saved
 	 * for the customer. Used to determine if the the shipping address needs to be
-	 * updated in Authorize.net prior to processing a transaction.
+	 * updated in Authorize.Net prior to processing a transaction.
 	 *
 	 * @since 2.0.0
 	 * @param \WC_Order $order order object
@@ -216,9 +216,9 @@ class WC_Authorize_Net_CIM_Shipping_Address {
 
 
 	/**
-	 * Returns true if the shipping info provided by Authorize.net for the customer
+	 * Returns true if the shipping info provided by Authorize.Net for the customer
 	 * profile matches the shipping info on the order. Used when the local
-	 * shipping profile has been corrupted or deleted, but it exists in Authorize.net.
+	 * shipping profile has been corrupted or deleted, but it exists in Authorize.Net.
 	 * Because the API does not return which profile is considered duplicate, we
 	 * must iterate through each one and match it to the shipping address on the order
 	 * to find which one to use ಠ_ಠ
