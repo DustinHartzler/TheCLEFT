@@ -104,6 +104,9 @@ class WC_Subscriptions_Synchroniser {
 		// Autocomplete subscription orders when they only contain a synchronised subscription
 		add_filter( 'woocommerce_payment_complete_order_status', __CLASS__ . '::order_autocomplete', 10, 2 );
 
+		// If it's an initial sync order and the total is zero, and nothing needs to be shipped, do not reduce stock
+		add_filter( 'woocommerce_order_item_quantity', __CLASS__ . '::maybe_do_not_reduce_stock', 10, 3 );
+
 		add_filter( 'woocommerce_subscriptions_recurring_cart_key', __CLASS__ . '::add_to_recurring_cart_key', 10, 2 );
 	}
 
@@ -195,8 +198,8 @@ class WC_Subscriptions_Synchroniser {
 			}
 
 			// Determine whether to display the week/month sync fields or the annual sync fields
-			$display_week_month_select = ( ! in_array( $subscription_period, array( 'month', 'week' ) ) ) ? ' style="display: none;"' : '';
-			$display_annual_select     = ( 'year' != $subscription_period ) ? ' style="display: none;"' : '';
+			$display_week_month_select = ( ! in_array( $subscription_period, array( 'month', 'week' ) ) ) ? 'display: none;' : '';
+			$display_annual_select     = ( 'year' != $subscription_period ) ? 'display: none;' : '';
 
 			$payment_day = self::get_products_payment_day( $post->ID );
 
@@ -209,7 +212,7 @@ class WC_Subscriptions_Synchroniser {
 			}
 
 			echo '<div class="options_group subscription_pricing subscription_sync show_if_subscription">';
-			echo '<div class="subscription_sync_week_month"' . esc_attr( $display_week_month_select ) . '>';
+			echo '<div class="subscription_sync_week_month" style="' . esc_attr( $display_week_month_select ) . '">';
 
 			woocommerce_wp_select( array(
 				'id'          => self::$post_meta_key,
@@ -224,7 +227,7 @@ class WC_Subscriptions_Synchroniser {
 
 			echo '</div>';
 
-			echo '<div class="subscription_sync_annual"' . esc_attr( $display_annual_select ) . '>';
+			echo '<div class="subscription_sync_annual" style="' . esc_attr( $display_annual_select ) . '">';
 
 			woocommerce_wp_text_input( array(
 				'id'            => self::$post_meta_key_day,
@@ -267,8 +270,8 @@ class WC_Subscriptions_Synchroniser {
 				$subscription_period = 'month';
 			}
 
-			$display_week_month_select = ( ! in_array( $subscription_period, array( 'month', 'week' ) ) ) ? ' style="display: none;"' : '';
-			$display_annual_select     = ( 'year' != $subscription_period ) ? ' style="display: none;"' : '';
+			$display_week_month_select = ( ! in_array( $subscription_period, array( 'month', 'week' ) ) ) ? 'display: none;' : '';
+			$display_annual_select     = ( 'year' != $subscription_period ) ? 'display: none;' : '';
 
 			$payment_day = self::get_products_payment_day( $variation->ID );
 
@@ -951,6 +954,34 @@ class WC_Subscriptions_Synchroniser {
 		}
 
 		return $new_order_status;
+	}
+
+	/**
+	 * Override quantities used to lower stock levels by when using synced subscriptions. If it's a synced product
+	 * that does not have proration enabled and the payment date is not today, do not lower stock levels.
+	 *
+	 * @param integer $qty the original quantity that would be taken out of the stock level
+	 * @param array $order order data
+	 * @param array $item item data for each item in the order
+	 *
+	 * @return int
+	 */
+	public static function maybe_do_not_reduce_stock( $qty, $order, $order_item ) {
+		if ( wcs_order_contains_subscription( $order, array( 'parent', 'resubscribe' ) ) && 0 == $order_item['line_total'] ) {
+			$subscriptions = wcs_get_subscriptions_for_order( $order );
+			$product_id    = wcs_get_canonical_product_id( $order_item );
+
+			foreach ( $subscriptions as $subscription ) {
+				if ( self::subscription_contains_synced_product( $subscription ) && $subscription->has_product( $product_id ) ) {
+					foreach ( $subscription->get_items() as $subscription_item ) {
+						if ( wcs_get_canonical_product_id( $subscription_item ) == $product_id && 0 < $subscription_item['line_total'] ) {
+							$qty = 0;
+						}
+					}
+				}
+			}
+		}
+		return $qty;
 	}
 
 	/**
