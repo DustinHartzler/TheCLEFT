@@ -145,7 +145,28 @@
 
 			});
 
+		}, 
+		getNYPVariationBulkEditValue: function( variation_action ){
+			var value;
+
+			switch( variation_action ) {
+				case 'variation_suggested_price':
+				case 'variation_minimum_price':
+					value = window.prompt( woocommerce_nyp_metabox.enter_value );
+					value = accounting.unformat( value, woocommerce_admin.mon_decimal_point );
+					break;
+				case 'variation_suggested_price_increase':
+				case 'variation_min_price_increase':
+					value = window.prompt( woocommerce_nyp_metabox.price_adjust );
+					break;
+				case 'variation_suggested_price_increase':
+				case 'variation_min_price_increase':
+					value = window.prompt( woocommerce_nyp_metabox.price_adjust );
+					break;
+			}
+			return value;
 		}
+
 	} ); //end extend
 
 
@@ -199,7 +220,7 @@
 	});
 
 	// hide/display variable nyp prices on bulk nyp checkbox change
-	$( 'select#field_to_edit' ).on( 'woocommerce_variable_bulk_nyp_toggle', function(event){
+	$( 'select.variation_actions' ).on( 'woocommerce_variable_bulk_nyp_toggle', function(event){
 		$.showHideNYPvariableMeta();
 	});
 
@@ -207,102 +228,36 @@
 	* Bulk Edit callbacks
 	*/
 
-	// toggle all variations to NYP
-	$( 'select#field_to_edit' ).on( 'toggle_nyp', function(){
-		var checkbox = $( 'input[name^="variation_is_nyp"]' );
-		checkbox.attr( 'checked', !checkbox.attr( 'checked' ));
-		$( 'select#field_to_edit' ).trigger( 'woocommerce_variable_bulk_nyp_toggle' );
+	// WC 2.4+ variation bulk edit handling
+	$( 'select.variation_actions' ).on( 'variation_suggested_price_ajax_data variation_suggested_price_increase_ajax_data variation_suggested_price_decrease_ajax_data variation_min_price_ajax_data variation_min_price_increase_ajax_data variation_min_price_decrease_ajax_data', function(event, data) {
+		
+		variation_action = event.type.replace(/_ajax_data/g,'');
+
+		switch( variation_action ) {
+			case 'variation_suggested_price':
+			case 'variation_min_price':
+				value = window.prompt( woocommerce_nyp_metabox.enter_value );
+				// unformat
+				value = accounting.unformat( value, woocommerce_admin.mon_decimal_point );
+				break;
+			case 'variation_suggested_price_increase':
+			case 'variation_suggested_price_decrease':
+			case 'variation_min_price_increase':
+			case 'variation_min_price_decrease':
+				value = window.prompt( woocommerce_nyp_metabox.price_adjust );
+
+				// is it a percentage change?
+				data.percentage = value.indexOf("%") >= 0 ? 'yes' : 'no';
+
+				// unformat
+				value = accounting.unformat( value, woocommerce_admin.mon_decimal_point );
+
+		}
+
+		if ( value != null ) {
+			data.value = value;
+		}
+		return data;
 	});
-
-	// set all suggestd prices
-	$( 'select#field_to_edit' ).on( 'variable_suggested_price', function(){
-
-		var input_tag = $( 'select#field_to_edit :selected' ).attr( 'rel' ) ? $( 'select#field_to_edit :selected' ).attr( 'rel' ) : 'input';
-
-		var value = prompt(woocommerce_nyp_metabox.enter_value);
-		$(input_tag + '[name^="' + field_to_edit + '["]' ).val( value ).change();
-
-	});
-
-	// increase all suggested prices
-	$( 'select#field_to_edit' ).on( 'variable_suggested_price_increase', function(){
-		field_to_edit = 'variable_suggested_price';
-		var input_tag = $( 'select#field_to_edit :selected' ).attr( 'rel' ) ? $( 'select#field_to_edit :selected' ).attr( 'rel' ) : 'input';
-
-		var value = prompt(woocommerce_nyp_metabox.price_adjust);
-		$(input_tag + '[name^="' + field_to_edit + '"]' ).each(function() {
-		var current_value = $(this).val();
-
-			if ( value.indexOf("%") >= 0 ) {
-				var new_value = Number( current_value ) + ( ( Number( current_value ) / 100 ) * Number( value.replace(/\%/, "" ) ) );
-			} else {
-				var new_value = Number( current_value ) + Number ( value );
-			}
-			$(this).val( new_value ).change();
-		});
-	});
-
-	// decrease all suggested prices
-	$( 'select#field_to_edit' ).on( 'variable_suggested_price_decrease', function(){
-		field_to_edit = 'variable_suggested_price';
-		var input_tag = $( 'select#field_to_edit :selected' ).attr( 'rel' ) ? $( 'select#field_to_edit :selected' ).attr( 'rel' ) : 'input';
-
-		var value = prompt(woocommerce_nyp_metabox.price_adjust);
-		$(input_tag + '[name^="' + field_to_edit + '"]' ).each(function() {
-			var current_value = $(this).val();
-
-			if ( value.indexOf("%") >= 0 ) {
-				var new_value = Number( current_value ) - ( ( Number( current_value ) / 100 ) * Number( value.replace(/\%/, "" ) ) );
-			} else {
-				var new_value = Number( current_value ) - Number ( value );
-			}
-			$(this).val( new_value ).change();
-		});
-	});
-
-	// set all minimum prices
-	$( 'select#field_to_edit' ).on( 'variable_minimum_price', function(){
-		var input_tag = $( 'select#field_to_edit :selected' ).attr( 'rel' ) ? $( 'select#field_to_edit :selected' ).attr( 'rel' ) : 'input';
-
-		var value = prompt(woocommerce_nyp_metabox.enter_value);
-		$(input_tag + '[name^="' + field_to_edit + '["]' ).val( value ).change();
-	});
-
-	// increase all minimum prices
-	$( 'select#field_to_edit' ).on( 'variable_minimum_price_increase', function(){
-		field_to_edit = 'variable_minimum_price';
-		var input_tag = $( 'select#field_to_edit :selected' ).attr( 'rel' ) ? $( 'select#field_to_edit :selected' ).attr( 'rel' ) : 'input';
-
-		var value = prompt(woocommerce_nyp_metabox.price_adjust);
-		$(input_tag + '[name^="' + field_to_edit + '"]' ).each(function() {
-			var current_value = $(this).val();
-
-			if ( value.indexOf("%") >= 0 ) {
-				var new_value = Number( current_value ) + ( ( Number( current_value ) / 100 ) * Number( value.replace(/\%/, "" ) ) );
-			} else {
-				var new_value = Number( current_value ) + Number ( value );
-			}
-			$(this).val( new_value ).change();
-		});
-	});
-
-	// decrease all minimu prices
-	$( 'select#field_to_edit' ).on( 'variable_minimum_price_decrease', function(){
-		field_to_edit = 'variable_minimum_price';
-		var input_tag = $( 'select#field_to_edit :selected' ).attr( 'rel' ) ? $( 'select#field_to_edit :selected' ).attr( 'rel' ) : 'input';
-
-		var value = prompt(woocommerce_nyp_metabox.price_adjust);
-		$(input_tag + '[name^="' + field_to_edit + '"]' ).each(function() {
-			var current_value = $(this).val();
-
-			if ( value.indexOf("%") >= 0 ) {
-				var new_value = Number( current_value ) - ( ( Number( current_value ) / 100 ) * Number( value.replace(/\%/, "" ) ) );
-			} else {
-				var new_value = Number( current_value ) - Number ( value );
-			}
-			$(this).val( new_value ).change();
-		});
-	});
-
 
 })(jQuery); //end

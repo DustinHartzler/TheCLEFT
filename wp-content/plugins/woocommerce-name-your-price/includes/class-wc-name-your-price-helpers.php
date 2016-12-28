@@ -9,6 +9,23 @@ class WC_Name_Your_Price_Helpers {
 	static $supported_types = array( 'simple', 'subscription', 'bundle', 'composite', 'variation', 'subscription_variation', 'deposit', 'mix-and-match', 'nyp' );
 	static $supported_variable_types = array( 'variable', 'variable-subscription' );
 
+
+	/**
+	 * Check the installed version of WooCommerce is greater than $version argument
+	 *
+	 * @param   $version
+	 * @return	boolean
+	 * @access 	public
+	 * @since   2.4.0
+	 */
+	public static function wc_is_version( $version = '2.6' ) {
+		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, $version ) >= 0 ) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 	/**
 	 * Check is the installed version of WooCommerce is 2.3 or newer.
 	 * props to Brent Shepard
@@ -18,11 +35,8 @@ class WC_Name_Your_Price_Helpers {
 	 * @since 2.1
 	 */
 	public static function is_woocommerce_2_3() {
-		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '2.3-bleeding' ) >= 0 ) {
-			return true;
-		} else {
-			return false;
-		}
+		_deprecated( __METHOD__, '2.4.0', 'wc_is_version()' );
+		return self::wc_is_version( '2.3' );
 	}
 
 
@@ -34,11 +48,8 @@ class WC_Name_Your_Price_Helpers {
 	 * @since 	2.3.4
 	 */
 	public static function is_woocommerce_2_5() {
-		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '2.5.0-dev' ) >= 0 ) {
-			return true;
-		} else {
-			return false;
-		}
+		_deprecated( __METHOD__, '2.4.0', 'wc_is_version()' );
+		return self::wc_is_version( '2.5' );
 	}
 
 
@@ -145,7 +156,9 @@ class WC_Name_Your_Price_Helpers {
 
 		$product_id = self::get_id( $product );	
 
-		$minimum = get_post_meta( $product_id , '_min_variation_price', true );
+		$min_id = get_post_meta( $product_id , '_min_price_variation_id', true );
+
+		$minimum = self::get_minimum_price( $min_id );
 
 		// filter the raw minimum price @since 1.2
 		return apply_filters ( 'woocommerce_raw_minimum_variation_price', $minimum, $product_id );
@@ -291,7 +304,7 @@ class WC_Name_Your_Price_Helpers {
 	 */
 	public static function standardize_number( $value ){
 
-		$value = trim( str_replace( get_option( 'woocommerce_price_thousand_sep' ), '', $value ) );
+		$value = trim( stripslashes( str_replace( get_option( 'woocommerce_price_thousand_sep' ), '', $value ) ) );
 
 		return wc_format_decimal( $value );
 
@@ -391,7 +404,7 @@ class WC_Name_Your_Price_Helpers {
 			// formulate a price string
 			$price_string = self::get_price_string( $product, 'minimum' );
 
-			$html .= sprintf( '<span class="minimum-text">%s</span><span class="amount">%s</span>', $minimum_text, $price_string );
+			$html .= sprintf( '<span class="minimum-text">%s</span> <span class="amount">%s</span>', $minimum_text, $price_string );
 
 
 		} 
@@ -431,7 +444,7 @@ class WC_Name_Your_Price_Helpers {
 			$price_string = self::get_price_string( $product );
 
 			// put it all together
-			$html .= sprintf( '<span class="suggested-text">%s</span>%s', $suggested_text, $price_string );
+			$html .= sprintf( '<span class="suggested-text">%s</span> %s', $suggested_text, $price_string );
 
 		} 
 
@@ -451,6 +464,9 @@ class WC_Name_Your_Price_Helpers {
 	 * @since	2.0
 	 */
 	public static function get_price_string( $product, $type = 'suggested' ) {
+
+		// start the price string
+		$html = '';
 
 		// need to catch the product ID from minimum price template - must've forgotten to change that
 		if ( ! is_object( $product ) ){
@@ -479,39 +495,43 @@ class WC_Name_Your_Price_Helpers {
 				break;
 		}
 
-		// get subscription price string
-		if( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $product ) && 'woocommerce_get_price_html' != current_filter() ) {
+		if( $price != '' ){
 
-			// if is a variable billing product we need to create our own string
-			if( self::is_billing_period_variable( $product ) ) { 
+			// get subscription price string
+			if( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $product ) && 'woocommerce_get_price_html' != current_filter() ) {
 
-				// minimum or suggested period
-				if( 'minimum' == $type ){
-					$period = self::get_minimum_billing_period( $product );
+				// if is a variable billing product we need to create our own string
+				if( self::is_billing_period_variable( $product ) ) { 
+
+					// minimum or suggested period
+					if( 'minimum' == $type ){
+						$period = self::get_minimum_billing_period( $product );
+					} else {
+						$period = self::get_suggested_billing_period( $product );
+					}
+
+					$html = sprintf( _x( ' %s / %s', 'Variable subscription price, ex: $10 / day', 'wc_name_your_price' ), wc_price( $price ), self::get_subscription_period_strings( 1, $period ) );
+
 				} else {
-					$period = self::get_suggested_billing_period( $product );
-				}
 
-				$html = sprintf( _x( ' %s / %s', 'Variable subscription price, ex: $10 / day', 'wc_name_your_price' ), wc_price( $price ), self::get_subscription_period_strings( 1, $period ) );
+					$include = array( 
+						'price' => wc_price( $price ),
+						'subscription_length' => false,
+						'sign_up_fee'         => false,
+						'trial_length'        => false );
+					
+					$html = WC_Subscriptions_Product::get_price_string( $product, $include );
 
-			} else {
+				} 
 
-				$include = array( 
-					'price' => wc_price( $price ),
-					'subscription_length' => false,
-					'sign_up_fee'         => false,
-					'trial_length'        => false );
-				
-				$html = WC_Subscriptions_Product::get_price_string( $product, $include );
+			// non-subscription products
+			} else { 
+				$html = wc_price( $price );
+			}
 
-			} 
-
-		// non-subscription products
-		} else { 
-			$html = wc_price( $price );
 		}
 
-		return apply_filters( 'woocommerce_nyp_price_string', $html, $product );
+		return apply_filters( 'woocommerce_nyp_price_string', $html, $product, $price );
 
 	}
 
@@ -708,8 +728,11 @@ class WC_Name_Your_Price_Helpers {
 	 * @return	string
 	 * @access	public
 	 * @since	2.0
+	 * @deprecated 2.4.0
 	 */
 	public static function get_subscription_period_input( $input, $product_id, $prefix ) {
+
+		_deprecated_function( __METHOD__, '2.4.0', 'Variable subscriptions' );
 
 		// create the dropdown select element
 		$period = self::get_posted_period( $product_id, $prefix );
@@ -787,111 +810,8 @@ class WC_Name_Your_Price_Helpers {
 	 */
 	public static function variable_product_sync( $product_id, $children ){ 
 
-		if ( $children ) { 
-
-			$min_price    = null;
-			$max_price    = null;
-			$min_price_id = null;
-			$max_price_id = null;
-
-			// Main active prices
-			$min_price            = null;
-			$max_price            = null;
-			$min_price_id         = null;
-			$max_price_id         = null;
-
-			// Regular prices
-			$min_regular_price    = null;
-			$max_regular_price    = null;
-			$min_regular_price_id = null;
-			$max_regular_price_id = null;
-
-			// Sale prices
-			$min_sale_price       = null;
-			$max_sale_price       = null;
-			$min_sale_price_id    = null;
-			$max_sale_price_id    = null;
-
-			foreach ( array( 'price', 'regular_price', 'sale_price' ) as $price_type ) {
-				foreach ( $children as $child_id ) {
-					
-					// if NYP 
-					if( WC_Name_Your_Price_Helpers::is_nyp( $child_id ) ) {
-
-						// Skip hidden variations
-						if ( 'yes' === get_option( 'woocommerce_hide_out_of_stock_items' ) ) {
-							$stock = get_post_meta( $child_id, '_stock', true );
-							if ( $stock !== "" && $stock <= get_option( 'woocommerce_notify_no_stock_amount' ) ) {
-								continue;
-							}
-						}
-
-						// get the nyp min price for this variation
-						$child_price 		= get_post_meta( $child_id, '_min_price', true );
-
-						// if there is no set minimum, technically the min is 0
-						$child_price = $child_price ? $child_price : 0;
-
-						// Find min price
-						if ( is_null( ${"min_{$price_type}"} ) || $child_price < ${"min_{$price_type}"} ) {
-							${"min_{$price_type}"}    = $child_price;
-							${"min_{$price_type}_id"} = $child_id;
-						}
-
-						// Find max price
-						if ( is_null( ${"max_{$price_type}"} ) || $child_price > ${"max_{$price_type}"} ) {
-							${"max_{$price_type}"}    = $child_price;
-							${"max_{$price_type}_id"} = $child_id;
-						}
-
-					} else {
-
-						$child_price = get_post_meta( $child_id, '_' . $price_type, true );
-
-						// Skip non-priced variations
-						if ( $child_price === '' ) {
-							continue;
-						}
-
-						// Skip hidden variations
-						if ( 'yes' === get_option( 'woocommerce_hide_out_of_stock_items' ) ) {
-							$stock = get_post_meta( $child_id, '_stock', true );
-							if ( $stock !== "" && $stock <= get_option( 'woocommerce_notify_no_stock_amount' ) ) {
-								continue;
-							}
-						}
-
-						// Find min price
-						if ( is_null( ${"min_{$price_type}"} ) || $child_price < ${"min_{$price_type}"} ) {
-							${"min_{$price_type}"}    = $child_price;
-							${"min_{$price_type}_id"} = $child_id;
-						}
-
-						// Find max price
-						if ( $child_price > ${"max_{$price_type}"} ) {
-							${"max_{$price_type}"}    = $child_price;
-							${"max_{$price_type}_id"} = $child_id;
-						}
-
-					}
-
-				}
-
-				// Store prices
-				update_post_meta( $product_id, '_min_variation_' . $price_type, ${"min_{$price_type}"} );
-				update_post_meta( $product_id, '_max_variation_' . $price_type, ${"max_{$price_type}"} );
-
-				// Store ids
-				update_post_meta( $product_id, '_min_' . $price_type . '_variation_id', ${"min_{$price_type}_id"} );
-				update_post_meta( $product_id, '_max_' . $price_type . '_variation_id', ${"max_{$price_type}_id"} );
-			}
-
-			// The VARIABLE PRODUCT price should equal the min price of any type
-			update_post_meta( $product_id, '_price', $min_price );
-
-			wc_delete_product_transients( $product_id );
-
-		}
+		__deprecated( __METHOD__, '2.4.0', 'Moved method to the WC_Name_Your_Price_Compatibility class' );
+		return WC_Name_Your_Price()->compatibility->variable_product_sync( $product_id, $children );
 
 	}
 

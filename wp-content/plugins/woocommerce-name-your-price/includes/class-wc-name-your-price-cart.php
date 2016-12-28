@@ -18,7 +18,7 @@ class WC_Name_Your_Price_Cart {
 		add_filter( 'woocommerce_add_cart_item_data', array( $this, 'add_cart_item_data' ), 5, 3 );
 		add_filter( 'woocommerce_get_cart_item_from_session', array( $this, 'get_cart_item_from_session' ), 11, 2 );
 		add_filter( 'woocommerce_add_cart_item', array( $this, 'add_cart_item' ), 11, 1 );
-		add_filter( 'woocommerce_add_to_cart_validation', array( $this, 'validate_add_cart_item' ), 5, 5 );
+		add_filter( 'woocommerce_add_to_cart_validation', array( $this, 'validate_add_cart_item' ), 5, 6 );
 
 	}
 
@@ -75,8 +75,9 @@ class WC_Name_Your_Price_Cart {
 			$cart_item['nyp'] = $values['nyp'];
 
 			// add the subscription billing period
-			if ( WC_Name_Your_Price_Helpers::is_subscription( $values['product_id'] ) && isset( $values['nyp_period'] ) && in_array( $values['nyp_period'], WC_Name_Your_Price_Helpers::get_subscription_period_strings() ) )
+			if ( WC_Name_Your_Price_Helpers::is_subscription( $values['product_id'] ) && isset( $values['nyp_period'] ) && in_array( $values['nyp_period'], WC_Name_Your_Price_Helpers::get_subscription_period_strings() ) ){
 				$cart_item['nyp_period'] = $values['nyp_period'];
+			}
 
 			$cart_item = $this->add_cart_item( $cart_item );
 		}
@@ -116,7 +117,7 @@ class WC_Name_Your_Price_Cart {
 	 * check this is a NYP product before adding to cart
 	 * @since 1.0
 	 */
-	public function validate_add_cart_item( $passed, $product_id, $quantity, $variation_id = '', $variations= '' ) {
+	public function validate_add_cart_item( $passed, $product_id, $quantity, $variation_id = '', $variations= '', $cart_item_data = array() ) {
 
 		if( $variation_id ){
 			$product_id = $variation_id;
@@ -129,8 +130,12 @@ class WC_Name_Your_Price_Cart {
 
 		$prefix = apply_filters( 'nyp_field_prefix', '', $product_id );
 
-		// get the posted price (can be null string)
-		$input = WC_Name_Your_Price_Helpers::get_posted_price( $product_id, $prefix );
+		// get the price from the order again params or from the posted value (posted can be null string)
+		if( isset( $cart_item_data['nyp'] ) ){
+			$input = $cart_item_data['nyp'];
+		} else {
+			$input = WC_Name_Your_Price_Helpers::get_posted_price( $product_id, $prefix );
+		}
 
 		// get minimum price
 		$minimum = WC_Name_Your_Price_Helpers::get_minimum_price( $product_id );

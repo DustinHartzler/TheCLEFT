@@ -3,13 +3,13 @@
 Plugin Name: WooCommerce Name Your Price
 Plugin URI: http://www.woothemes.com/products/name-your-price/
 Description: WooCommerce Name Your Price allows customers to set their own price for products or donations.
-Version: 2.3.4
+Version: 2.4.2
 Author: Kathy Darling
 Author URI: http://kathyisawesome.com
 Requires at least: 3.8
-Tested up to: 4.2
+Tested up to: 4.6.1
 WC requires at least: 2.1.0    
-WC tested up to: 2.3.8   
+WC tested up to: 2.6.4   
 
 Copyright: © 2012 Kathy Darling.
 License: GNU General Public License v3.0
@@ -20,8 +20,9 @@ License URI: http://www.gnu.org/licenses/gpl-3.0.html
 /**
  * Required functions
  */
-if ( ! function_exists( 'woothemes_queue_update' ) )
+if ( ! function_exists( 'woothemes_queue_update' ) ){
 	require_once( 'woo-includes/woo-functions.php' );
+}
 
 /**
  * Plugin updates
@@ -29,8 +30,9 @@ if ( ! function_exists( 'woothemes_queue_update' ) )
 woothemes_queue_update( plugin_basename( __FILE__ ), '31b4e11696cd99a3c0572975a84f1c08', '18738' );
 
 // Quit right now if WooCommerce is not active
-if ( ! is_woocommerce_active() )
+if ( ! is_woocommerce_active() ){
 	return;
+}
 
 
 /**
@@ -50,7 +52,7 @@ class WC_Name_Your_Price {
 	 * @var plugin version
 	 * @since 2.0
 	 */
-	public $version = '2.3.4';   
+	public $version = '2.4.2';   
 
 	/**
 	 * @var required WooCommerce version
@@ -172,17 +174,22 @@ class WC_Name_Your_Price {
 			include_once( 'includes/class-wc-name-your-price-cart.php' );
 			$this->cart = new WC_Name_Your_Price_Cart();
 
+			include_once( 'includes/class-wc-name-your-price-order.php' );
+			$this->order = new WC_Name_Your_Price_Order();
+
 		}
 
 		include_once( 'includes/class-wc-name-your-price-compatibility.php' );
 		$this->compatibility = new WC_Name_Your_Price_Compatibility();
 
 		// minor backcompat issues
-		if ( WC_Name_Your_Price_Helpers::is_woocommerce_2_3() ) {
+		if ( WC_Name_Your_Price_Helpers::wc_is_version( '2.3' ) ) {
 			include_once( 'includes/wc-23-functions.php' );
 		} else {
 			include_once( 'includes/wc-21-functions.php' );
 		}
+
+		do_action( 'wc_name_your_price_loaded' );
 
 	}
 

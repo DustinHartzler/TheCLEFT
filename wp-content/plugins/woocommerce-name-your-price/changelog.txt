@@ -1,5 +1,23 @@
 === WooCommerce Name Your Price ===
 
+2016.10.17 - version 2.4.2
+* New: JS support multiple NYP inputs
+* Fix: bulk toggle NYP on/off for variations
+
+2016.08.03 - version 2.4.1
+* Fix: Update version number in main plugin file
+
+2016.08.02 - version 2.4.0
+* New: Add support for order again, fixes loss of NYP price on order again, and payment for pending orders
+* New: Add filter for woocommerce_variable_subscription_price_html (will work better when Subscriptions changes how they save variations)
+* Fix: Better price strings for Variable products with NYP variations. Products with no minimum will no longer say From: $0 unless 0 is explicity defined as minimum
+* Fix: bulk variation actions
+* Deprecated: Variable billing periods. Existing products will continue to work, but new instances are disabled. Please switch to variable subscriptions instead. 
+* Fix: support CHF thousands seperator (')
+
+2016.05.03 - version 2.3.5
+* New: add wc_name_your_price_loaded hook for extending NYP
+
 2015.12.30 - version 2.3.4
 * Fix: bug in validation of subscriptions with variable billing period
 * Fix: display of front-end NYP variation price string

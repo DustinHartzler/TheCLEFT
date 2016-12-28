@@ -30,16 +30,14 @@ class WC_Name_Your_Price_Admin {
 		add_action( 'woocommerce_variation_options', array( __CLASS__, 'product_variations_options' ), 10, 3 );
 		add_action( 'woocommerce_product_after_variable_attributes', array( __CLASS__, 'add_to_variations_metabox'), 10, 3 );
 
-		// regular variable products
-		add_action( 'woocommerce_process_product_meta_variable', array( __CLASS__, 'save_variable_product_meta' ) );
-		add_action( 'woocommerce_save_product_variation', array( __CLASS__, 'save_product_variation' ), 20, 2 );
-
-		// variable subscription products
-		add_action( 'woocommerce_process_product_meta_variable-subscription', array( __CLASS__, 'save_variable_product_meta' ) );
-		add_action( 'woocommerce_save_product_variation-subscription', array( __CLASS__, 'save_product_variation' ), 20, 2 );
+		// save NYP variations
+		add_action( 'woocommerce_save_product_variation', array( __CLASS__, 'save_product_variation' ), 30, 2 );
 
 		// Variable Bulk Edit
 		add_action( 'woocommerce_variable_product_bulk_edit_actions', array( __CLASS__, 'bulk_edit_actions' ) );
+
+		// Handle bulk edits to data in WC 2.4+
+		add_action( 'woocommerce_bulk_edit_variations', array( __CLASS__, 'bulk_edit_variations' ), 10, 4 );
 
 		// Admin Scripts
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'meta_box_script'), 20 );
@@ -100,9 +98,12 @@ class WC_Name_Your_Price_Admin {
 	public static function add_to_metabox(){
 		global $post;
 
+		// if variable billing is enabled, continue to show options. otherwise, deprecate
+		$show_billing_period_options = get_post_meta( $post->ID , '_variable_billing', true ) == 'yes' ? true : false;
+		
 		echo '<div class="options_group show_if_nyp">';
 
-			if( class_exists( 'WC_Subscriptions' ) ) {
+			if( class_exists( 'WC_Subscriptions' ) && $show_billing_period_options ) {
 
 				// make billing period variable
 				woocommerce_wp_checkbox( array(
@@ -122,7 +123,7 @@ class WC_Name_Your_Price_Admin {
 				'data_type' => 'price'
 			) );
 
-			if( class_exists( 'WC_Subscriptions' ) ) {
+			if( class_exists( 'WC_Subscriptions' ) && $show_billing_period_options ) {
 
 				// Suggested Billing Period
 				woocommerce_wp_select( array(
@@ -143,7 +144,7 @@ class WC_Name_Your_Price_Admin {
 				'data_type' => 'price'
 			) );
 
-			if( class_exists( 'WC_Subscriptions' ) ) {
+			if( class_exists( 'WC_Subscriptions' ) && $show_billing_period_options ) {
 				// Minimum Billing Period
 				woocommerce_wp_select( array(
 					'id'          => '_minimum_billing_period',
@@ -251,7 +252,7 @@ class WC_Name_Your_Price_Admin {
 		$suggested = get_post_meta( $variation->ID, '_suggested_price', true );
 		$min = get_post_meta( $variation->ID, '_min_price', true );
 
-		if( WC_Name_Your_Price_Helpers::is_woocommerce_2_3() ){ ?>
+		if( WC_Name_Your_Price_Helpers::wc_is_version( '2.3' ) ){ ?>
 
 			<div class="variable_nyp_pricing">
 				<p class="form-row form-row-first">
@@ -309,16 +310,24 @@ class WC_Name_Your_Price_Admin {
 		if ( isset( $_POST['variation_min_price'][$i] ) ) {
 			$variation_min_price = ( trim( $_POST['variation_min_price'][$i]  ) === '' ) ? '' : wc_format_decimal( $_POST['variation_min_price'][$i] );
 			update_post_meta( $variation_id, '_min_price', $variation_min_price );
-		}
 
-		// remove lingering sale price if switched to nyp
-		if( $variation_is_nyp == 'yes' )
-			update_post_meta( $variation_id, '_sale_price', '' );
+			// if NYP, set prices to minimum
+			if( $variation_is_nyp == 'yes' ){
+				$new_price = $variation_min_price === '' ? 0 : wc_format_decimal( $variation_min_price );
+				update_post_meta( $variation_id, '_price', $new_price );
+				update_post_meta( $variation_id, '_regular_price', $new_price );
+				update_post_meta( $variation_id, '_sale_price', '' );
+
+				if( isset( $_POST['product-type'] ) && 'variable-subscription' == $_POST['product-type'] ){
+					update_post_meta( $variation_id, '_subscription_price', $new_price );
+				}
+			} 
+		}
 
 	}
 
 	/*
-	 * Save extra meta info for product variations
+	 * Save extra meta info for variable products
 	 *
 	 * @param int $post_id
 	 * @return void
@@ -326,9 +335,11 @@ class WC_Name_Your_Price_Admin {
 	 */
 	public static function save_variable_product_meta( $post_id ){
 
+		_deprecated_function( __METHOD__, '2.4.0', 'Meta for the variable product now saved during sync' );
+
 		$has_nyp = false;
 
-		if ( isset( $_POST['variable_sku'] ) ) :
+		if ( isset( $_POST['variable_sku'] ) ) {
 			$variable_sku = $_POST['variable_sku'];
 
 			$variation_is_nyp = isset( $_POST['variation_is_nyp'] ) ? $_POST['variation_is_nyp'] : array();
@@ -344,10 +355,10 @@ class WC_Name_Your_Price_Admin {
 
 			endfor;
 
-		$has_nyp = $has_nyp ? 'yes' : 'no';
-		update_post_meta( $post_id, '_has_nyp', $has_nyp );
-		
-		endif;
+			$has_nyp = $has_nyp ? 'yes' : 'no';
+			update_post_meta( $post_id, '_has_nyp', $has_nyp );
+			
+		}
 
 	}
 
@@ -359,14 +370,89 @@ class WC_Name_Your_Price_Admin {
 	 * @since 2.0
 	 */
 	public static function bulk_edit_actions(){ ?>
-		<option value="toggle_nyp"><?php _e( 'Toggle &quot;Name Your Price&quot;', 'wc_name_your_price' ); ?></option>
-		<option value="variation_suggested_price"><?php _e( 'Suggested prices', 'wc_name_your_price' ); ?></option>
-		<option value="variation_suggested_price_increase"><?php _e( 'Suggested prices increase by (fixed amount or %)', 'wc_name_your_price' ); ?></option>
-		<option value="variation_suggested_price_decrease"><?php _e( 'Suggested prices decrease by (fixed amount or %)', 'wc_name_your_price' ); ?></option>
-		<option value="variation_min_price"><?php _e( 'Minimum prices', 'wc_name_your_price' ); ?></option>
-		<option value="variation_min_price_increase"><?php _e( 'Minimum prices increase by (fixed amount or %)', 'wc_name_your_price' ); ?></option>
-		<option value="variation_min_price_decrease"><?php _e( 'Minimum prices decrease by (fixed amount or %)', 'wc_name_your_price' ); ?></option>
+		<optgroup label="<?php esc_attr_e( 'Name Your Price', 'wc_name_your_price' ); ?>">
+			<option value="toggle_nyp"><?php _e( 'Toggle &quot;Name Your Price&quot;', 'wc_name_your_price' ); ?></option>
+			<option value="variation_suggested_price"><?php _e( 'Set suggested prices', 'wc_name_your_price' ); ?></option>
+			<option value="variation_suggested_price_increase"><?php _e( 'Increase suggested prices (fixed amount or %)', 'wc_name_your_price' ); ?></option>
+			<option value="variation_suggested_price_decrease"><?php _e( 'Decrease suggested prices (fixed amount or %)', 'wc_name_your_price' ); ?></option>
+			<option value="variation_min_price"><?php _e( 'Set minimum prices', 'wc_name_your_price' ); ?></option>
+			<option value="variation_min_price_increase"><?php _e( 'Increase minimum prices (fixed amount or %)', 'wc_name_your_price' ); ?></option>
+			<option value="variation_min_price_decrease"><?php _e( 'Decrease minimum prices (fixed amount or %)', 'wc_name_your_price' ); ?></option>
+		</optgroup>
+		
 		<?php
+	}
+
+
+
+	/**
+	 * Save NYP meta data when it is bulk edited from the Edit Product screen
+	 *
+	 * @param string $bulk_action The bulk edit action being performed
+	 * @param array $data An array of data relating to the bulk edit action. $data['value'] represents the new value for the meta.
+	 * @param int $variable_product_id The post ID of the parent variable product.
+	 * @param array $variation_ids An array of post IDs for the variable prodcut's variations.
+	 * @since 2.3.6
+	 */
+	public static function bulk_edit_variations( $bulk_action, $data, $variable_product_id, $variation_ids ) {
+
+		switch ( $bulk_action ) {
+			case 'toggle_nyp':
+				foreach ( $variation_ids as $variation_id ) {
+					$_nyp = get_post_meta( $variation_id, '_nyp', true );
+					// check for definitive 'yes' as new variations will have null values for _nyp meta key
+					$is_nyp = 'yes' === $_nyp ? 'no' : 'yes';
+					update_post_meta( $variation_id, '_nyp', wc_clean( $is_nyp ) );
+				}
+			break;
+			case 'variation_suggested_price':
+			case 'variation_min_price':
+
+				$meta_key = str_replace( 'variation', '', $bulk_action );
+				$price = trim( $data['value'] ) === '' ? '' : wc_format_decimal( $data['value'] );
+
+				foreach ( $variation_ids as $variation_id ) {
+					update_post_meta( $variation_id, $meta_key, wc_clean( $price ) );
+				}
+
+			break;
+			case 'variation_suggested_price_increase':
+			case 'variation_min_price_increase':
+
+				$meta_key = str_replace( array('variation', '_increase' ), '', $bulk_action );
+				$percentage = isset( $data['percentage'] ) && $data['percentage'] == 'yes' ? true : false;
+
+				foreach ( $variation_ids as $variation_id ) {
+					$price = get_post_meta( $variation_id, $meta_key, true );
+					if( $percentage ){
+						$price = $price * ( 1 + $data['value'] / 100 );
+					} else {
+						$price = $price + $data['value'];
+					}
+					update_post_meta( $variation_id, $meta_key, wc_format_decimal( $price ) );
+				}
+
+			break;
+			case 'variation_suggested_price_decrease':
+			case 'variation_min_price_decrease':
+
+				$meta_key = str_replace( array('variation', '_decrease' ), '', $bulk_action );
+				$percentage = isset( $data['percentage'] ) && $data['percentage'] == 'yes' ? true : false;
+
+				foreach ( $variation_ids as $variation_id ) {
+					$price = get_post_meta( $variation_id, $meta_key, true );
+					if( $percentage ){
+						$price = $price * ( 1 - $data['value'] / 100 );
+					} else {
+						$price = $price - $data['value'];
+					}
+					update_post_meta( $variation_id, $meta_key, wc_format_decimal( $price ) );
+				}
+
+			break;
+
+		}
+
 	}
 
 
@@ -410,13 +496,16 @@ class WC_Name_Your_Price_Admin {
 	 */
     public static function add_help_tab(){
 
-    	if ( ! function_exists( 'get_current_screen' ) )
+    	if ( ! function_exists( 'get_current_screen' ) ){
     		return;
+    	}
 
 		$screen = get_current_screen();
 
 		// Product/Coupon/Orders
-		if ( ! in_array( $screen->id, array( 'product', 'edit-product' ) ) ) return;
+		if ( ! in_array( $screen->id, array( 'product', 'edit-product' ) ) ){
+			return;
+		}
 
 		$screen->add_help_tab( array(
 	    'id'	=> 'woocommerce_nyp_tab',

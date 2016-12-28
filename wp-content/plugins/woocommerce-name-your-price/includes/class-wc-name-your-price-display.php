@@ -22,6 +22,7 @@ class WC_Name_Your_Price_Display {
 
 		// Display NYP Prices
 		add_filter( 'woocommerce_get_price_html', array( $this, 'nyp_price_html' ), 10, 2 );
+		add_filter( 'woocommerce_variable_subscription_price_html', array( $this, 'variable_subscription_nyp_price_html' ), 10, 2 );
 
 		// Loop Display
 		add_filter( 'woocommerce_product_add_to_cart_text', array( $this, 'add_to_cart_text' ), 10, 2 );
@@ -211,27 +212,45 @@ class WC_Name_Your_Price_Display {
 	/**
 	 * Filter the Price HTML
 	 *
-	 * @param string $price
+	 * @param string $html
 	 * @param object $product
 	 * @return string
 	 * @since 1.0
 	 * @renamed in 2.0
 	 */
-	function nyp_price_html( $price, $product ){
+	function nyp_price_html( $html, $product ){
 
 		if( WC_Name_Your_Price_Helpers::is_nyp( $product ) ){
-			$price =  apply_filters( 'woocommerce_nyp_html', WC_Name_Your_Price_Helpers::get_suggested_price_html( $product ),  $product );
-		} else if( WC_Name_Your_Price_Helpers::has_nyp( $product ) ){		
+			$html =  apply_filters( 'woocommerce_nyp_html', WC_Name_Your_Price_Helpers::get_suggested_price_html( $product ),  $product );
+		} else if( WC_Name_Your_Price_Helpers::has_nyp( $product ) ){ 	
 			$min_variation_string = WC_Name_Your_Price_Helpers::get_price_string( $product, 'minimum-variation' );
-			if( $min_variation_string != ''){
-				$price = $product->get_price_html_from_text() . $min_variation_string;
-			}
-			$price = apply_filters( 'woocommerce_variable_nyp_html', $price, $product );
+			$html = $min_variation_string != '' ? $product->get_price_html_from_text() . $min_variation_string : '';	
+			$html = apply_filters( 'woocommerce_variable_nyp_html', $html, $product );
 		}
 
-		return $price;
+		return $html;
 
 	}
+
+	/**
+	 * Filter the Price HTML
+	 *
+	 * @param string $html
+	 * @param object $product
+	 * @return string
+	 * @since 1.0
+	 * @renamed in 2.0
+	 */
+	function variable_subscription_nyp_price_html( $html, $product ){
+
+		if( WC_Name_Your_Price_Helpers::has_nyp( $product ) && WC_Name_Your_Price_Helpers::get_minimum_variation_price( $product ) === '' && intval( $product->get_sign_up_fee() ) === 0 && intval( WC_Subscriptions_Product::get_trial_length( $product ) ) === 0 ){ 	
+			$html = '';
+		} 
+
+		$html = apply_filters( 'woocommerce_variable_subscription_nyp_html', $html, $product );
+
+	}
+
 
 
 	/*-----------------------------------------------------------------------------------*/
@@ -268,7 +287,7 @@ class WC_Name_Your_Price_Display {
 		if ( WC_Name_Your_Price_Helpers::is_nyp( $product ) ) {
 			$url = get_permalink( $product->id );
 			// disables the ajax add to cart for WC<2.5
-			if( ! WC_Name_Your_Price_Helpers::is_woocommerce_2_5() ){
+			if( ! WC_Name_Your_Price_Helpers::wc_is_version( '2.5' ) ){
 				$product->product_type = 'nyp'; 
 			}
 		}

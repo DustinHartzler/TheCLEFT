@@ -59,7 +59,7 @@ jQuery( document ).ready( function($) {
 					// in the case of variable period we need to adjust the error message a bit
 					error_price = woocommerce_nyp_format_price( error, woocommerce_nyp_params.currency_format_symbol ) + ' / ' + $nyp_period.find('option[value="' + form_period + '"]').text();
 
-					
+
 				}
 
 			// otherwise a regular product or subscription with non-variable periods
@@ -149,7 +149,7 @@ jQuery( document ).ready( function($) {
 
 			// the add to cart text
 			var default_add_to_cart_text 	= $add_to_cart.html();
-			
+
 			// hide the nyp form by default
 			$nyp.hide();
 			$minimum.hide();
@@ -176,6 +176,8 @@ jQuery( document ).ready( function($) {
 					// maybe auto-format the input
 					if( $.trim( initial_price ) != '' ){
 						$nyp_input.val( woocommerce_nyp_format_price( initial_price ) );
+					} else {
+						$nyp_input.val( '' );
 					}
 
 					// maybe show subscription terms
@@ -235,7 +237,7 @@ jQuery( document ).ready( function($) {
 	 * run when Quick view item is launched
 	 */
 	$( 'body' ).on( 'quick-view-displayed', function() {
-		$( 'body' ).find( '.cart' ).each( function() {
+		$( 'body' ).find( '.cart:not(.cart_group)' ).each( function() {
 			$( this ).woocommerce_nyp_update();
 		} );
 	} );
@@ -244,7 +246,7 @@ jQuery( document ).ready( function($) {
 	 * run when a Composite component is re-loaded
 	 */
 	$( 'body .component' ).on( 'wc-composite-component-loaded', function() {
-		$( this ).find( '.cart' ).each( function() {
+		$( this ).find( '.cart:not(.cart_group)' ).each( function() {
 			$( this ).woocommerce_nyp_update();
 		} );
 	} );
@@ -252,7 +254,7 @@ jQuery( document ).ready( function($) {
 	/*
 	 * run on load
 	 */
-	$( 'body' ).find( '.cart' ).each( function() {
+	$( 'body' ).find( '.cart:not(.cart_group)' ).each( function() {
 		$( this ).woocommerce_nyp_update();
 	} );
 
@@ -270,7 +272,7 @@ jQuery( document ).ready( function($) {
 				decimal : woocommerce_nyp_params.currency_format_decimal_sep,
 				thousand: woocommerce_nyp_params.currency_format_thousand_sep,
 				precision : woocommerce_nyp_params.currency_format_num_decimals,
-				format: woocommerce_nyp_params.currency_format	
+				format: woocommerce_nyp_params.currency_format
 		}).trim();
 
 	}
