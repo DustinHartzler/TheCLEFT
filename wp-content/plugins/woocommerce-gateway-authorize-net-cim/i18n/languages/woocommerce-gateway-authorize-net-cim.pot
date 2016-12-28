@@ -2,8 +2,8 @@
 # This file is distributed under the GNU General Public License v3.0.
 msgid ""
 msgstr ""
-"Project-Id-Version: WooCommerce Authorize.Net CIM Gateway 2.4.0\n"
-"Report-Msgid-Bugs-To: https://support.woothemes.com/hc/\n"
+"Project-Id-Version: WooCommerce Authorize.Net CIM Gateway 2.5.0\n"
+"Report-Msgid-Bugs-To: https://woocommerce.com/my-account/tickets/\n"
 "POT-Creation-Date: 2014-06-15 22:41:25+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
@@ -55,15 +55,19 @@ msgstr ""
 msgid "Code: %s - %s"
 msgstr ""
 
-#: includes/api/transaction/abstract-wc-authorize-net-cim-api-transaction-request.php:125
+#: includes/api/transaction/abstract-wc-authorize-net-cim-api-transaction-request.php:123
+msgid "Fee"
+msgstr ""
+
+#: includes/api/transaction/abstract-wc-authorize-net-cim-api-transaction-request.php:124
 msgid "Order Fee"
 msgstr ""
 
-#: includes/api/transaction/abstract-wc-authorize-net-cim-api-transaction-request.php:160
+#: includes/api/transaction/abstract-wc-authorize-net-cim-api-transaction-request.php:159
 msgid "Order Taxes"
 msgstr ""
 
-#: includes/api/transaction/abstract-wc-authorize-net-cim-api-transaction-request.php:183
+#: includes/api/transaction/abstract-wc-authorize-net-cim-api-transaction-request.php:182
 msgid "Order Shipping"
 msgstr ""
 
@@ -89,55 +93,55 @@ msgid ""
 "CIM."
 msgstr ""
 
-#: includes/class-wc-gateway-authorize-net-cim-credit-card.php:82
+#: includes/class-wc-gateway-authorize-net-cim-credit-card.php:83
 #: includes/class-wc-gateway-authorize-net-cim-echeck.php:72
 msgid "Production"
 msgstr ""
 
-#: includes/class-wc-gateway-authorize-net-cim-credit-card.php:82
+#: includes/class-wc-gateway-authorize-net-cim-credit-card.php:83
 #: includes/class-wc-gateway-authorize-net-cim-echeck.php:72
 msgid "Test"
 msgstr ""
 
-#: includes/class-wc-gateway-authorize-net-cim-credit-card.php:114
-#: includes/class-wc-gateway-authorize-net-cim-credit-card.php:129
+#: includes/class-wc-gateway-authorize-net-cim-credit-card.php:115
+#: includes/class-wc-gateway-authorize-net-cim-credit-card.php:130
 msgid "Accept.js"
 msgstr ""
 
-#: includes/class-wc-gateway-authorize-net-cim-credit-card.php:117
-#: includes/class-wc-gateway-authorize-net-cim-credit-card.php:132
+#: includes/class-wc-gateway-authorize-net-cim-credit-card.php:118
+#: includes/class-wc-gateway-authorize-net-cim-credit-card.php:133
 msgid ""
 "Enable Accept.js to minimize PCI compliance and send credit card details "
 "directly to Authorize.Net"
 msgstr ""
 
-#: includes/class-wc-gateway-authorize-net-cim-credit-card.php:119
-#: includes/class-wc-gateway-authorize-net-cim-credit-card.php:134
+#: includes/class-wc-gateway-authorize-net-cim-credit-card.php:120
+#: includes/class-wc-gateway-authorize-net-cim-credit-card.php:135
 msgid ""
 "You must obtain a Client Key to use Accept.js at checkout. %1$sLearn more "
 "&raquo;%2$s"
 msgstr ""
 
-#: includes/class-wc-gateway-authorize-net-cim-credit-card.php:123
-#: includes/class-wc-gateway-authorize-net-cim-credit-card.php:138
+#: includes/class-wc-gateway-authorize-net-cim-credit-card.php:124
+#: includes/class-wc-gateway-authorize-net-cim-credit-card.php:139
 msgid "Client Key"
 msgstr ""
 
-#: includes/class-wc-gateway-authorize-net-cim-credit-card.php:219
+#: includes/class-wc-gateway-authorize-net-cim-credit-card.php:220
 msgid "An error occurred, please try again or try an alternate form of payment."
 msgstr ""
 
-#: includes/class-wc-gateway-authorize-net-cim-credit-card.php:397
+#: includes/class-wc-gateway-authorize-net-cim-credit-card.php:398
 msgid "Order is missing customer profile ID."
 msgstr ""
 
-#: includes/class-wc-gateway-authorize-net-cim-credit-card.php:408
+#: includes/class-wc-gateway-authorize-net-cim-credit-card.php:409
 msgid ""
 "Order is missing the last four digits or expiration date of the credit card "
 "used."
 msgstr ""
 
-#: includes/class-wc-gateway-authorize-net-cim-credit-card.php:413
+#: includes/class-wc-gateway-authorize-net-cim-credit-card.php:414
 msgid "%s Refund error - %s"
 msgstr ""
 

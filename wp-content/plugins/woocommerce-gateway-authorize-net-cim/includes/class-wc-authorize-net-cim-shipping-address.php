@@ -229,6 +229,9 @@ class WC_Authorize_Net_CIM_Shipping_Address {
 	 */
 	public function matches_address( $address ) {
 
+		// convert the country code to 2-character, as stored by WC
+		$address['country'] = ! empty( $address['country'] ) ? SV_WC_Helper::convert_country_code( $address['country'] ) : '';
+
 		return md5( json_encode( $address ) ) === $this->get_hash();
 	}
 

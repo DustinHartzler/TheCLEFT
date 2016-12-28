@@ -1,5 +1,16 @@
 *** WooCommerce Authorize.Net CIM Gateway Changelog ***
 
+2016.11.09 - version 2.5.0
+ * Feature - Orders with only virtual items can now force a charge instead of authorization
+ * Feature - Enhanced payment form is now mobile-friendly (well, friendlier!) with `tel` type inputs
+ * Tweak - Update Mastercard payment icon and add BIN 2 series support
+ * Fix - Missing shipping profile data is now properly set
+ * Fix - Subscription payment method changes following a failed renewal were not saved properly if transaction type was set to "authorization"
+ * Misc - Update SkyVerge plugin framework to 4.5
+
+2016.10.25 - version 2.4.1
+ * Fix - Fixes transaction failures on orders with $0 fees
+
 2016.09.28 - version 2.4.0
  * Feature - Add Accept.js support for reduced PCI compliance scope
  * Feature - Add an optional eCheck authorization confirmation message at checkout
