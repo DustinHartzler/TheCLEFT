@@ -5,7 +5,7 @@
  * Description: Adds the Authorize.Net CIM Payment Gateway to your WooCommerce site, allowing customers to securely save their credit card or bank account to their account for use with single purchases, pre-orders, subscriptions, and more!
  * Author: WooThemes / SkyVerge
  * Author URI: http://www.woothemes.com/
- * Version: 2.5.0
+ * Version: 2.5.1
  * Text Domain: woocommerce-gateway-authorize-net-cim
  * Domain Path: /i18n/languages/
  *
@@ -41,7 +41,7 @@ if ( ! class_exists( 'SV_WC_Framework_Bootstrap' ) ) {
 	require_once( plugin_dir_path( __FILE__ ) . 'lib/skyverge/woocommerce/class-sv-wc-framework-bootstrap.php' );
 }
 
-SV_WC_Framework_Bootstrap::instance()->register_plugin( '4.5.0', __( 'WooCommerce Authorize.Net CIM Gateway', 'woocommerce-gateway-authorize-net-cim' ), __FILE__, 'init_woocommerce_gateway_authorize_net_cim', array(
+SV_WC_Framework_Bootstrap::instance()->register_plugin( '4.5.2', __( 'WooCommerce Authorize.Net CIM Gateway', 'woocommerce-gateway-authorize-net-cim' ), __FILE__, 'init_woocommerce_gateway_authorize_net_cim', array(
 	'is_payment_gateway'   => true,
 	'minimum_wc_version'   => '2.4.13',
 	'minimum_wp_version'   => '4.1',
@@ -122,7 +122,7 @@ class WC_Authorize_Net_CIM extends SV_WC_Payment_Gateway_Plugin {
 
 
 	/** string version number */
-	const VERSION = '2.5.0';
+	const VERSION = '2.5.1';
 
 	/** @var WC_Authorize_Net_CIM single instance of this plugin */
 	protected static $instance;

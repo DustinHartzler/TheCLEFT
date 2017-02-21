@@ -1,5 +1,9 @@
 *** WooCommerce Authorize.Net CIM Gateway Changelog ***
 
+2017.01.11 - version 2.5.1
+ * Fix - Disable the default CSC validation for saved credit cards when using Accept.js
+ * Fix - Ensure Curaçao country code is properly formatted to avoid invalid country errors
+
 2016.11.09 - version 2.5.0
  * Feature - Orders with only virtual items can now force a charge instead of authorization
  * Feature - Enhanced payment form is now mobile-friendly (well, friendlier!) with `tel` type inputs
