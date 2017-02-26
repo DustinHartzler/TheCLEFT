@@ -3,9 +3,9 @@
 	Plugin Name: WP Force SSL
 	Plugin URI: https://www.codesigns.gr/
 	Description: Redirect all traffic from HTTP to HTTPS to all pages of your WordPress website.
-	Stable Tag: 1.2.1
+	Stable Tag: 1.3
 	Author: Kostas Vrouvas
-	Version: 1.2.1
+	Version: 1.3
  */
 
 //
@@ -50,8 +50,8 @@ function wpfssl_welcome_screen_content() {
 <div class="wrap about-wrap">
 	<h1>Thank you for installing WP Force SSL!</h1>
 	<div class="about-text">
-		The main purpose of this plugin is to fix a problem that occurred on some websites that while everything was served over HTTPS (even while navigating), if you specifically tried to access a page via HTTP (via url) it won't redirect to HTTPS.	</div>
-	<h2>Notes:</h2>
+		This plugin helps you redirect HTTP traffic to HTTPS without the need of touching any code.</div>
+	<h3>Some things are required for this to happen:</h3>
 	<ul class="ul-disc">
 			<li>You need an SSL Certificate in order for this plugin to work.</li>
 			<li>You need to add https to the WordPress Address (URL) and Site Address (URL) parameters under General > Settings. (Required by WordPress itself)</li>
@@ -59,16 +59,21 @@ function wpfssl_welcome_screen_content() {
 	<br>
 	<br>
 	<hr>
-	<h2>Changelog:</h2>
+	<h1>Changelog:</h1>
 	<br>
-	<h2>WP Force SSL 1.2.1</h2>
+	<h4>1.3</h4>
+		<p><small>Release date: February 11th, 2016</small></p>
+		<ul class="ul-disc">
+			<li>Dropping support for PHP 5.3: Only 15.9% of the people that use WordPress use PHP 5.3, it reached end of life and you should ask your host to upgrade.</li>
+		</ul>
+	<h4>1.2.1</h4>
 		<p><small>Release date: April 22th, 2015</small></p>
 		<ul class="ul-disc">
 			<li>Fixed an issue where some users were getting a error message for no valid header when activating the plugin.</li>
 		</ul>
-		<h2>WP Force SSL 1.2</h2>
+	<h4>1.2</h4>
 		<ul class="ul-disc">
-			<li>Dropping support for PHP 5.2: Only 16% of the people that use WordPress use PHP 5.2, it's old, buggy, and insecure.</li>
+			<li>Dropping support for PHP 5.2: Only 5.7% of the people that use WordPress use PHP 5.2, it's old, buggy, and insecure.</li>
 		</ul>
 </div>
 </div>
@@ -89,7 +94,7 @@ if( !defined( 'ABSPATH' ) ) {
 }
 
 // Check if PHP is at the minimum required version
-if( version_compare( PHP_VERSION, '5.3', '>=' ) ) {
+if( version_compare( PHP_VERSION, '5.4', '>=' ) ) {
 define( 'WP_FORCE_SSL_FILE', __FILE__ );
 require_once dirname( __FILE__ ) . '/plugin.php';
 } else {

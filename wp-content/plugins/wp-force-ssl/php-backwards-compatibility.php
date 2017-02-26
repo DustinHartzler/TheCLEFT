@@ -30,7 +30,7 @@ return true;
 function wp_force_ssl_requirement_notice() {
 ?>
 <div class="updated">
-<p><?php _e( 'WP Force SSL did not activate because it requires your server to run PHP 5.3 or higher. <a href="http://www.wpupdatephp.com/update/" target="_blank">Learn More</a>', 'wp-force-ssl' ); ?></p>
+<p><?php _e( 'WP Force SSL did not activate because it requires your server to run PHP 5.4 or higher. <a href="http://www.wpupdatephp.com/update/" target="_blank">Learn More</a>', 'wp-force-ssl' ); ?></p>
 </div>
 <?php
 }
